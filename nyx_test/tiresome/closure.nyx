@@ -1,0 +1,88 @@
+func add(a,b){
+    return a+b
+}
+
+func add3(b){
+    return func(){
+        return add(3,b)
+    }
+}
+func twice(){
+    return func(){
+        return 5+5
+    }
+}
+
+func trible(p){
+    original = p
+
+    a =  func(){
+       return original
+    }
+    b = func(){
+        return a()+p
+    }
+    c= func(){
+        return b()+p
+    }
+    return c
+}
+t = trible(3)
+println(t()==9)
+println(add(1,2)==3)
+a = add3(4)
+println(typeof(a)=="closure")
+println(a()==7)
+q=twice()
+println(q()==10)
+println(q()==10)
+println(q)
+func weird(num){
+    closure_arr = []
+    for(i:range(num)){
+        closure_arr += func(){
+            return i
+        }    
+    }
+    return closure_arr
+}
+for(closure:weird(3)){
+    println(closure+" produces the result:"+closure())
+}
+
+func currying(f){
+    return func(a){
+        return f(1,a)
+    }
+}
+
+currying_demo = currying(func(a,b){return a+b})
+println(currying_demo(2)==3)
+
+func hof(f1,f2){
+    return f1(f2)
+}
+
+res = hof(func(f1)=> return func() => return f1()+5 ,func()=>return 8)
+println(res()==13)
+
+func nest_closures(){
+    top = 100
+    a = func(){
+        b = 10
+        c = b+20
+        d = func(){
+            e = top+c
+            f = func(){
+                h = 100
+                g = e+h
+                return g
+            }
+            return f()
+        }
+        return d()
+    }
+    return a()
+}
+
+println(nest_closures()==230)

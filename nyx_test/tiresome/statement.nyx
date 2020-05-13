@@ -1,0 +1,68 @@
+a = 3
+if(a+3==6){
+    println("sure")
+    println("it")
+    if(a+4==7){
+        println("nest")
+        if(a+5==9){
+            println("impossible")
+        }
+    }
+    println("is")
+}
+
+if(a+1==3){
+    println("then")
+}else{
+    println("else")
+}
+if(a<4){
+    a = a+1
+    println("now a is "+a)
+}
+
+while(a<100){
+println("counter:"+a)
+a=1+a
+}
+
+b = 1
+if(b==1){
+    c = b+1
+    if(c==2){
+        println("c is"+c)
+        c = c-1
+    }
+    println("now c is "+c)
+}
+println("--------------")
+for(i=0;i<100;i+=1){
+    println(i%2)
+}
+
+for(i:[1,2,3,54,6,67,7]){
+    println(i)
+}
+
+arr = [23,3,56,7,7,8,89,9,3]
+for(i:arr){
+    println(i*34+34-34/35%2&1|123)
+}
+
+func test(){
+    arr = []
+    for(i=100;i>=-100;i-=1){
+        arr+=i
+    }
+    return arr
+}
+
+for(t: test()){
+    println(t)
+}
+for(i:range(10)){
+    println(i)
+}
+for(i:range(-1)){
+    println(i)
+}

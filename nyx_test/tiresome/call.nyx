@@ -1,0 +1,7 @@
+import mod_a
+
+func t(){}
+
+t()
+
+mod_a.hello()

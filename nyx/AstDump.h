@@ -64,6 +64,10 @@ protected:
 
     void visitMatchStmt(MatchStmt *node) override;
 
+    void visitImportStmt(ImportStmt *node) override;
+
+    void visitExportStmt(ExportStmt *node) override;
+
     void visitBlock(Block *node) override;
 
     void visitFuncDef(FuncDef *node) override;

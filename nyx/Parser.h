@@ -49,6 +49,10 @@ namespace nyx {
 
         ReturnStmt *parseReturnStmt();
 
+        ImportStmt *parseImportStmt();
+
+        ExportStmt *parseExportStmt();
+
         Stmt *parseStatement();
 
         std::vector<Stmt *> parseStatementList();

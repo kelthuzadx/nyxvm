@@ -107,6 +107,9 @@ std::string AssignExpr::to_string() const {
 
 std::string FuncCallExpr::to_string() const {
     std::string str("FuncCallExpr{");
+    if (moduleName.length() != 0) {
+        str += moduleName + ".";
+    }
     str += funcName;
     str += "}";
     return std::move(str);

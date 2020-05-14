@@ -25,7 +25,9 @@ Parser::Parser(const std::string &fileName)
                     {"return",   KW_RETURN},
                     {"break",    KW_BREAK},
                     {"continue", KW_CONTINUE},
-                    {"match",    KW_MATCH}}) {
+                    {"match",    KW_MATCH},
+                    {"import",   KW_IMPORT},
+                    {"export",   KW_EXPORT}}) {
     fs.open(fileName);
     if (!fs.is_open()) {
         panic("ParserError: can not open source file");
@@ -43,9 +45,16 @@ Expr *Parser::parsePrimaryExpr() {
             auto ident = getCurrentLexeme();
             currentToken = next();
             switch (getCurrentToken()) {
+                case TK_DOT:
                 case TK_LPAREN: {
-                    currentToken = next();
                     auto *val = new FuncCallExpr(line, column);
+                    if (getCurrentToken() == TK_DOT) {
+                        val->moduleName = ident;
+                        currentToken = next();
+                        ident = getCurrentLexeme();
+                        currentToken = next();
+                    }
+                    currentToken = next();
                     val->funcName = ident;
                     while (getCurrentToken() != TK_RPAREN) {
                         val->args.push_back(parseExpression());
@@ -323,6 +332,49 @@ ReturnStmt *Parser::parseReturnStmt() {
     return node;
 }
 
+
+ImportStmt *Parser::parseImportStmt() {
+    auto *node = new ImportStmt(line, column);
+    auto *mod = parseExpression();
+    if (typeid(*mod) != typeid(IdentExpr)) {
+        panic("import statement expects sequences of module identifier");
+    }
+    node->imports.push_back(dynamic_cast<IdentExpr *>(mod));
+
+    if (getCurrentToken() == TK_COMMA) {
+        while (getCurrentToken() == TK_COMMA) {
+            currentToken = next();
+            mod = parseExpression();
+            if (typeid(*mod) != typeid(IdentExpr)) {
+                panic("import statement expects sequences of module identifier");
+            }
+            node->imports.push_back(dynamic_cast<IdentExpr *>(mod));
+        }
+    }
+    return node;
+}
+
+ExportStmt *Parser::parseExportStmt() {
+    auto *node = new ExportStmt(line, column);
+    auto *mod = parseExpression();
+    if (typeid(*mod) != typeid(IdentExpr)) {
+        panic("export statement expects sequences of module identifier");
+    }
+    node->exports.push_back(dynamic_cast<IdentExpr *>(mod));
+
+    if (getCurrentToken() == TK_COMMA) {
+        while (getCurrentToken() == TK_COMMA) {
+            currentToken = next();
+            mod = parseExpression();
+            if (typeid(*mod) != typeid(IdentExpr)) {
+                panic("export statement expects sequences of module identifier");
+            }
+            node->exports.push_back(dynamic_cast<IdentExpr *>(mod));
+        }
+    }
+    return node;
+}
+
 Stmt *Parser::parseStatement() {
     Stmt *node;
     switch (getCurrentToken()) {
@@ -353,6 +405,14 @@ Stmt *Parser::parseStatement() {
         case KW_MATCH:
             currentToken = next();
             node = parseMatchStmt();
+            break;
+        case KW_IMPORT:
+            currentToken = next();
+            node = parseImportStmt();
+            break;
+        case KW_EXPORT:
+            currentToken = next();
+            node = parseExportStmt();
             break;
         default:
             node = parseExpressionStmt();
@@ -423,8 +483,7 @@ CompilationUnit *Parser::parse() {
     do {
         if (getCurrentToken() == KW_FUNC) {
             auto *def = parseFuncDef();
-            if (unit)
-                unit->definitions.push_back(def);
+            unit->definitions.push_back(def);
         } else {
             unit->topStmts.push_back(parseStatement());
         }
@@ -587,6 +646,9 @@ std::tuple<Token, std::string> Parser::next() {
                 return std::make_tuple(TK_MOD_AGN, "%=");
             }
             return std::make_tuple(TK_MOD, "%");
+        }
+        case '.': {
+            return std::make_tuple(TK_DOT, ".");
         }
         case '~': {
             return std::make_tuple(TK_BITNOT, "~");

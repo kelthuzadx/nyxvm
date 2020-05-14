@@ -50,6 +50,7 @@ enum Token {
     TK_RBRACKET,   // ]
     TK_SEMICOLON,  // ;
     TK_COLON,      // :
+    TK_DOT,        // .
 
     KW_IF,        // if
     KW_ELSE,      // else
@@ -63,6 +64,8 @@ enum Token {
     KW_BREAK,     // break
     KW_CONTINUE,  // continue
     KW_MATCH,     // match
+    KW_IMPORT,    // import
+    KW_EXPORT     // export
 };
 
 inline const char *getTokenSymbol(Token token) {
@@ -118,7 +121,9 @@ inline const char *getTokenSymbol(Token token) {
             "return",
             "break",
             "continue",
-            "match"
+            "match",
+            "import",
+            "export"
     };
     return symbol[token];
 }

@@ -95,6 +95,7 @@ void AstDump::visitBreakStmt(BreakStmt *node) {
     // Pass
 }
 
+
 void AstDump::visitStmt(Stmt *node) {
     panic("should not reach here");
 }
@@ -155,6 +156,14 @@ void AstDump::visitCharExpr(CharExpr *node) {
 
 void AstDump::visitBoolExpr(BoolExpr *node) {
     // Pass
+}
+
+void AstDump::visitExportStmt(ExportStmt *node) {
+    VISIT_VEC_FIELD(exports);
+}
+
+void AstDump::visitImportStmt(ImportStmt *node) {
+    VISIT_VEC_FIELD(imports);
 }
 
 

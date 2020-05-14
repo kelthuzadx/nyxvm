@@ -37,11 +37,19 @@ struct WhileStmt;
 struct ForStmt;
 struct ForEachStmt;
 struct MatchStmt;
+struct ImportStmt;
+struct ExportStmt;
 struct Block;
 struct FuncDef;
 struct CompilationUnit;
 
 struct AstVisitor {
+    virtual void visitBlock(Block *node) {}
+
+    virtual void visitFuncDef(FuncDef *node) {}
+
+    virtual void visitCompilationUnit(CompilationUnit *node) {}
+
     virtual void visitBoolExpr(BoolExpr *node) {}
 
     virtual void visitCharExpr(CharExpr *node) {}
@@ -90,11 +98,10 @@ struct AstVisitor {
 
     virtual void visitMatchStmt(MatchStmt *node) {}
 
-    virtual void visitBlock(Block *node) {}
+    virtual void visitImportStmt(ImportStmt *node) {}
 
-    virtual void visitFuncDef(FuncDef *node) {}
+    virtual void visitExportStmt(ExportStmt *node) {}
 
-    virtual void visitCompilationUnit(CompilationUnit *node) {}
 };
 
 
@@ -216,6 +223,7 @@ AST_EXPR_END
 
 AST_EXPR(FuncCallExpr)
 
+    std::string moduleName;
     std::string funcName;
     std::vector<Expr *> args;
 AST_EXPR_END
@@ -292,6 +300,16 @@ AST_STMT(MatchStmt)
 
     Expr *cond{};
     std::vector<std::tuple<Expr *, Block *, bool>> matches;
+AST_STMT_END
+
+AST_STMT(ImportStmt)
+
+    std::vector<IdentExpr *> imports;
+AST_STMT_END
+
+AST_STMT(ExportStmt)
+
+    std::vector<IdentExpr *> exports;
 AST_STMT_END
 
 #endif

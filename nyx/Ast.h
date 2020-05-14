@@ -10,7 +10,6 @@
 //===----------------------------------------------------------------------===//
 // Ast node visitor, we can derive this class when needed
 //===----------------------------------------------------------------------===//
-
 struct Expr;
 struct Stmt;
 struct Block;
@@ -103,80 +102,64 @@ struct AstVisitor {
 // Top level ast nodes
 //===----------------------------------------------------------------------===//
 struct AstNode {
-    explicit AstNode(int line, int column) : line(line), column(column) {}
+    explicit AstNode(int line, int column);
 
     virtual ~AstNode() = default;
 
     int line = -1;
     int column = -1;
 
+    int id = 0;
+
     virtual void visit(AstVisitor *visitor) {}
 
-    virtual const char *name() const { return "AstNode"; }
+    virtual std::string to_string() const;
+
+    int getId() const { return id; }
 };
 
-struct Expr : public AstNode {
-    using AstNode::AstNode;
+#define AST_ROOT(root_name) \
+struct root_name : public AstNode{ \
+    using AstNode::AstNode;\
+    void visit(AstVisitor *visitor) override { visitor->visit##root_name(this); } \
+    std::string to_string() const override;
 
-    virtual ~Expr() = default;
+#define AST_ROOT_END };
 
-    void visit(AstVisitor *visitor) override { visitor->visitExpr(this); }
+AST_ROOT(Expr)
+AST_ROOT_END
 
-    const char *name() const override { return "Expr"; }
-};
+AST_ROOT(Stmt)
+AST_ROOT_END
 
-struct Stmt : public AstNode {
-    using AstNode::AstNode;
-
-    virtual ~Stmt() = default;
-
-    void visit(AstVisitor *visitor) override { visitor->visitStmt(this); }
-
-    const char *name() const override { return "Stmt"; }
-};
-
-struct Block : public AstNode {
-    using AstNode::AstNode;
+AST_ROOT(Block)
 
     std::vector<Stmt *> stmts;
+AST_ROOT_END
 
-    void visit(AstVisitor *visitor) override { visitor->visitBlock(this); }
-
-    const char *name() const override { return "Block"; }
-};
-
-struct FuncDef : public AstNode {
-    using AstNode::AstNode;
+AST_ROOT(FuncDef)
 
     std::string funcName;
     std::vector<std::string> params;
     Block *block{};
+AST_ROOT_END
 
-    void visit(AstVisitor *visitor) override { visitor->visitFuncDef(this); }
+AST_ROOT(CompilationUnit)
 
-    const char *name() const override { return "FuncDef"; }
-};
-
-struct CompilationUnit : public AstNode {
     explicit CompilationUnit() : AstNode(-1, -1) {}
 
     std::vector<FuncDef *> definitions;
     std::vector<Stmt *> topStmts;
-
-    void visit(AstVisitor *visitor) override { visitor->visitCompilationUnit(this); }
-
-    const char *name() const override { return "CompilationUnit"; }
-};
+AST_ROOT_END
 
 //===----------------------------------------------------------------------===//
 // Expressions
 //===----------------------------------------------------------------------===//
-
 #define AST_EXPR(expr_name) \
 struct expr_name : public Expr{ \
     using Expr::Expr;\
     void visit(AstVisitor *visitor) override { visitor->visit##expr_name(this); } \
-    const char * name() const override { return ""#expr_name;}
+    std::string to_string() const override;
 
 #define AST_EXPR_END };
 
@@ -251,14 +234,13 @@ AST_EXPR(ClosureExpr)
 AST_EXPR_END
 
 //===----------------------------------------------------------------------===//
-// Stmt
+// Statements
 //===----------------------------------------------------------------------===//
-
 #define AST_STMT(stmt_name) \
 struct stmt_name : public Stmt{ \
     using Stmt::Stmt;\
     void visit(AstVisitor *visitor) override { visitor->visit##stmt_name(this); } \
-    const char * name() const override { return ""#stmt_name;}
+    std::string to_string() const override { return std::move(std::string(""#stmt_name));}
 
 #define AST_STMT_END };
 

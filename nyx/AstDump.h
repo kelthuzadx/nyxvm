@@ -7,119 +7,66 @@
 class AstDump : protected AstVisitor {
 private:
     std::ofstream ofs;
-    std::string content;
 
     void addEdge(AstNode *from, AstNode *to);
 
 public:
-
     explicit AstDump(const std::string &dotFilePath);
 
     void dump(CompilationUnit *unit);
 
 protected:
-    virtual void visitBoolExpr(BoolExpr *node) {
-    }
+    void visitBoolExpr(BoolExpr *node) override;
 
-    virtual void visitCharExpr(CharExpr *node) {
+    void visitCharExpr(CharExpr *node) override;
 
-    }
+    void visitNullExpr(NullExpr *node) override;
 
-    virtual void visitNullExpr(NullExpr *node) {
+    void visitIntExpr(IntExpr *node) override;
 
-    }
+    void visitExpr(Expr *expr) override;
 
-    virtual void visitIntExpr(IntExpr *node) {
+    void visitDoubleExpr(DoubleExpr *node) override;
 
-    }
+    void visitStringExpr(StringExpr *node) override;
 
-    virtual void visitExpr(Expr *expr) {
+    void visitArrayExpr(ArrayExpr *node) override;
 
-    }
+    void visitIdentExpr(IdentExpr *node) override;
 
-    virtual void visitDoubleExpr(DoubleExpr *node) {
+    void visitIndexExpr(IndexExpr *node) override;
 
-    }
+    void visitBinaryExpr(BinaryExpr *node) override;
 
-    virtual void visitStringExpr(StringExpr *node) {
+    void visitFuncCallExpr(FuncCallExpr *node) override;
 
-    }
+    void visitAssignExpr(AssignExpr *node) override;
 
-    virtual void visitArrayExpr(ArrayExpr *node) {
+    void visitClosureExpr(ClosureExpr *node) override;
 
-    }
+    void visitStmt(Stmt *node) override;
 
-    virtual void visitIdentExpr(IdentExpr *node) {
+    void visitBreakStmt(BreakStmt *node) override;
 
-    }
+    void visitContinueStmt(ContinueStmt *node) override;
 
-    virtual void visitIndexExpr(IndexExpr *node) {
+    void visitSimpleStmt(SimpleStmt *node) override;
 
-    }
+    void visitReturnStmt(ReturnStmt *node) override;
 
-    virtual void visitBinaryExpr(BinaryExpr *node) {
+    void visitIfStmt(IfStmt *node) override;
 
-    }
+    void visitWhileStmt(WhileStmt *node) override;
 
-    virtual void visitFuncCallExpr(FuncCallExpr *node) {
+    void visitForStmt(ForStmt *node) override;
 
-    }
+    void visitForEachStmt(ForEachStmt *node) override;
 
-    virtual void visitAssignExpr(AssignExpr *node) {
+    void visitMatchStmt(MatchStmt *node) override;
 
-    }
+    void visitBlock(Block *node) override;
 
-    virtual void visitClosureExpr(ClosureExpr *node) {
-
-    }
-
-    virtual void visitStmt(Stmt *node) {
-
-    }
-
-    virtual void visitBreakStmt(BreakStmt *node) {
-
-    }
-
-    virtual void visitContinueStmt(ContinueStmt *node) {
-
-    }
-
-    virtual void visitSimpleStmt(SimpleStmt *node) {
-
-    }
-
-    virtual void visitReturnStmt(ReturnStmt *node) {
-
-    }
-
-    virtual void visitIfStmt(IfStmt *node) {
-
-    }
-
-    virtual void visitWhileStmt(WhileStmt *node) {
-
-    }
-
-    virtual void visitForStmt(ForStmt *node) {
-
-    }
-
-    virtual void visitForEachStmt(ForEachStmt *node) {
-
-    }
-
-    virtual void visitMatchStmt(MatchStmt *node) {
-
-    }
-
-    virtual void visitBlock(Block *node) {
-
-    }
-
-    virtual void visitFuncDef(FuncDef *node) {
-
-    }
+    void visitFuncDef(FuncDef *node) override;
 
     void visitCompilationUnit(CompilationUnit *node) override;
 };

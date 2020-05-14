@@ -65,5 +65,62 @@ enum Token {
     KW_MATCH,     // match
 };
 
+inline const char *getTokenSymbol(Token token) {
+    static const char *symbol[] = {
+            "<invalid>",
+            "<identifier>",
+            "<eof>",
+            "<integer>",
+            "<string>",
+            "<decimal>",
+            "<character>",
+            "&",
+            "|",
+            "~",
+            "&&",
+            "||",
+            "!",
+            "+",
+            "-",
+            "*",
+            "/",
+            "%",
+            "==",
+            "!=",
+            ">",
+            ">=",
+            "<",
+            "<=",
+            "=",
+            "+=",
+            "-=",
+            "*=",
+            "/=",
+            "%=",
+            "=>",
+            ",",
+            "(",
+            ")",
+            "{",
+            "}",
+            "[",
+            "]",
+            ";",
+            ":",
+            "if",
+            "else",
+            "true",
+            "false",
+            "while",
+            "for",
+            "null",
+            "func",
+            "return",
+            "break",
+            "continue",
+            "match"
+    };
+    return symbol[token];
+}
 
 #endif //NYX_TOKEN_H

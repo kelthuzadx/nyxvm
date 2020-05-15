@@ -6,8 +6,9 @@
 #include "../runtime/Global.hpp"
 
 struct MetaArea {
+
     int bytecodeSize;
-    nyx::int8* bytecodes;
+    nyx::int8 *bytecodes;
     std::vector<std::string> strings;
 };
 

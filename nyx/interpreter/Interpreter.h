@@ -3,12 +3,17 @@
 
 #include "../runtime/Global.hpp"
 #include "../bytecode/MetaArea.h"
+#include "Object.h"
+
+struct Frame{
+    std::vector<Object*> slots;
+};
 
 class Interpreter {
 private:
-    const nyx::int8 *bytecodes;
     MetaArea* meta{};
-    int bci;
+    std::vector<Frame*> stack;
+    Frame* frame;
 
 public:
     Interpreter(MetaArea* meta);

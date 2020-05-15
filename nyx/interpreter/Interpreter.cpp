@@ -3,40 +3,40 @@
 #include "../bytecode/Opcode.h"
 
 Interpreter::Interpreter(MetaArea* meta) :
-       meta(meta),bytecodes(meta->bytecodes) {
-    bci = 0;
+       meta(meta){
 }
 
 void Interpreter::execute() {
-    for(int i=0;i<meta->bytecodeSize;i++){
+    frame = new Frame;
+    stack.push_back(frame);
+
+    const int bytecodeSize = meta->bytecodeSize;
+    const nyx::int8* bytecodes =meta->bytecodes;
+    int bci = 0;
+
+    PhaseTime timer("execute bytecode");
+    for(int i=0;i<bytecodeSize;i++){
         switch (bytecodes[i]){
-            case JMP:
-                std::cout<<"jmp "<<bytecodes[i+1]<<"\n";
+            case CALL:{
+                int funcNameIndex = bytecodes[i+1];
+                std::string str = meta->strings[funcNameIndex];
+                break;
+            }
+            case CONST_I: {
+                auto *object = new NInt(bytecodes[i + 1]);
+                frame->slots.push_back(object);
                 i++;
                 break;
-            case JMP_EQ:
-                std::cout<<"jmp_eq "<<bytecodes[i+1]<<"\n";
-                i++;
+            }
+            case ADD: {
+                Object *object1 = frame->slots.back();
+                frame->slots.pop_back();
+                Object *object2 = frame->slots.back();
+                frame->slots.pop_back();
                 break;
-            case JMP_NE:
-                std::cout<<"jmp_ne "<<bytecodes[i+1]<<"\n";
-                i++;
-                break;
-            case CONST_I:
-                std::cout<<"const_i "<<(int)*(bytecodes+1)<<"\n";
-                i+=4;
-                break;
-            case CONST_NULL:
-                std::cout<<"const_null\n";
-                break;
-            case CONST_D:
-                std::cout<<"const_d "<<(double)*(bytecodes+1)<<"\n";
-                i+=8;
-                break;
-            case CONST_STR:
-                std::cout<<"const_str "<<meta->strings[bytecodes[i+1]]<<"\n";
-                i++;
-                break;
+            }
+            default:
+                panic("should not reach here");
         }
     }
 }

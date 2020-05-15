@@ -406,14 +406,6 @@ Stmt *Parser::parseStatement() {
             currentToken = next();
             node = parseMatchStmt();
             break;
-        case KW_IMPORT:
-            currentToken = next();
-            node = parseImportStmt();
-            break;
-        case KW_EXPORT:
-            currentToken = next();
-            node = parseExportStmt();
-            break;
         default:
             node = parseExpressionStmt();
             break;
@@ -475,9 +467,9 @@ FuncDef *Parser::parseFuncDef() {
 }
 
 CompilationUnit *Parser::parse() {
-    CompilationUnit *unit = new CompilationUnit();
+    auto *unit = new CompilationUnit();
     {
-        PhaseTime timer("parse source code to AST structure");
+        PhaseTime timer("parse source code to Ast structure");
         currentToken = next();
         if (getCurrentToken() == TK_EOF) {
             return unit;
@@ -485,7 +477,18 @@ CompilationUnit *Parser::parse() {
         do {
             if (getCurrentToken() == KW_FUNC) {
                 auto *def = parseFuncDef();
+                for(auto* existing:unit->definitions){
+                    if(existing->funcName == def->funcName){
+                        panic("multiple function definitions of %s",def->funcName.c_str());
+                    }
+                }
                 unit->definitions.push_back(def);
+            } else if (getCurrentToken()==KW_IMPORT){
+                auto *stmt = parseImportStmt();
+                unit->imports.push_back(stmt);
+            } else if(getCurrentToken()==KW_EXPORT){
+                auto *stmt = parseExportStmt();
+                unit->exports.push_back(stmt);
             } else {
                 unit->topStmts.push_back(parseStatement());
             }

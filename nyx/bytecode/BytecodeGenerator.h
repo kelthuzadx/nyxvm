@@ -73,13 +73,13 @@ private:
 
 public:
     explicit BytecodeGenerator(CompilationUnit *unit) : unit(unit) {
-        meta  =new MetaArea;
+        meta = new MetaArea;
         meta->bytecodes = new nyx::int8[65535];
         meta->bytecodeSize = -1;
         bci = 0;
     }
 
-    MetaArea* generate() {
+    MetaArea *generate() {
         PhaseTime timer("generate bytecode from Ast");
         unit->visit(this);
         meta->bytecodeSize = bci;

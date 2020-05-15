@@ -2,7 +2,11 @@
 #include "BytecodeGenerator.h"
 #include "Opcode.h"
 
-void BytecodeGenerator::visitBlock(Block *node) {}
+void BytecodeGenerator::visitBlock(Block *node) {
+    for (auto *stmt:node->stmts) {
+        stmt->visit(this);
+    }
+}
 
 void BytecodeGenerator::visitFuncDef(FuncDef *node) {}
 
@@ -57,10 +61,10 @@ void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {}
 void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {}
 
 void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
-    if(node->rhs== nullptr){
+    if (node->rhs == nullptr) {
         // unary expression
         node->lhs->visit(this);
-        switch(node->opt){
+        switch (node->opt) {
             case TK_MINUS:
                 meta->bytecodes[bci++] = NEG;
                 break;
@@ -73,9 +77,9 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
             default:
                 panic("should not reach here");
         }
-    }else{
+    } else {
         // binary expression
-        switch(node->opt){
+        switch (node->opt) {
             case TK_BITOR:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
@@ -87,15 +91,10 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
                 meta->bytecodes[bci++] = AND;
                 break;
             case TK_LOGOR:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                meta->bytecodes[bci++] = TEST;
-                meta->bytecodes[bci++] = TEST;
+                //todo
                 break;
             case TK_LOGAND:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                meta->bytecodes[bci++] = TEST_EQ;
+                //todo
                 break;
             case TK_EQ:
                 node->lhs->visit(this);
@@ -159,7 +158,24 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
 
 }
 
-void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {}
+
+//===----------------------------------------------------------------------===//
+// call the function either in this module or in one of imported modules
+//
+// CALL FUNC_NAME ARG_NUM
+// stack_bottom -> stack_top
+// before: (arg_n, arg_n-1,... arg2, arg1)
+// after: ()
+//===----------------------------------------------------------------------===//
+void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
+    for(auto*arg:node->args){
+        arg->visit(this);
+    }
+    meta->bytecodes[bci++]  = CALL;
+    meta->strings.push_back(node->funcName);
+    meta->bytecodes[bci++] = meta->strings.size()-1;
+    meta->bytecodes[bci++] = node->args.size();
+}
 
 void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {}
 
@@ -178,9 +194,9 @@ void BytecodeGenerator::visitSimpleStmt(SimpleStmt *node) {
 }
 
 void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
-    if(node->retval== nullptr){
-        meta->bytecodes[bci++]=RETURN;
-    }else{
+    if (node->retval == nullptr) {
+        meta->bytecodes[bci++] = RETURN;
+    } else {
         node->retval->visit(this);
     }
 

@@ -2,6 +2,7 @@
 #include "parser/Parser.h"
 #include "parser/AstDump.h"
 #include "bytecode/BytecodeGenerator.h"
+#include "interpreter/Interpreter.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -13,6 +14,8 @@ int main(int argc, char *argv[]) {
     AstDump dumper("ast.dot");
     dumper.dump(unit);
     BytecodeGenerator gen(unit);
-    gen.generate();
+    MetaArea* meta =  gen.generate();
+    Interpreter interpreter(meta);
+    interpreter.execute();
     return 0;
 }

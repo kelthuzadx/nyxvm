@@ -1,11 +1,14 @@
 #ifndef NYX_AST_H
 #define NYX_AST_H
 
+
 #include <deque>
+
 #include <map>
 #include <vector>
 #include <string>
 #include "Token.h"
+#include "../runtime/Global.hpp"
 
 //===----------------------------------------------------------------------===//
 // Ast node visitor, we can derive this class when needed
@@ -177,7 +180,7 @@ AST_EXPR_END
 
 AST_EXPR(CharExpr)
 
-    char literal;
+    nyx::int8 literal;
 AST_EXPR_END
 
 AST_EXPR(NullExpr)
@@ -185,7 +188,7 @@ AST_EXPR_END
 
 AST_EXPR(IntExpr)
 
-    int literal;
+    nyx::int32 literal;
 AST_EXPR_END
 
 AST_EXPR(DoubleExpr)

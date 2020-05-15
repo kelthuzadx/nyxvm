@@ -1,3 +1,4 @@
 println(3&5)
 println(4|66)
 println(~43)
+println(~(53&4|34))

@@ -203,8 +203,8 @@ Expr *Parser::parseExpression(short oldPrecedence) {
         return assignExpr;
     }
 
-    while (anyone(getCurrentToken(), TK_BITOR, TK_BITAND, TK_BITNOT, TK_LOGOR,
-                  TK_LOGAND, TK_LOGNOT, TK_EQ, TK_NE, TK_GT, TK_GE, TK_LT,
+    while (anyone(getCurrentToken(), TK_BITOR, TK_BITAND, TK_LOGOR,
+                  TK_LOGAND, TK_EQ, TK_NE, TK_GT, TK_GE, TK_LT,
                   TK_LE, TK_PLUS, TK_MINUS, TK_MOD, TK_TIMES, TK_DIV)) {
         short currentPrecedence = Parser::getPrecedence(getCurrentToken());
         if (oldPrecedence > currentPrecedence) {

@@ -4,16 +4,15 @@
 #include <cstdint>
 #include "../parser/Ast.h"
 #include "../runtime/Utils.hpp"
+#include "MetaArea.h"
 
 class BytecodeGenerator : public AstVisitor {
 private:
     CompilationUnit *unit;
-    uint8_t *bytecodes;
+    MetaArea *meta{};
     int bci;
 
 private:
-    void emitBytecode();
-
     void visitBlock(Block *node) override;
 
     void visitFuncDef(FuncDef *node) override;
@@ -74,13 +73,17 @@ private:
 
 public:
     explicit BytecodeGenerator(CompilationUnit *unit) : unit(unit) {
-        bytecodes = new uint8_t[65535];
+        meta  =new MetaArea;
+        meta->bytecodes = new nyx::int8[65535];
+        meta->bytecodeSize = -1;
         bci = 0;
     }
 
-    void generate() {
+    MetaArea* generate() {
         PhaseTime timer("generate bytecode from Ast");
         unit->visit(this);
+        meta->bytecodeSize = bci;
+        return meta;
     }
 };
 

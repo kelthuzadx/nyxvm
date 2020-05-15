@@ -13,22 +13,23 @@ void BytecodeGenerator::visitCompilationUnit(CompilationUnit *node) {
 }
 
 void BytecodeGenerator::visitBoolExpr(BoolExpr *node) {
-    bytecodes[bci++] = CONST_I;
-    bytecodes[bci++] = (int)node->literal;
+    meta->bytecodes[bci++] = CONST_I;
+    meta->bytecodes[bci++] = (int) node->literal;
 }
 
 void BytecodeGenerator::visitCharExpr(CharExpr *node) {
-    bytecodes[bci++] = CONST_I;
-    bytecodes[bci++] = (int)node->literal;
+    meta->bytecodes[bci++] = CONST_I;
+    meta->bytecodes[bci++] = (int) node->literal;
 }
 
 void BytecodeGenerator::visitNullExpr(NullExpr *node) {
-    bytecodes[bci++] = CONST_NULL;
+    meta->bytecodes[bci++] = CONST_NULL;
 }
 
 void BytecodeGenerator::visitIntExpr(IntExpr *node) {
-    bytecodes[bci++] = CONST_I;
-    bytecodes[bci++] = (int)node->literal;
+    meta->bytecodes[bci++] = CONST_I;
+    *(meta->bytecodes + bci) = node->literal;
+    bci += 4;
 }
 
 void BytecodeGenerator::visitExpr(Expr *expr) {
@@ -36,19 +37,127 @@ void BytecodeGenerator::visitExpr(Expr *expr) {
 }
 
 void BytecodeGenerator::visitDoubleExpr(DoubleExpr *node) {
-    bytecodes[bci++] = CONST_I;
-    bytecodes[bci++]  = node->literal;
+    meta->bytecodes[bci++] = CONST_D;
+    for (int i = 0; i < 8; i++) {
+        meta->bytecodes[bci++] = (reinterpret_cast<nyx::int8 *>(&(node->literal)))[i];
+    }
 }
 
-void BytecodeGenerator::visitStringExpr(StringExpr *node) {}
+void BytecodeGenerator::visitStringExpr(StringExpr *node) {
+    meta->strings.push_back(node->literal);
+    meta->bytecodes[bci++] = CONST_STR;
+    meta->bytecodes[bci++] = meta->strings.size() - 1;
+}
 
-void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {}
+void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {
+}
 
 void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {}
 
 void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {}
 
-void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {}
+void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
+    if(node->rhs== nullptr){
+        // unary expression
+        node->lhs->visit(this);
+        switch(node->opt){
+            case TK_MINUS:
+                meta->bytecodes[bci++] = NEG;
+                break;
+            case TK_LOGNOT:
+                meta->bytecodes[bci++] = TEST_NE;
+                break;
+            case TK_BITNOT:
+                meta->bytecodes[bci++] = NOT;
+                break;
+            default:
+                panic("should not reach here");
+        }
+    }else{
+        // binary expression
+        switch(node->opt){
+            case TK_BITOR:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = OR;
+                break;
+            case TK_BITAND:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = AND;
+                break;
+            case TK_LOGOR:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = TEST;
+                meta->bytecodes[bci++] = TEST;
+                break;
+            case TK_LOGAND:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = TEST_EQ;
+                break;
+            case TK_EQ:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = TEST_EQ;
+                break;
+            case TK_NE:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = TEST_NE;
+                break;
+            case TK_GT:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = TEST_GT;
+                break;
+            case TK_GE:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = TEST_GE;
+                break;
+            case TK_LT:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = TEST_LT;
+                break;
+            case TK_LE:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = TEST_EQ;
+                break;
+            case TK_PLUS:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = ADD;
+                break;
+            case TK_MINUS:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = SUB;
+                break;
+            case TK_MOD:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = REM;
+                break;
+            case TK_TIMES:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = MUL;
+                break;
+            case TK_DIV:
+                node->lhs->visit(this);
+                node->rhs->visit(this);
+                meta->bytecodes[bci++] = DIV;
+                break;
+            default:
+                panic("should not reach here");
+        }
+    }
+
+}
 
 void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {}
 
@@ -64,46 +173,42 @@ void BytecodeGenerator::visitBreakStmt(BreakStmt *node) {}
 
 void BytecodeGenerator::visitContinueStmt(ContinueStmt *node) {}
 
-void BytecodeGenerator::visitSimpleStmt(SimpleStmt *node) {}
+void BytecodeGenerator::visitSimpleStmt(SimpleStmt *node) {
+    node->expr->visit(this);
+}
 
-void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {}
+void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
+    if(node->retval== nullptr){
+        meta->bytecodes[bci++]=RETURN;
+    }else{
+        node->retval->visit(this);
+    }
+
+}
 
 void BytecodeGenerator::visitIfStmt(IfStmt *node) {
     node->cond->visit(this);
     if (node->elseBlock == nullptr) {
-        // if(cond){ ... }
-        // COND
-        // JMP_NE Target
-        // ... <then block>
-        // Target:
-        bytecodes[bci++] = JMP_NE;
+        meta->bytecodes[bci++] = TEST;
+        meta->bytecodes[bci++] = JMP;
         int patching = bci;
-        bytecodes[bci++] = -1; // target, further patching
-        std::cout << "jmp_eq -1";
+        meta->bytecodes[bci++] = -1; // target, further patching
         node->block->visit(this);
-        bytecodes[patching] = bci;
+        meta->bytecodes[patching] = bci;
     } else {
-        // if(cond){ ... } else{ ... }
-        // COND
-        // JMP_NE Else
-        // ... <then block>
-        // JMP Target
-        // Else:
-        // ... <else block>
-        // JMP Target
-        // Target:
-        bytecodes[bci++] = JMP_NE;
+        meta->bytecodes[bci++] = TEST;
+        meta->bytecodes[bci++] = JMP;
         int falsePatching = bci;
-        bytecodes[bci++] = -1; // target, further patching
+        meta->bytecodes[bci++] = -1; // target, further patching
         node->block->visit(this);
-        bytecodes[bci++] = JMP;
+        meta->bytecodes[bci++] = JMP;
         int targetPatching = bci;
-        bytecodes[bci++] = -1;
-        bytecodes[falsePatching] = bci;
+        meta->bytecodes[bci++] = -1;
+        meta->bytecodes[falsePatching] = bci;
         node->elseBlock->visit(this);
-        bytecodes[bci++] = JMP;
-        bytecodes[bci++] = bci + 1;
-        bytecodes[targetPatching] = bci;
+        meta->bytecodes[bci++] = JMP;
+        meta->bytecodes[bci++] = bci + 1;
+        meta->bytecodes[targetPatching] = bci;
     }
 }
 

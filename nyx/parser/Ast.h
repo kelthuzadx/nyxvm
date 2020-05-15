@@ -159,8 +159,8 @@ AST_ROOT(CompilationUnit)
     explicit CompilationUnit() : AstNode(-1, -1) {}
 
     std::vector<FuncDef *> definitions;
-    std::vector<ImportStmt*> imports;
-    std::vector<ExportStmt*> exports;
+    std::vector<ImportStmt *> imports;
+    std::vector<ExportStmt *> exports;
     std::vector<Stmt *> topStmts;
 AST_ROOT_END
 

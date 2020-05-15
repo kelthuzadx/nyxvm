@@ -5,18 +5,18 @@
 #include "../bytecode/MetaArea.h"
 #include "Object.h"
 
-struct Frame{
-    std::vector<Object*> slots;
+struct Frame {
+    std::vector<Object *> slots;
 };
 
 class Interpreter {
 private:
-    MetaArea* meta{};
-    std::vector<Frame*> stack;
-    Frame* frame;
+    MetaArea *meta{};
+    std::vector<Frame *> stack;
+    Frame *frame;
 
 public:
-    Interpreter(MetaArea* meta);
+    Interpreter(MetaArea *meta);
 
     void execute();
 };

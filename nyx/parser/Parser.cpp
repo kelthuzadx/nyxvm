@@ -477,16 +477,16 @@ CompilationUnit *Parser::parse() {
         do {
             if (getCurrentToken() == KW_FUNC) {
                 auto *def = parseFuncDef();
-                for(auto* existing:unit->definitions){
-                    if(existing->funcName == def->funcName){
-                        panic("multiple function definitions of %s",def->funcName.c_str());
+                for (auto *existing:unit->definitions) {
+                    if (existing->funcName == def->funcName) {
+                        panic("multiple function definitions of %s", def->funcName.c_str());
                     }
                 }
                 unit->definitions.push_back(def);
-            } else if (getCurrentToken()==KW_IMPORT){
+            } else if (getCurrentToken() == KW_IMPORT) {
                 auto *stmt = parseImportStmt();
                 unit->imports.push_back(stmt);
-            } else if(getCurrentToken()==KW_EXPORT){
+            } else if (getCurrentToken() == KW_EXPORT) {
                 auto *stmt = parseExportStmt();
                 unit->exports.push_back(stmt);
             } else {

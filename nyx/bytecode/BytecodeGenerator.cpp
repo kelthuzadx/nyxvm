@@ -168,12 +168,12 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
 // after: ()
 //===----------------------------------------------------------------------===//
 void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
-    for(auto*arg:node->args){
+    for (auto *arg:node->args) {
         arg->visit(this);
     }
-    meta->bytecodes[bci++]  = CALL;
+    meta->bytecodes[bci++] = CALL;
     meta->strings.push_back(node->funcName);
-    meta->bytecodes[bci++] = meta->strings.size()-1;
+    meta->bytecodes[bci++] = meta->strings.size() - 1;
     meta->bytecodes[bci++] = node->args.size();
 }
 

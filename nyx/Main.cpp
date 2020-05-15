@@ -14,8 +14,8 @@ int main(int argc, char *argv[]) {
     AstDump dumper("ast.dot");
     dumper.dump(unit);
     BytecodeGenerator gen(unit);
-    MetaArea* meta =  gen.generate();
-    Interpreter interpreter(meta);
-    interpreter.execute();
+    MetaArea *meta = gen.generate();
+    //Interpreter interpreter(meta);
+    //interpreter.execute();
     return 0;
 }

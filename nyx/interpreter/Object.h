@@ -5,18 +5,19 @@
 
 struct Object {
 
-    Object(){}
-    virtual ~Object(){}
+    Object() {}
+
+    virtual ~Object() {}
 };
 
-struct NInt:public Object{
-    NInt(nyx::int32 value):value(value){}
+struct NInt : public Object {
+    NInt(nyx::int32 value) : value(value) {}
 
     nyx::int32 value;
 };
 
-struct NDouble:public Object{
-    NDouble(double value):value(value){}
+struct NDouble : public Object {
+    NDouble(double value) : value(value) {}
 
     double value;
 };

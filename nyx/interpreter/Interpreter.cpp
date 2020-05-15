@@ -2,8 +2,8 @@
 #include "Interpreter.h"
 #include "../bytecode/Opcode.h"
 
-Interpreter::Interpreter(MetaArea* meta) :
-       meta(meta){
+Interpreter::Interpreter(MetaArea *meta) :
+        meta(meta) {
 }
 
 void Interpreter::execute() {
@@ -11,14 +11,14 @@ void Interpreter::execute() {
     stack.push_back(frame);
 
     const int bytecodeSize = meta->bytecodeSize;
-    const nyx::int8* bytecodes =meta->bytecodes;
+    const nyx::int8 *bytecodes = meta->bytecodes;
     int bci = 0;
 
     PhaseTime timer("execute bytecode");
-    for(int i=0;i<bytecodeSize;i++){
-        switch (bytecodes[i]){
-            case CALL:{
-                int funcNameIndex = bytecodes[i+1];
+    for (int i = 0; i < bytecodeSize; i++) {
+        switch (bytecodes[i]) {
+            case CALL: {
+                int funcNameIndex = bytecodes[i + 1];
                 std::string str = meta->strings[funcNameIndex];
                 break;
             }

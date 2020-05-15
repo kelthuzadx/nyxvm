@@ -2,7 +2,16 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include "Utils.hpp"
+
+#ifdef _WIN32
+#include <process.h>
+#else
+
+#include <unistd.h>
+
+#endif
 
 
 [[noreturn]] void panic(const char *format, ...) {
@@ -13,12 +22,23 @@
     exit(EXIT_FAILURE);
 }
 
+int getPid() {
+    return (int) getpid();
+}
+
 PhaseTime::PhaseTime(const char *name) : name(name) {
+
     start = clock();
 }
 
 PhaseTime::~PhaseTime() {
     long end = clock();
     double duration = (end - start) / 1000.0;
-    std::cout << "[PhaseTime] " << name << " ( " << duration << "s )\n";
+    std::ofstream ofs;
+    std::string fileName("phase_time.");
+    fileName += std::to_string(getPid());
+    fileName += ".log";
+    ofs.open(fileName, std::ios::app);
+    ofs << "[PhaseTime] " << name << " ( " << duration << "s )\n";
+    ofs.flush();
 }

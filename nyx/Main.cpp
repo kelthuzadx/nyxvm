@@ -1,6 +1,7 @@
-#include "Utils.hpp"
-#include "Parser.h"
-#include "AstDump.h"
+#include "runtime/Utils.hpp"
+#include "parser/Parser.h"
+#include "parser/AstDump.h"
+#include "bytecode/BytecodeGenerator.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -11,5 +12,7 @@ int main(int argc, char *argv[]) {
     CompilationUnit *unit = parser.parse();
     AstDump dumper("ast.dot");
     dumper.dump(unit);
+    BytecodeGenerator gen(unit);
+    gen.generate();
     return 0;
 }

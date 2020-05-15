@@ -1,6 +1,6 @@
 #include <typeinfo>
 #include "Parser.h"
-#include "Utils.hpp"
+#include "../runtime/Utils.hpp"
 
 using namespace nyx;
 
@@ -476,19 +476,22 @@ FuncDef *Parser::parseFuncDef() {
 
 CompilationUnit *Parser::parse() {
     CompilationUnit *unit = new CompilationUnit();
-    currentToken = next();
-    if (getCurrentToken() == TK_EOF) {
+    {
+        PhaseTime timer("parse source code to AST structure");
+        currentToken = next();
+        if (getCurrentToken() == TK_EOF) {
+            return unit;
+        }
+        do {
+            if (getCurrentToken() == KW_FUNC) {
+                auto *def = parseFuncDef();
+                unit->definitions.push_back(def);
+            } else {
+                unit->topStmts.push_back(parseStatement());
+            }
+        } while (getCurrentToken() != TK_EOF);
         return unit;
     }
-    do {
-        if (getCurrentToken() == KW_FUNC) {
-            auto *def = parseFuncDef();
-            unit->definitions.push_back(def);
-        } else {
-            unit->topStmts.push_back(parseStatement());
-        }
-    } while (getCurrentToken() != TK_EOF);
-    return unit;
 }
 
 //===----------------------------------------------------------------------===//

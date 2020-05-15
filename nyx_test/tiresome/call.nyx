@@ -2,6 +2,22 @@ import mod_a
 
 func t(){}
 
-t()
+i =20
 
-mod_a.hello()
+if(i>10){
+    t()
+}else{
+    mod_a.hello()
+}
+
+if(true){
+  mod_a.hello()
+}
+
+if(t()){
+  mod_a.hello()
+}
+
+if(!t()){
+ mod_a.hello()
+}

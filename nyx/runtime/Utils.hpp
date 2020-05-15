@@ -11,3 +11,16 @@ inline bool anyone(_DesireType k, _ArgumentType... args) {
 
 [[noreturn]] void panic(const char *format, ...);
 
+
+class PhaseTime {
+private:
+    long start;
+    const char *name;
+public:
+    explicit PhaseTime(const char *name);
+
+    ~PhaseTime();
+
+    void reset();
+};
+

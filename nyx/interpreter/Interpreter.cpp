@@ -1,13 +1,12 @@
 #include <iostream>
 #include "Interpreter.h"
 #include "../bytecode/Opcode.h"
-#include "../runtime/Builtin.h"
+#include "../runtime/NyxVM.h"
 
 
-static const char *(builtin[])[2] = {
-        {"nyxffi_println", (char *) nyxffi_println},
-};
-
+//===----------------------------------------------------------------------===//
+// Simple C++ bytecode interpreter
+//===----------------------------------------------------------------------===//
 Interpreter::Interpreter(MetaArea *meta) :
         meta(meta) {
 }
@@ -33,7 +32,7 @@ void Interpreter::execute() {
                     frame->slots.pop_back();
                 }
 
-                const char *funcPtr = findBuiltin(funcName);
+                const char *funcPtr = NyxVM::findBuiltin(funcName);
                 if (funcPtr != nullptr) {
                     ((void (*)(int, Object **)) funcPtr)(funcArgc, argv);
                 }
@@ -98,15 +97,4 @@ void Interpreter::execute() {
                 panic("invalid bytecode %d", bytecodes[bci]);
         }
     }
-}
-
-const char *Interpreter::findBuiltin(const std::string &name) {
-    std::string target = "nyxffi_" + name;
-    for (int i = 0; i < sizeof(builtin) / sizeof(builtin[0]); i++) {
-        const char *bname = builtin[i][0];
-        if (target == bname) {
-            return builtin[i][1];
-        }
-    }
-    return nullptr;
 }

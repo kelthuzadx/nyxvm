@@ -14,7 +14,7 @@ class Interpreter {
 private:
     MetaArea *meta{};
     std::vector<Frame *> stack;
-    Frame *frame;
+    Frame *frame{};
 private:
     const char *findBuiltin(const std::string &name);
 
@@ -22,7 +22,7 @@ private:
     void arithmetic(Object *o1, Object *o2);
 
 public:
-    Interpreter(MetaArea *meta);
+    explicit Interpreter(MetaArea *meta);
 
     void execute();
 };

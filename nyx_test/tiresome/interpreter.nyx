@@ -11,3 +11,12 @@ if(80>30){
 }else{
     println(1234)
 }
+
+if(!true){
+println(-(-33))
+println(33)
+}
+
+println(3&4)
+println(3&3)
+println(~3)

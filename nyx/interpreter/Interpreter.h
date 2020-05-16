@@ -26,6 +26,11 @@ private:
     template<int Operation>
     void compare(Object *o1, Object *o2);
 
+    template<int Operation>
+    void bitop(Object *o1, Object *o2);
+
+    void neg(Object *object);
+
 public:
     explicit Interpreter(MetaArea *meta);
 
@@ -243,6 +248,32 @@ void Interpreter::compare(Object *o1, Object *o2) {
                 panic("should not reach here");
         }
         auto *res = new NInt(cond);
+        push(res);
+    } else {
+        panic("should not reach here");
+    }
+}
+
+template<int Operation>
+void Interpreter::bitop(Object *o1, Object *o2) {
+    if (o2 == nullptr) {
+        // NOT
+        auto *t1 = dynamic_cast<NInt *>(o1);
+        auto *res = new NInt(~t1->value);
+        push(res);
+        return;
+    }
+    // AND OR
+    if (typeid(*o1) != typeid(NInt) || typeid(*o2) != typeid(NInt)) {
+        panic("bit operation requires integer as its operand");
+    }
+    auto *t1 = dynamic_cast<NInt *>(o1);
+    auto *t2 = dynamic_cast<NInt *>(o2);
+    if (Operation == AND) {
+        auto *res = new NInt((nyx::int32) (t1->value & t2->value));
+        push(res);
+    } else if (Operation == OR) {
+        auto *res = new NInt((nyx::int32) (t1->value | t2->value));
         push(res);
     } else {
         panic("should not reach here");

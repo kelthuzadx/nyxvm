@@ -158,15 +158,6 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
 
 }
 
-
-//===----------------------------------------------------------------------===//
-// call the function either in this module or in one of imported modules
-//
-// CALL FUNC_NAME ARG_NUM
-// stack_bottom -> stack_top
-// before: (arg_n, arg_n-1,... arg2, arg1)
-// after: ()
-//===----------------------------------------------------------------------===//
 void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
     for (auto *arg:node->args) {
         arg->visit(this);

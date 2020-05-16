@@ -11,6 +11,28 @@ Interpreter::Interpreter(MetaArea *meta) :
         meta(meta) {
 }
 
+Object *Interpreter::pop() {
+    Object *obj = frame->slots.back();
+    frame->slots.pop_back();
+    return obj;
+}
+
+void Interpreter::push(Object *obj) {
+    frame->slots.push_back(obj);
+}
+
+void Interpreter::neg(Object *object) {
+    if (typeid(*object) == typeid(NInt)) {
+        nyx::int32 val = -dynamic_cast<NInt *>(object)->value;
+        push(new NInt(val));
+    } else if (typeid(*object) == typeid(NDouble)) {
+        double val = -dynamic_cast<NDouble *>(object)->value;
+        push(new NDouble(val));
+    } else {
+        panic("should not reach here");
+    }
+}
+
 void Interpreter::execute() {
     frame = new Frame;
     stack.push_back(frame);
@@ -154,20 +176,31 @@ void Interpreter::execute() {
                 }
                 break;
             }
+            case AND: {
+                Object *object1 = pop();
+                Object *object2 = pop();
+                bitop<AND>(object1, object2);
+                break;
+            }
+            case OR: {
+                Object *object1 = pop();
+                Object *object2 = pop();
+                bitop<OR>(object1, object2);
+                break;
+            }
+            case NOT: {
+                Object *object1 = pop();
+                bitop<NOT>(object1, nullptr);
+                break;
+            }
+            case NEG: {
+                Object *object = pop();
+                neg(object);
+                break;
+            }
             default:
                 panic("invalid bytecode %d", bytecodes[bci]);
         }
     }
 }
-
-Object *Interpreter::pop() {
-    Object *obj = frame->slots.back();
-    frame->slots.pop_back();
-    return obj;
-}
-
-void Interpreter::push(Object *obj) {
-    frame->slots.push_back(obj);
-}
-
 

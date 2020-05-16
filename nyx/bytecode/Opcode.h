@@ -2,6 +2,7 @@
 #define NYX_OPCODE_H
 
 enum Opcode {
+    NOP,
     CALL,
     JMP,
     CONST_I,

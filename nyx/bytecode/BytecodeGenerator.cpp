@@ -32,7 +32,7 @@ void BytecodeGenerator::visitNullExpr(NullExpr *node) {
 
 void BytecodeGenerator::visitIntExpr(IntExpr *node) {
     meta->bytecodes[bci++] = CONST_I;
-    *(meta->bytecodes + bci) = node->literal;
+    *(nyx::int32 *) (meta->bytecodes + bci) = 3253555;//(nyx::int32)node->literal;
     bci += 4;
 }
 
@@ -239,4 +239,18 @@ void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {}
 void BytecodeGenerator::visitImportStmt(ImportStmt *node) {}
 
 void BytecodeGenerator::visitExportStmt(ExportStmt *node) {}
+
+MetaArea *BytecodeGenerator::generate() {
+    PhaseTime timer("generate bytecode from Ast");
+    unit->visit(this);
+    meta->bytecodeSize = bci;
+    return meta;
+}
+
+BytecodeGenerator::BytecodeGenerator(CompilationUnit *unit) : unit(unit) {
+    meta = new MetaArea;
+    meta->bytecodes = new nyx::int8[65535];
+    meta->bytecodeSize = -1;
+    bci = 0;
+}
 

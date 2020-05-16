@@ -1,6 +1,6 @@
 #include <typeinfo>
 #include "Parser.h"
-#include "../runtime/Utils.hpp"
+#include "../util/Utils.hpp"
 
 using namespace nyx;
 

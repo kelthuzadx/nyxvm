@@ -3,7 +3,7 @@
 
 #include "../runtime/Global.hpp"
 #include "../bytecode/MetaArea.h"
-#include "Object.h"
+#include "../runtime/Object.h"
 
 struct Frame {
     std::vector<Object *> slots;
@@ -14,6 +14,8 @@ private:
     MetaArea *meta{};
     std::vector<Frame *> stack;
     Frame *frame;
+private:
+    const char *findBuiltin(const std::string &name);
 
 public:
     Interpreter(MetaArea *meta);

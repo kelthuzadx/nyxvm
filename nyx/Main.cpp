@@ -1,4 +1,4 @@
-#include "runtime/Utils.hpp"
+#include "util/Utils.hpp"
 #include "parser/Parser.h"
 #include "parser/AstDump.h"
 #include "bytecode/BytecodeGenerator.h"
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     dumper.dump(unit);
     BytecodeGenerator gen(unit);
     MetaArea *meta = gen.generate();
-    //Interpreter interpreter(meta);
-    //interpreter.execute();
+    Interpreter interpreter(meta);
+    interpreter.execute();
     return 0;
 }

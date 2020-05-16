@@ -6,7 +6,7 @@ println(434*5523)
 println(4/3.0)
 
 
-if(80>300){
+if(80>30){
     println(5678)
 }else{
     println(1234)

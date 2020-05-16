@@ -249,7 +249,7 @@ MetaArea *BytecodeGenerator::generate() {
 
 BytecodeGenerator::BytecodeGenerator(CompilationUnit *unit) : unit(unit) {
     meta = new MetaArea;
-    meta->bytecodes = new nyx::int8[65535];
+    meta->bytecodes = new nyx::int32[65535];
     meta->bytecodeSize = -1;
     bci = 0;
 }

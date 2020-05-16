@@ -15,8 +15,8 @@ void Interpreter::execute() {
     frame = new Frame;
     stack.push_back(frame);
 
-    const int bytecodeSize = meta->bytecodeSize;
-    const nyx::int8 *bytecodes = meta->bytecodes;
+    int bytecodeSize = meta->bytecodeSize;
+    auto *bytecodes = meta->bytecodes;
 
     PhaseTime timer("execute bytecode");
     for (int bci = 0; bci < bytecodeSize; bci++) {
@@ -124,8 +124,8 @@ void Interpreter::execute() {
                 break;
             }
             case JMP: {
-                int targert = bytecodes[bci + 1];
-                bci = targert - 1;
+                int target = bytecodes[bci + 1];
+                bci = target - 1;
                 break;
             }
             case JMP_NE: {

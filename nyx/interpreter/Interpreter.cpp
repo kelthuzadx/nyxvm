@@ -74,6 +74,10 @@ void Interpreter::execute() {
                 bci += 8;
                 break;
             }
+            case CONST_NULL:{
+                push(nullptr);
+                break;
+            }
             case ADD: {
                 Object *object1 = pop();
                 Object *object2 = pop();

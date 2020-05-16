@@ -1,1 +1,6 @@
 println(3+20000000)
+println(32+64.5)
+println(44.4+444.2)
+println(33-22)
+println(434*5523)
+println(4/3.0)

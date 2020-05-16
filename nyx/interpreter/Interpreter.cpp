@@ -18,14 +18,13 @@ void Interpreter::execute() {
 
     const int bytecodeSize = meta->bytecodeSize;
     const nyx::int8 *bytecodes = meta->bytecodes;
-    int bci = 0;
 
     PhaseTime timer("execute bytecode");
-    for (int i = 0; i < bytecodeSize; i++) {
-        switch (bytecodes[i]) {
+    for (int bci = 0; bci < bytecodeSize; bci++) {
+        switch (bytecodes[bci]) {
             case CALL: {
-                int funcNameIndex = bytecodes[i + 1];
-                int funcArgc = bytecodes[i + 2];
+                int funcNameIndex = bytecodes[bci + 1];
+                int funcArgc = bytecodes[bci + 2];
                 std::string funcName = meta->strings[funcNameIndex];
 
                 auto **argv = new Object *[funcArgc];
@@ -38,14 +37,21 @@ void Interpreter::execute() {
                 if (funcPtr != nullptr) {
                     ((void (*)(int, Object **)) funcPtr)(funcArgc, argv);
                 }
-                i += 3;
+                bci += 2;
                 break;
             }
             case CONST_I: {
-                nyx::int32 value = *(int *) (bytecodes + i + 1);
+                nyx::int32 value = *(nyx::int32 *) (bytecodes + bci + 1);
                 auto *object = new NInt(value);
                 frame->slots.push_back(object);
-                i += 4;
+                bci += 4;
+                break;
+            }
+            case CONST_D: {
+                double value = *(double *) (bytecodes + bci + 1);
+                auto *object = new NDouble(value);
+                frame->slots.push_back(object);
+                bci += 8;
                 break;
             }
             case ADD: {
@@ -53,18 +59,43 @@ void Interpreter::execute() {
                 frame->slots.pop_back();
                 Object *object2 = frame->slots.back();
                 frame->slots.pop_back();
-                if (typeid(*object1) == typeid(NInt)) {
-                    NInt *o1 = dynamic_cast<NInt *>(object1);
-                    if (typeid(*object2) == typeid(NInt)) {
-                        NInt *o2 = dynamic_cast<NInt *>(object2);
-                        NInt *res = new NInt(o1->value + o2->value);
-                        frame->slots.push_back(res);
-                    }
-                }
+                arithmetic<ADD>(object1, object2);
+                break;
+            }
+            case SUB: {
+                Object *object1 = frame->slots.back();
+                frame->slots.pop_back();
+                Object *object2 = frame->slots.back();
+                frame->slots.pop_back();
+                arithmetic<SUB>(object1, object2);
+                break;
+            }
+            case MUL: {
+                Object *object1 = frame->slots.back();
+                frame->slots.pop_back();
+                Object *object2 = frame->slots.back();
+                frame->slots.pop_back();
+                arithmetic<MUL>(object1, object2);
+                break;
+            }
+            case DIV: {
+                Object *object1 = frame->slots.back();
+                frame->slots.pop_back();
+                Object *object2 = frame->slots.back();
+                frame->slots.pop_back();
+                arithmetic<DIV>(object1, object2);
+                break;
+            }
+            case REM: {
+                Object *object1 = frame->slots.back();
+                frame->slots.pop_back();
+                Object *object2 = frame->slots.back();
+                frame->slots.pop_back();
+                arithmetic<REM>(object1, object2);
                 break;
             }
             default:
-                panic("should not reach here");
+                panic("invalid bytecode %d", bytecodes[bci]);
         }
     }
 }

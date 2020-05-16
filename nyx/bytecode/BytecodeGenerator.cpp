@@ -1,4 +1,3 @@
-#include <iostream>
 #include "BytecodeGenerator.h"
 #include "Opcode.h"
 
@@ -32,7 +31,7 @@ void BytecodeGenerator::visitNullExpr(NullExpr *node) {
 
 void BytecodeGenerator::visitIntExpr(IntExpr *node) {
     meta->bytecodes[bci++] = CONST_I;
-    *(nyx::int32 *) (meta->bytecodes + bci) = 3253555;//(nyx::int32)node->literal;
+    *(nyx::int32 *) (meta->bytecodes + bci) = node->literal;
     bci += 4;
 }
 
@@ -45,6 +44,7 @@ void BytecodeGenerator::visitDoubleExpr(DoubleExpr *node) {
     for (int i = 0; i < 8; i++) {
         meta->bytecodes[bci++] = (reinterpret_cast<nyx::int8 *>(&(node->literal)))[i];
     }
+
 }
 
 void BytecodeGenerator::visitStringExpr(StringExpr *node) {

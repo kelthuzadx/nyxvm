@@ -1,7 +1,7 @@
 #ifndef NYX_OBJECT_H
 #define NYX_OBJECT_H
 
-#include "Global.hpp"
+#include "Global.h"
 
 struct Object {
 

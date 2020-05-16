@@ -1,5 +1,5 @@
 #include "AstDump.h"
-#include "../util/Utils.hpp"
+#include "../util/Utils.h"
 
 AstDump::AstDump(const std::string &dotFilePath)
         : ofs(dotFilePath, std::ios::out) {

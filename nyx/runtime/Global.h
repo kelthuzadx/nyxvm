@@ -1,7 +1,7 @@
-#ifndef NYX_GLOBAL_HPP
-#define NYX_GLOBAL_HPP
+#ifndef NYX_GLOBAL_H
+#define NYX_GLOBAL_H
 
-#include "../util/Utils.hpp"
+#include "../util/Utils.h"
 #include <cstdint>
 
 namespace nyx {
@@ -13,4 +13,4 @@ namespace nyx {
 }
 
 
-#endif //NYX_GLOBAL_HPP
+#endif //NYX_GLOBAL_H

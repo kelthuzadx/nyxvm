@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include "Token.h"
-#include "../runtime/Global.hpp"
+#include "../runtime/Global.h"
 
 //===----------------------------------------------------------------------===//
 // Ast node visitor, we can derive this class when needed

@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include "../parser/Ast.h"
-#include "../util/Utils.hpp"
+#include "../util/Utils.h"
 #include "MetaArea.h"
 
 class BytecodeGenerator : public AstVisitor {

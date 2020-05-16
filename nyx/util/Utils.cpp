@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
-#include "Utils.hpp"
+#include "Utils.h"
 
 #ifdef _WIN32
 #include <process.h>

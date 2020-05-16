@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-#include "../runtime/Global.hpp"
+#include "../runtime/Global.h"
 
 struct MetaArea {
 

@@ -5,15 +5,15 @@
 
 struct Object {
 
-    Object() {}
+    Object() = default;
 
-    virtual ~Object() {}
+    virtual ~Object() = default;
 
     virtual std::string toString();
 };
 
 struct NInt : public Object {
-    NInt(nyx::int32 value) : value(value) {}
+    explicit NInt(nyx::int32 value) : value(value) {}
 
     nyx::int32 value;
 
@@ -21,7 +21,7 @@ struct NInt : public Object {
 };
 
 struct NDouble : public Object {
-    NDouble(double value) : value(value) {}
+    explicit NDouble(double value) : value(value) {}
 
     double value;
 

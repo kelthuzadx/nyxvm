@@ -25,10 +25,10 @@ void NyxVM::ignition(const char *script) {
 
 const char *NyxVM::findBuiltin(const std::string &name) {
     std::string target = "nyxffi_" + name;
-    for (auto &i : builtin) {
-        const char *bname = i[0];
-        if (target == bname) {
-            return i[1];
+    for (auto &func : builtin) {
+        const char *builtinFuncName = func[0];
+        if (target == builtinFuncName) {
+            return func[1];
         }
     }
     return nullptr;

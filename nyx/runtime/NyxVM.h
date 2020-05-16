@@ -13,7 +13,7 @@ public:
 public:
     NyxVM() = default;
 
-    void setup();
+    static void setup();
 
     void ignition(const char *script);
 };

@@ -15,6 +15,7 @@ private:
     MetaArea *meta{};
     std::vector<Frame *> stack;
     Frame *frame{};
+    
 private:
     Object *pop();
 

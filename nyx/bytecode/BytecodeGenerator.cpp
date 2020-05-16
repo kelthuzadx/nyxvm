@@ -177,7 +177,9 @@ void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
     meta->bytecodes[bci++] = node->args.size();
 }
 
-void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {}
+void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
+
+}
 
 void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {}
 
@@ -205,26 +207,24 @@ void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
 void BytecodeGenerator::visitIfStmt(IfStmt *node) {
     node->cond->visit(this);
     if (node->elseBlock == nullptr) {
-        meta->bytecodes[bci++] = TEST;
-        meta->bytecodes[bci++] = JMP;
+        meta->bytecodes[bci++] = JMP_NE;
         int patching = bci;
         meta->bytecodes[bci++] = -1; // target, further patching
         node->block->visit(this);
         meta->bytecodes[patching] = bci;
     } else {
-        meta->bytecodes[bci++] = TEST;
-        meta->bytecodes[bci++] = JMP;
-        int falsePatching = bci;
-        meta->bytecodes[bci++] = -1; // target, further patching
+        meta->bytecodes[bci++] = JMP_NE;
+        int elsePatching = bci;
+        meta->bytecodes[bci++] = -1;
         node->block->visit(this);
         meta->bytecodes[bci++] = JMP;
-        int targetPatching = bci;
+        int normalPatching = bci;
         meta->bytecodes[bci++] = -1;
-        meta->bytecodes[falsePatching] = bci;
+        meta->bytecodes[elsePatching] = bci;
         node->elseBlock->visit(this);
         meta->bytecodes[bci++] = JMP;
         meta->bytecodes[bci++] = bci + 1;
-        meta->bytecodes[targetPatching] = bci;
+        meta->bytecodes[normalPatching] = bci;
     }
 }
 

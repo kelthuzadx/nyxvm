@@ -4,3 +4,10 @@ println(44.4+444.2)
 println(33-22)
 println(434*5523)
 println(4/3.0)
+
+
+if(80>300){
+    println(5678)
+}else{
+    println(1234)
+}

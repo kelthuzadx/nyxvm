@@ -99,7 +99,7 @@ std::string BinaryExpr::to_string() const {
 }
 
 std::string AssignExpr::to_string() const {
-    std::string str("BinaryExpr{");
+    std::string str("AssignExpr{");
     str += getTokenSymbol(opt);
     str += "}";
     return std::move(str);

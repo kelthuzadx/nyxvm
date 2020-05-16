@@ -5,6 +5,8 @@ enum Opcode {
     NOP,
     CALL,
     JMP,
+    JMP_EQ,
+    JMP_NE,
     CONST_I,
     CONST_NULL,
     CONST_D,

@@ -6,6 +6,9 @@ Frame::Frame(int localSize) {
 
 Frame::~Frame() {
     delete[] local;
+    for (auto &slot:slots) {
+        delete slot;
+    }
 }
 
 Object *Frame::pop() {

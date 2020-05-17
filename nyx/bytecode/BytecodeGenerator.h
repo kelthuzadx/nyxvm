@@ -9,10 +9,10 @@
 
 class BytecodeGenerator : public AstVisitor {
 private:
+    std::unordered_map<std::string, int> localMap;
     CompilationUnit *unit{};
     MetaArea *meta{};
     int bci;
-    std::unordered_map<std::string, int> localMap;
     int local;
 
 private:

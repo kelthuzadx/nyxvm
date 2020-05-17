@@ -10,6 +10,8 @@ struct MetaArea {
     int bytecodeSize;
     nyx::int32 *bytecodes;
     std::vector<std::string> strings;
+
+    ~MetaArea();
 };
 
 

@@ -13,6 +13,8 @@ private:
 public:
     explicit AstDump(const std::string &dotFilePath);
 
+    ~AstDump();
+
     void dump(CompilationUnit *unit);
 
 protected:

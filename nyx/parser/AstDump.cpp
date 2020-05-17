@@ -1,10 +1,14 @@
 #include "AstDump.h"
-#include "../util/Utils.h"
 
-AstDump::AstDump(const std::string &dotFilePath)
-        : ofs(dotFilePath, std::ios::out) {
-
+AstDump::AstDump(const std::string &dotFilePath) {
+    ofs.open(dotFilePath, std::ios::out);
 }
+
+AstDump::~AstDump() {
+    ofs.flush();
+    ofs.close();
+}
+
 
 void AstDump::addEdge(AstNode *from, AstNode *to) {
     ofs << "\tnode_" << from->getId() << "[label=\"" << from->to_string() << "\"]\n";
@@ -45,7 +49,7 @@ void AstDump::visitFuncDef(FuncDef *node) {
 void AstDump::visitMatchStmt(MatchStmt *node) {
     VISIT_FIELD(cond);
     // Special handling
-    for (auto[expr, block, matchAll]:node->matches) {
+    for (auto&[expr, block, matchAll]:node->matches) {
         addEdge(node, expr);
         expr->visit(this);
         addEdge(node, block);
@@ -166,7 +170,6 @@ void AstDump::visitExportStmt(ExportStmt *node) {
 void AstDump::visitImportStmt(ImportStmt *node) {
     VISIT_VEC_FIELD(imports);
 }
-
 
 
 

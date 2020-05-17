@@ -11,6 +11,14 @@ Interpreter::Interpreter(MetaArea *meta) :
         meta(meta) {
 }
 
+Interpreter::~Interpreter() {
+    frame = nullptr;
+    for (auto &val:stack) {
+        delete val;
+    }
+    delete meta;
+}
+
 
 void Interpreter::neg(Object *object) {
     if (typeid(*object) == typeid(NInt)) {
@@ -220,4 +228,3 @@ void Interpreter::execute() {
         }
     }
 }
-

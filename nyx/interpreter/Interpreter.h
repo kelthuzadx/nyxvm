@@ -28,6 +28,8 @@ private:
 public:
     explicit Interpreter(MetaArea *meta);
 
+    ~Interpreter();
+
     void execute();
 };
 

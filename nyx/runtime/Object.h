@@ -15,7 +15,7 @@ struct Object {
 };
 
 struct NInt : public Object {
-    explicit NInt(nyx::int32 value) : value(value) {}
+    explicit NInt(nyx::int32 value);
 
     nyx::int32 value;
 
@@ -23,7 +23,7 @@ struct NInt : public Object {
 };
 
 struct NDouble : public Object {
-    explicit NDouble(double value) : value(value) {}
+    explicit NDouble(double value);
 
     double value;
 
@@ -31,7 +31,7 @@ struct NDouble : public Object {
 };
 
 struct NString : public Object {
-    explicit NString(std::string value) : value(std::move(value)) {}
+    explicit NString(std::string value);
 
     std::string value;
 
@@ -41,8 +41,11 @@ struct NString : public Object {
 struct NArray : public Object {
     explicit NArray(int length);
 
-    ~NArray();
+    ~NArray() override;
 
+    std::string toString() override;
+
+    int length;
     Object **array;
 };
 

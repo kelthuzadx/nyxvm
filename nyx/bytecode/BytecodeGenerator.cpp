@@ -422,19 +422,6 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
 }
 
 void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
-    /**
- * cond:
- * lhs:
- * jmp_eq then
- * rhs
- * jmp_eq then
- * jmp out
- * then:
- * <block>
- * jmp cond
- * out:
- * */
-
     if (isShortCircuitAnd(node->cond)) {
         auto *t = dynamic_cast<BinaryExpr *>(node->cond);
         Label L_cond(this);
@@ -465,15 +452,6 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
         L_out();
         return;
     }
-    // normal condition
-    /**
-     * cond:
-     * <cond>
-     * jmp_ne out
-     * <block>
-     * jmp cond
-     * out
-     */
     Label L_cond(this);
     Label L_out(this);
 
@@ -484,7 +462,50 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
     L_out();
 }
 
-void BytecodeGenerator::visitForStmt(ForStmt *node) {}
+void BytecodeGenerator::visitForStmt(ForStmt *node) {
+    if (isShortCircuitAnd(node->cond)) {
+        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        /**
+         * <init>
+         * cond:
+         * lhs
+         * jmp_ne out
+         * rhs
+         * jmp_ne out
+         * <block>
+         * <post>
+         * jmp cond
+         * out
+         */
+        Label L_cond(this);
+        Label L_out(this);
+
+        t->lhs->visit(this);
+        Jmp j1(this, &L_out, JMP_NE);
+        t->rhs->visit(this);
+        Jmp j2(this, &L_out, JMP_NE);
+        node->block->visit(this);
+        Jmp j3(this, &L_cond, JMP);
+        L_out();
+        return;
+    }
+    if (isShortCircuitOr(node->cond)) {
+        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        Label L_cond(this);
+        Label L_out(this);
+        Label L_then(this);
+        t->lhs->visit(this);
+        Jmp j1(this, &L_then, JMP_EQ);
+        t->rhs->visit(this);
+        Jmp j2(this, &L_then, JMP_EQ);
+        Jmp j3(this, &L_out, JMP);
+        L_then();
+        node->block->visit(this);
+        Jmp j4(this, &L_cond, JMP);
+        L_out();
+        return;
+    }
+}
 
 void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {}
 
@@ -510,40 +531,6 @@ void BytecodeGenerator::varStore(int localIndex) {
     bytecode->bytecodes[bci++] = localIndex;
 }
 
-BytecodeGenerator::BytecodeGenerator() {
-    this->bytecode = new Bytecode;
-    this->bci = 0;
-    this->local = 0;
-}
-
-void BytecodeGenerator::fixupBytecode() {
-    bytecode->bytecodeSize = bci;
-    bytecode->localSize = local;
-}
-
-Bytecode *BytecodeGenerator::generate(CompilationUnit *unit) {
-    {
-        // Generate bytecode via visitor pattern
-        PhaseTime timer("generate bytecode from Ast");
-        unit->visit(this);
-    }
-    fixupBytecode();
-    return bytecode;
-}
-
-Bytecode *BytecodeGenerator::generate(FuncDef *node) {
-    // Prepare parameters
-    for (int i = 0; i < node->params.size(); i++) {
-        localMap.insert({node->params[i], i});
-    }
-    // Generate bytecode via visitor pattern
-    node->block->visit(this);
-    // Fixup generated production
-    fixupBytecode();
-    // don't delete node, it's responsibility of public generate() API
-    return bytecode;
-}
-
 bool BytecodeGenerator::isShortCircuitOr(Expr *expr) {
     if (typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGOR) {
         return true;
@@ -557,5 +544,41 @@ bool BytecodeGenerator::isShortCircuitAnd(Expr *expr) {
     }
     return false;
 }
+
+BytecodeGenerator::BytecodeGenerator() {
+    this->bytecode = new Bytecode;
+    this->bci = 0;
+    this->local = 0;
+}
+
+void BytecodeGenerator::fixupBytecode(const std::string& funcName) {
+    bytecode->bytecodeSize = bci;
+    bytecode->localSize = local;
+    bytecode->funcName = funcName;
+}
+
+Bytecode *BytecodeGenerator::generate(CompilationUnit *unit) {
+    {
+        // Generate bytecode via visitor pattern
+        PhaseTime timer("generate bytecode from Ast");
+        unit->visit(this);
+    }
+    fixupBytecode("<top-level>");
+    return bytecode;
+}
+
+Bytecode *BytecodeGenerator::generate(FuncDef *node) {
+    // Prepare parameters
+    for (int i = 0; i < node->params.size(); i++) {
+        localMap.insert({node->params[i], i});
+    }
+    // Generate bytecode via visitor pattern
+    node->block->visit(this);
+    // Fixup generated production
+    fixupBytecode(node->funcName);
+    // don't delete node, it's responsibility of public generate() API
+    return bytecode;
+}
+
 
 

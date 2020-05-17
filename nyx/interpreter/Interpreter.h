@@ -28,12 +28,14 @@ private:
 
     void destroyFrame();
 
+    void execute(Bytecode *bytecode, int argc, Object **argv);
+
 public:
     explicit Interpreter();
 
     ~Interpreter();
 
-    void execute(Bytecode *bytecode, int argc, Object **argv);
+    void execute(Bytecode* bytecode);
 };
 
 template<int Operation>

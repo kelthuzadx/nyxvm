@@ -6,6 +6,7 @@
 #include "../bytecode/Bytecode.h"
 #include "../interpreter/Interpreter.h"
 #include "../parser/Parser.h"
+#include "../bytecode/BytecodeDump.h"
 
 
 const char *((NyxVM::builtin[])[2]) = {
@@ -16,13 +17,15 @@ const char *((NyxVM::builtin[])[2]) = {
 void NyxVM::ignition(const char *script) {
     nyx::Parser parser(script);
     CompilationUnit *unit = parser.parse();
-    AstDump dumper("ast.dot");
-    dumper.dump(unit);
+    AstDump astDumper("ast.dot");
+    astDumper.dump(unit);
     BytecodeGenerator gen;
     Bytecode *bytecode = gen.generate(unit);
-    // delete unit;
+    BytecodeDump bcDumper("bytecode.log");
+    bcDumper.dump(bytecode);
+    delete unit;
     Interpreter interpreter;
-    interpreter.execute(bytecode, 0, nullptr);
+    interpreter.execute(bytecode);
     delete bytecode;
 }
 

@@ -1,3 +1,4 @@
+println([36,7,5,6,5,"test"])
 i=0
 while(i!=10){
     print(i," ")
@@ -69,3 +70,5 @@ if(true&&true){println("true&&true")}
 if(true&&false){println("should not happen")}
 if(false||false){println("should not happen")}
 println("---------------------------------------------")
+i = [36,7,5,6,5,"test"]
+println(i)

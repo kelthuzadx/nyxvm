@@ -17,7 +17,6 @@ Interpreter::~Interpreter() {
     }
 }
 
-
 void Interpreter::neg(Object *object) {
     if (typeid(*object) == typeid(NInt)) {
         nyx::int32 val = -dynamic_cast<NInt *>(object)->value;
@@ -61,7 +60,6 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
 
     // Execute bytecode
     {
-        PhaseTime timer("execute bytecodes via simple c++ interpreter");
         for (int bci = 0; bci < bytecodeSize; bci++) {
             switch (bytecodes[bci]) {
                 case CALL: {
@@ -292,4 +290,9 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
         }
     }
     destroyFrame();
+}
+
+void Interpreter::execute(Bytecode *bytecode) {
+    PhaseTime timer("execute bytecodes via simple c++ interpreter");
+    execute(bytecode,0,nullptr);
 }

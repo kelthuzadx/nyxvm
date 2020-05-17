@@ -15,3 +15,7 @@ std::string NInt::toString() {
 std::string NDouble::toString() {
     return std::to_string(value);
 }
+
+std::string NString::toString() {
+    return value;
+}

@@ -23,4 +23,4 @@ println(~3)
 
 a = 6666.0
 b = 6666.0
-if(a==b){ println(333)}
+if(a==b){ println("string contents")}else{println("another string contents")}

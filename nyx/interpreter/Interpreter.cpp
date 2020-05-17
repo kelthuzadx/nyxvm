@@ -48,6 +48,7 @@ void Interpreter::execute() {
                 if (funcPtr != nullptr) {
                     ((void (*)(int, Object **)) funcPtr)(funcArgc, argv);
                 }
+                //TODO user defined functions calls
                 bci += 2;
                 break;
             }
@@ -67,6 +68,14 @@ void Interpreter::execute() {
             }
             case CONST_NULL: {
                 frame->push(nullptr);
+                break;
+            }
+            case CONST_STR: {
+                int index = bytecodes[bci + 1];
+                auto &str = meta->strings[index];
+                Object *object = new NString(str);
+                frame->push(object);
+                bci++;
                 break;
             }
             case ADD: {

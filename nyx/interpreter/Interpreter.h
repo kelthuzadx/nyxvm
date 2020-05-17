@@ -14,14 +14,6 @@ private:
     Frame *frame{};
 
 private:
-    Object *pop();
-
-    void push(Object *obj);
-
-    void load(int index);
-
-    void store(int index, Object *value);
-
     template<int Operation>
     void arithmetic(Object *o1, Object *o2);
 
@@ -48,11 +40,11 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 if (typeid(*o2) == typeid(NInt)) {
                     NInt *t2 = dynamic_cast<NInt *>(o2);
                     NInt *res = new NInt(t1->value + t2->value);
-                    push(res);
+                    frame->push(res);
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value + t2->value);
-                    push(res);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -61,11 +53,11 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 if (typeid(*o2) == typeid(NInt)) {
                     NInt *t2 = dynamic_cast<NInt *>(o2);
                     auto *res = new NDouble(t1->value + t2->value);
-                    push(res);
+                    frame->push(res);
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value + t2->value);
-                    push(res);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -78,11 +70,11 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 if (typeid(*o2) == typeid(NInt)) {
                     NInt *t2 = dynamic_cast<NInt *>(o2);
                     NInt *res = new NInt(t1->value - t2->value);
-                    push(res);
+                    frame->push(res);
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value - t2->value);
-                    push(res);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -91,11 +83,11 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 if (typeid(*o2) == typeid(NInt)) {
                     NInt *t2 = dynamic_cast<NInt *>(o2);
                     auto *res = new NDouble(t1->value - t2->value);
-                    push(res);
+                    frame->push(res);
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value - t2->value);
-                    push(res);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -109,11 +101,11 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 if (typeid(*o2) == typeid(NInt)) {
                     NInt *t2 = dynamic_cast<NInt *>(o2);
                     NInt *res = new NInt(t1->value * t2->value);
-                    push(res);
+                    frame->push(res);
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value * t2->value);
-                    push(res);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -122,11 +114,11 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 if (typeid(*o2) == typeid(NInt)) {
                     NInt *t2 = dynamic_cast<NInt *>(o2);
                     auto *res = new NDouble(t1->value * t2->value);
-                    push(res);
+                    frame->push(res);
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value * t2->value);
-                    push(res);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -140,11 +132,11 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 if (typeid(*o2) == typeid(NInt)) {
                     NInt *t2 = dynamic_cast<NInt *>(o2);
                     NInt *res = new NInt(t1->value / t2->value);
-                    push(res);
+                    frame->push(res);
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value / t2->value);
-                    push(res);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -153,11 +145,11 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 if (typeid(*o2) == typeid(NInt)) {
                     NInt *t2 = dynamic_cast<NInt *>(o2);
                     auto *res = new NDouble(t1->value / t2->value);
-                    push(res);
+                    frame->push(res);
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value / t2->value);
-                    push(res);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -172,7 +164,7 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
             NInt *t1 = dynamic_cast<NInt *>(o1);
             NInt *t2 = dynamic_cast<NInt *>(o2);
             NInt *res = new NInt(t1->value % t2->value);
-            push(res);
+            frame->push(res);
             break;
         }
         default:
@@ -188,7 +180,7 @@ void Interpreter::compare(Object *o1, Object *o2) {
         if (typeid(*o1) == typeid(NInt)) {
             auto *t1 = dynamic_cast<NInt *>(o1);
             auto *res = new NInt(t1->value == 0);
-            push(res);
+            frame->push(res);
         } else {
             panic("should not reach here");
         }
@@ -222,7 +214,7 @@ void Interpreter::compare(Object *o1, Object *o2) {
                 panic("should not reach here");
         }
         auto *res = new NInt(cond);
-        push(res);
+        frame->push(res);
     } else if (typeid(*o1) == typeid(NDouble) && typeid(*o2) == typeid(NDouble)) {
         auto *t1 = dynamic_cast<NDouble *>(o1);
         auto *t2 = dynamic_cast<NDouble *>(o2);
@@ -250,7 +242,7 @@ void Interpreter::compare(Object *o1, Object *o2) {
                 panic("should not reach here");
         }
         auto *res = new NInt(cond);
-        push(res);
+        frame->push(res);
     } else {
         panic("should not reach here");
     }
@@ -262,7 +254,7 @@ void Interpreter::bitop(Object *o1, Object *o2) {
         // NOT
         auto *t1 = dynamic_cast<NInt *>(o1);
         auto *res = new NInt(~t1->value);
-        push(res);
+        frame->push(res);
         return;
     }
     // AND OR
@@ -273,10 +265,10 @@ void Interpreter::bitop(Object *o1, Object *o2) {
     auto *t2 = dynamic_cast<NInt *>(o2);
     if (Operation == AND) {
         auto *res = new NInt((nyx::int32) (t1->value & t2->value));
-        push(res);
+        frame->push(res);
     } else if (Operation == OR) {
         auto *res = new NInt((nyx::int32) (t1->value | t2->value));
-        push(res);
+        frame->push(res);
     } else {
         panic("should not reach here");
     }

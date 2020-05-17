@@ -1,6 +1,8 @@
 #ifndef NYX_OBJECT_H
 #define NYX_OBJECT_H
 
+#include <utility>
+
 #include "Global.h"
 
 struct Object {
@@ -24,6 +26,14 @@ struct NDouble : public Object {
     explicit NDouble(double value) : value(value) {}
 
     double value;
+
+    std::string toString() override;
+};
+
+struct NString : public Object {
+    explicit NString(std::string value) : value(std::move(value)) {}
+
+    std::string value;
 
     std::string toString() override;
 };

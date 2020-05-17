@@ -30,6 +30,18 @@ void Interpreter::neg(Object *object) {
     }
 }
 
+void Interpreter::destroyFrame(){
+    // Destroy current frame, current frame may points to next frame
+    auto *temp = stack.back();
+    stack.pop_back();
+    if (!stack.empty()) {
+        this->frame = stack.back();
+    } else {
+        this->frame = nullptr;
+    }
+    delete temp;
+}
+
 void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
     // Create execution frame
     this->frame = new Frame(bytecode->localSize);
@@ -254,19 +266,25 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     frame->dup();
                     break;
                 }
+                case RETURN:{
+                    destroyFrame();
+                    return;
+                }
+                case RETURN_VAL:{
+                    auto *temp = stack.back();
+                    stack.pop_back();
+                    if (stack.empty()) {
+                        panic("return from top context");
+                    }
+                    this->frame = stack.back();
+                    this->frame->push(temp->pop());
+                    delete temp;
+                    return;
+                }
                 default:
                     panic("invalid bytecode %d", bytecodes[bci]);
             }
         }
     }
-
-    // Destroy current frame, current frame may points to next frame
-    auto *temp = stack.back();
-    stack.pop_back();
-    if (!stack.empty()) {
-        this->frame = stack.back();
-    } else {
-        this->frame = nullptr;
-    }
-    delete temp;
+    destroyFrame();
 }

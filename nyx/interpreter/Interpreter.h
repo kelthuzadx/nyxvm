@@ -24,6 +24,9 @@ private:
 
     void neg(Object *object);
 
+    void createFrame();
+    void destroyFrame();
+
 public:
     explicit Interpreter();
 

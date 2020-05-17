@@ -1,3 +1,8 @@
+func ret_985(){
+    return 985
+}
+println(ret_985())
+
 arr=[3,5.8,"sss"]
 arr[0]  =111
 println(arr[0])

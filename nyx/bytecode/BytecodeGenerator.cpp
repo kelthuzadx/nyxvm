@@ -279,6 +279,8 @@ void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
         bytecode->bytecodes[bci++] = RETURN;
     } else {
         // TODO
+        node->retval->visit(this);
+        bytecode->bytecodes[bci++] = RETURN_VAL;
     }
 
 }

@@ -27,6 +27,7 @@ enum Opcode {
     DIV,
     REM,
     RETURN,
+    RETURN_VAL,
     LOAD,
     STORE,
     LOAD_INDEX,

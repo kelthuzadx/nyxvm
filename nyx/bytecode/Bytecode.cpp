@@ -6,3 +6,8 @@ Bytecode::~Bytecode() {
         delete val.second;
     }
 }
+
+Bytecode::Bytecode() {
+    bytecodes = new nyx::int32[65535];
+}
+

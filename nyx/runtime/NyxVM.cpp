@@ -17,8 +17,8 @@ void NyxVM::ignition(const char *script) {
     CompilationUnit *unit = parser.parse();
     AstDump dumper("ast.dot");
     dumper.dump(unit);
-    BytecodeGenerator gen(unit);
-    Bytecode *meta = gen.generate();
+    BytecodeGenerator gen;
+    Bytecode *meta = gen.generate(unit);
     Interpreter interpreter(meta);
     interpreter.execute();
 }

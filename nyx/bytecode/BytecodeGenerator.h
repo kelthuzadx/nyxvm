@@ -10,8 +10,7 @@
 class BytecodeGenerator : public AstVisitor {
 private:
     std::unordered_map<std::string, int> localMap;
-    CompilationUnit *unit{};
-    Bytecode *meta{};
+    Bytecode *bytecode{};
     int bci;
     int local;
 
@@ -74,10 +73,13 @@ private:
 
     void visitExportStmt(ExportStmt *node) override;
 
-public:
-    explicit BytecodeGenerator(CompilationUnit *unit);
+private:
+    Bytecode *generate(FuncDef *node);
 
-    Bytecode *generate();
+public:
+    explicit BytecodeGenerator() = default;
+
+    Bytecode *generate(CompilationUnit *unit);
 };
 
 

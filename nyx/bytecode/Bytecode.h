@@ -9,14 +9,15 @@
 
 struct Bytecode {
     std::vector<std::string> strings;
-
     int localSize;
     int bytecodeSize;
     nyx::int32 *bytecodes;
 
-    std::unordered_map<std::string, Bytecode *> functions;
+    explicit Bytecode();
 
     ~Bytecode();
+
+    std::unordered_map<std::string, Bytecode *> functions;
 };
 
 

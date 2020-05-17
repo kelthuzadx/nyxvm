@@ -24,3 +24,11 @@ println(~3)
 a = 6666.0
 b = 6666.0
 if(a==b){ println("string contents")}else{println("another string contents")}
+
+if(true||false){
+println("ok")
+}
+
+if(true&&true){println("ok1")}
+if(true&&false){println("should not happen")}
+if(false||false){println("should not happen")}

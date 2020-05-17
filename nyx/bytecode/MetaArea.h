@@ -6,7 +6,7 @@
 #include "../runtime/Global.h"
 
 struct MetaArea {
-
+    int localSize;
     int bytecodeSize;
     nyx::int32 *bytecodes;
     std::vector<std::string> strings;

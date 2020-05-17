@@ -28,6 +28,9 @@ enum Opcode {
     DIV,
     REM,
     RETURN,
+
+    LOAD,
+    STORE,
 };
 
 #endif //NYX_OPCODE_H

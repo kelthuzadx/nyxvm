@@ -20,3 +20,7 @@ println(33)
 println(3&4)
 println(3&3)
 println(~3)
+
+a = 6666.0
+b = 6666.0
+if(a==b){ println(333)}

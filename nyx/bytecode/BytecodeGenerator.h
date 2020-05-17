@@ -2,15 +2,18 @@
 #define NYX_BYTECODEGENERATOR_H
 
 #include <cstdint>
+#include <unordered_map>
 #include "../parser/Ast.h"
 #include "../util/Utils.h"
 #include "MetaArea.h"
 
 class BytecodeGenerator : public AstVisitor {
 private:
-    CompilationUnit *unit;
+    CompilationUnit *unit{};
     MetaArea *meta{};
     int bci;
+    std::unordered_map<std::string, int> localMap;
+    int local;
 
 private:
     void visitBlock(Block *node) override;

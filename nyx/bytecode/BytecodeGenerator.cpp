@@ -56,7 +56,14 @@ void BytecodeGenerator::visitStringExpr(StringExpr *node) {
 void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {
 }
 
-void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {}
+void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {
+    if (auto iter = localMap.find(node->identName);iter == localMap.cend()) {
+        panic("variable undefined but using");
+    }
+    int localIndex = localMap[node->identName];
+    meta->bytecodes[bci++] = LOAD;
+    meta->bytecodes[bci++] = localIndex;
+}
 
 void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {}
 
@@ -169,7 +176,18 @@ void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
 }
 
 void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
-
+    node->rhs->visit(this);
+    if (typeid(*node->lhs) == typeid(IndexExpr)) {
+        // Array element
+        panic("shout not reach here");
+    } else if (typeid(*node->lhs) == typeid(IdentExpr)) {
+        // Normal variable
+        auto *t = dynamic_cast<IdentExpr *>(node->lhs);
+        meta->bytecodes[bci++] = STORE;
+        int localIndex = local++;
+        localMap.insert(std::make_pair(t->identName, localIndex));
+        meta->bytecodes[bci++] = localIndex;
+    }
 }
 
 void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {}
@@ -235,6 +253,7 @@ MetaArea *BytecodeGenerator::generate() {
     PhaseTime timer("generate bytecode from Ast");
     unit->visit(this);
     meta->bytecodeSize = bci;
+    meta->localSize = local;
     return meta;
 }
 
@@ -243,5 +262,6 @@ BytecodeGenerator::BytecodeGenerator(CompilationUnit *unit) : unit(unit) {
     meta->bytecodes = new nyx::int32[65535];
     meta->bytecodeSize = -1;
     bci = 0;
+    local = 0;
 }
 

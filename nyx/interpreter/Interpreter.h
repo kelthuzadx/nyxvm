@@ -5,10 +5,7 @@
 #include "../bytecode/MetaArea.h"
 #include "../runtime/Object.h"
 #include "../bytecode/Opcode.h"
-
-struct Frame {
-    std::vector<Object *> slots;
-};
+#include "Frame.h"
 
 class Interpreter {
 private:
@@ -20,6 +17,10 @@ private:
     Object *pop();
 
     void push(Object *obj);
+
+    void load(int index);
+
+    void store(int index, Object *value);
 
     template<int Operation>
     void arithmetic(Object *o1, Object *o2);

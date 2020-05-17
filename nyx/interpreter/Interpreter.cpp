@@ -21,6 +21,14 @@ void Interpreter::push(Object *obj) {
     frame->slots.push_back(obj);
 }
 
+void Interpreter::load(int index) {
+    frame->slots.push_back(frame->local[index]);
+}
+
+void Interpreter::store(int index, Object *value) {
+    frame->local[index] = value;
+}
+
 void Interpreter::neg(Object *object) {
     if (typeid(*object) == typeid(NInt)) {
         nyx::int32 val = -dynamic_cast<NInt *>(object)->value;
@@ -34,13 +42,13 @@ void Interpreter::neg(Object *object) {
 }
 
 void Interpreter::execute() {
-    frame = new Frame;
+    frame = new Frame(meta->localSize);
     stack.push_back(frame);
 
     int bytecodeSize = meta->bytecodeSize;
     auto *bytecodes = meta->bytecodes;
 
-    PhaseTime timer("execute bytecode");
+    PhaseTime timer("execute bytecodes via simple c++ interpreter");
     for (int bci = 0; bci < bytecodeSize; bci++) {
         switch (bytecodes[bci]) {
             case CALL: {
@@ -74,7 +82,7 @@ void Interpreter::execute() {
                 bci += 8;
                 break;
             }
-            case CONST_NULL:{
+            case CONST_NULL: {
                 push(nullptr);
                 break;
             }
@@ -157,7 +165,7 @@ void Interpreter::execute() {
             case JMP_NE: {
                 auto *cond = dynamic_cast<NInt *>(pop());
                 assert(cond->value == 0 || cond->value == 1);
-                if (cond->value != 0) {
+                if (cond->value == 0) {
                     // Goto target
                     int target = bytecodes[bci + 1];
                     bci = target - 1;
@@ -170,7 +178,7 @@ void Interpreter::execute() {
             case JMP_EQ: {
                 auto *cond = dynamic_cast<NInt *>(pop());
                 assert(cond->value == 0 || cond->value == 1);
-                if (cond->value == 0) {
+                if (cond->value == 1) {
                     // Goto target
                     int target = bytecodes[bci + 1];
                     bci = target - 1;
@@ -200,6 +208,19 @@ void Interpreter::execute() {
             case NEG: {
                 Object *object = pop();
                 neg(object);
+                break;
+            }
+            case LOAD: {
+                int index = bytecodes[bci + 1];
+                load(index);
+                bci++;
+                break;
+            }
+            case STORE: {
+                Object *value = pop();
+                int index = bytecodes[bci + 1];
+                store(index, value);
+                bci++;
                 break;
             }
             default:

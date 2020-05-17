@@ -30,7 +30,16 @@ void Interpreter::neg(Object *object) {
     }
 }
 
-void Interpreter::destroyFrame(){
+void Interpreter::createFrame(Bytecode *bytecode, int argc, Object **argv){
+    // Create execution frame
+    this->frame = new Frame(bytecode->localSize);
+    for (int i = argc - 1, k = 0; i >= 0; i--, k++) {
+        frame->store(k, argv[i]);
+    }
+    stack.push_back(frame);
+}
+
+void Interpreter::destroyFrame() {
     // Destroy current frame, current frame may points to next frame
     auto *temp = stack.back();
     stack.pop_back();
@@ -43,12 +52,8 @@ void Interpreter::destroyFrame(){
 }
 
 void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
-    // Create execution frame
-    this->frame = new Frame(bytecode->localSize);
-    for (int i = argc - 1, k = 0; i >= 0; i--, k++) {
-        frame->store(k, argv[i]);
-    }
-    stack.push_back(frame);
+    createFrame(bytecode,argc,argv);
+
 
     // Set up bytecode size and max length
     int bytecodeSize = bytecode->bytecodeSize;
@@ -266,11 +271,11 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     frame->dup();
                     break;
                 }
-                case RETURN:{
+                case RETURN: {
                     destroyFrame();
                     return;
                 }
-                case RETURN_VAL:{
+                case RETURN_VAL: {
                     auto *temp = stack.back();
                     stack.pop_back();
                     if (stack.empty()) {

@@ -24,7 +24,8 @@ private:
 
     void neg(Object *object);
 
-    void createFrame();
+    void createFrame(Bytecode *bytecode, int argc, Object **argv);
+
     void destroyFrame();
 
 public:

@@ -278,7 +278,6 @@ void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
     if (node->retval == nullptr) {
         bytecode->bytecodes[bci++] = RETURN;
     } else {
-        // TODO
         node->retval->visit(this);
         bytecode->bytecodes[bci++] = RETURN_VAL;
     }

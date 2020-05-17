@@ -5,13 +5,13 @@
 #include <unordered_map>
 #include "../parser/Ast.h"
 #include "../util/Utils.h"
-#include "MetaArea.h"
+#include "Bytecode.h"
 
 class BytecodeGenerator : public AstVisitor {
 private:
     std::unordered_map<std::string, int> localMap;
     CompilationUnit *unit{};
-    MetaArea *meta{};
+    Bytecode *meta{};
     int bci;
     int local;
 
@@ -77,7 +77,7 @@ private:
 public:
     explicit BytecodeGenerator(CompilationUnit *unit);
 
-    MetaArea *generate();
+    Bytecode *generate();
 };
 
 

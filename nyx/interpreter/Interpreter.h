@@ -2,14 +2,14 @@
 #define NYX_INTERPRETER_H
 
 #include "../runtime/Global.h"
-#include "../bytecode/MetaArea.h"
+#include "../bytecode/Bytecode.h"
 #include "../runtime/Object.h"
 #include "../bytecode/Opcode.h"
 #include "Frame.h"
 
 class Interpreter {
 private:
-    MetaArea *meta{};
+    Bytecode *meta{};
     std::vector<Frame *> stack;
     Frame *frame{};
 
@@ -26,7 +26,7 @@ private:
     void neg(Object *object);
 
 public:
-    explicit Interpreter(MetaArea *meta);
+    explicit Interpreter(Bytecode *meta);
 
     ~Interpreter();
 

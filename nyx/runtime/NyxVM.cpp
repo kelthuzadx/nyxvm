@@ -3,7 +3,7 @@
 #include "../parser/Ast.h"
 #include "../parser/AstDump.h"
 #include "../bytecode/BytecodeGenerator.h"
-#include "../bytecode/MetaArea.h"
+#include "../bytecode/Bytecode.h"
 #include "../interpreter/Interpreter.h"
 #include "../parser/Parser.h"
 
@@ -18,7 +18,7 @@ void NyxVM::ignition(const char *script) {
     AstDump dumper("ast.dot");
     dumper.dump(unit);
     BytecodeGenerator gen(unit);
-    MetaArea *meta = gen.generate();
+    Bytecode *meta = gen.generate();
     Interpreter interpreter(meta);
     interpreter.execute();
 }

@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 // Simple C++ bytecode interpreter
 //===----------------------------------------------------------------------===//
-Interpreter::Interpreter(MetaArea *meta) :
+Interpreter::Interpreter(Bytecode *meta) :
         meta(meta) {
 }
 

@@ -249,7 +249,7 @@ void BytecodeGenerator::visitImportStmt(ImportStmt *node) {}
 
 void BytecodeGenerator::visitExportStmt(ExportStmt *node) {}
 
-MetaArea *BytecodeGenerator::generate() {
+Bytecode *BytecodeGenerator::generate() {
     PhaseTime timer("generate bytecode from Ast");
     unit->visit(this);
     meta->bytecodeSize = bci;
@@ -259,7 +259,7 @@ MetaArea *BytecodeGenerator::generate() {
 }
 
 BytecodeGenerator::BytecodeGenerator(CompilationUnit *unit) : unit(unit) {
-    meta = new MetaArea;
+    meta = new Bytecode;
     meta->bytecodes = new nyx::int32[65535];
     meta->bytecodeSize = -1;
     bci = 0;

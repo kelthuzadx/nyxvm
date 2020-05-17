@@ -15,7 +15,6 @@ class BytecodeGenerator : public AstVisitor {
 
 private:
     std::unordered_map<std::string, int> localMap;
-    std::unordered_map<std::string, std::vector<int>> jmpTable;
     Bytecode *bytecode{};
     int bci;
     int local;
@@ -82,27 +81,10 @@ private:
 private:
     Bytecode *generate(FuncDef *node);
 
-    void jmp(Opcode opcode, const std::string &targetName) {
-        assert(opcode == JMP || opcode == JMP_NE || opcode == JMP_NE);
-        bytecode->bytecodes[bci++] = opcode;
-        jmpTable[targetName].push_back(bci);
-        bytecode->bytecodes[bci++] = -1;
-    }
-
-    void target(const std::string &targetName) {
-        if (auto iter = jmpTable.find(targetName);iter != jmpTable.end()) {
-            // Since multiple jump bytecodes may jump to the same destination
-            // we should patch all destinations of jump bytecode
-            for (int i : iter->second) {
-                bytecode->bytecodes[i] = bci;
-            }
-            return;
-        }
-        assert(false);
-    }
+    void fixupBytecode();
 
 public:
-    explicit BytecodeGenerator() = default;
+    explicit BytecodeGenerator();
 
     Bytecode *generate(CompilationUnit *unit);
 };

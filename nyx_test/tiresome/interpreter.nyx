@@ -1,3 +1,12 @@
+
+func hello(a,b){
+    println("hello")
+    println(a)
+    println(b)
+}
+
+hello("a","b")
+
 println(3+20000000)
 println(32+64.5)
 println(44.4+444.2)
@@ -42,4 +51,4 @@ println("---")
 if(true&&true){println("true&&true")}
 if(true&&false){println("should not happen")}
 if(false||false){println("should not happen")}
-println("---xx-----")
+println("---------------------------------------------")

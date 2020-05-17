@@ -9,7 +9,7 @@ private:
 public:
     explicit Jmp(BytecodeGenerator *gen, Label *label, Opcode opcode);
 
-    int getPatching() const { return patching; }
+    [[nodiscard]] int getPatching() const { return patching; }
 };
 
 class Label {
@@ -63,6 +63,9 @@ void BytecodeGenerator::visitFuncDef(FuncDef *node) {
 }
 
 void BytecodeGenerator::visitCompilationUnit(CompilationUnit *node) {
+    for (auto *definition:node->definitions) {
+        definition->visit(this);
+    }
     for (auto *stmt:node->topStmts) {
         stmt->visit(this);
     }
@@ -360,33 +363,38 @@ void BytecodeGenerator::visitImportStmt(ImportStmt *node) {}
 
 void BytecodeGenerator::visitExportStmt(ExportStmt *node) {}
 
-Bytecode *BytecodeGenerator::generate(CompilationUnit *unit) {
-    // Setup related data structures
+
+BytecodeGenerator::BytecodeGenerator() {
     this->bytecode = new Bytecode;
     this->bci = 0;
     this->local = 0;
+}
+
+void BytecodeGenerator::fixupBytecode() {
+    bytecode->bytecodeSize = bci;
+    bytecode->localSize = local;
+}
+
+
+Bytecode *BytecodeGenerator::generate(CompilationUnit *unit) {
     {
         // Generate bytecode via visitor pattern
         PhaseTime timer("generate bytecode from Ast");
         unit->visit(this);
     }
-    // Fixup generated production
-    bytecode->bytecodeSize = bci;
-    bytecode->localSize = local;
-    delete unit;
+    fixupBytecode();
     return bytecode;
 }
 
 Bytecode *BytecodeGenerator::generate(FuncDef *node) {
-    // Setup related data structures
-    this->bytecode = new Bytecode;
-    this->bci = 0;
-    this->local = 0;
+    // Prepare parameters
+    for (int i = 0; i < node->params.size(); i++) {
+        localMap.insert({node->params[i], i});
+    }
     // Generate bytecode via visitor pattern
-    node->visit(this);
+    node->block->visit(this);
     // Fixup generated production
-    bytecode->bytecodeSize = bci;
-    bytecode->localSize = local;
+    fixupBytecode();
     // don't delete node, it's responsibility of public generate() API
     return bytecode;
 }

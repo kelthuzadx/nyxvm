@@ -9,7 +9,6 @@
 
 class Interpreter {
 private:
-    Bytecode *meta{};
     std::vector<Frame *> stack;
     Frame *frame{};
 
@@ -26,11 +25,11 @@ private:
     void neg(Object *object);
 
 public:
-    explicit Interpreter(Bytecode *meta);
+    explicit Interpreter();
 
     ~Interpreter();
 
-    void execute();
+    void execute(Bytecode *bytecode, int argc, Object **argv);
 };
 
 template<int Operation>

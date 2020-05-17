@@ -18,9 +18,11 @@ void NyxVM::ignition(const char *script) {
     AstDump dumper("ast.dot");
     dumper.dump(unit);
     BytecodeGenerator gen;
-    Bytecode *meta = gen.generate(unit);
-    Interpreter interpreter(meta);
-    interpreter.execute();
+    Bytecode *bytecode = gen.generate(unit);
+    // delete unit;
+    Interpreter interpreter;
+    interpreter.execute(bytecode, 0, nullptr);
+    delete bytecode;
 }
 
 const char *NyxVM::findBuiltin(const std::string &name) {

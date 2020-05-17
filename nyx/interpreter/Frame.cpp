@@ -7,3 +7,21 @@ Frame::Frame(int localSize) {
 Frame::~Frame() {
     delete[] local;
 }
+
+Object *Frame::pop() {
+    Object *obj = slots.back();
+    slots.pop_back();
+    return obj;
+}
+
+void Frame::push(Object *obj) {
+    slots.push_back(obj);
+}
+
+void Frame::load(int index) {
+    slots.push_back(local[index]);
+}
+
+void Frame::store(int index, Object *value) {
+    local[index] = value;
+}

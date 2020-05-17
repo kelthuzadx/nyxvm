@@ -11,31 +11,14 @@ Interpreter::Interpreter(MetaArea *meta) :
         meta(meta) {
 }
 
-Object *Interpreter::pop() {
-    Object *obj = frame->slots.back();
-    frame->slots.pop_back();
-    return obj;
-}
-
-void Interpreter::push(Object *obj) {
-    frame->slots.push_back(obj);
-}
-
-void Interpreter::load(int index) {
-    frame->slots.push_back(frame->local[index]);
-}
-
-void Interpreter::store(int index, Object *value) {
-    frame->local[index] = value;
-}
 
 void Interpreter::neg(Object *object) {
     if (typeid(*object) == typeid(NInt)) {
         nyx::int32 val = -dynamic_cast<NInt *>(object)->value;
-        push(new NInt(val));
+        frame->push(new NInt(val));
     } else if (typeid(*object) == typeid(NDouble)) {
         double val = -dynamic_cast<NDouble *>(object)->value;
-        push(new NDouble(val));
+        frame->push(new NDouble(val));
     } else {
         panic("should not reach here");
     }
@@ -58,7 +41,7 @@ void Interpreter::execute() {
 
                 auto **argv = new Object *[funcArgc];
                 for (int k = 0; k < funcArgc; k++) {
-                    argv[k] = pop();
+                    argv[k] = frame->pop();
                 }
 
                 const char *funcPtr = NyxVM::findBuiltin(funcName);
@@ -71,89 +54,89 @@ void Interpreter::execute() {
             case CONST_I: {
                 nyx::int32 value = *(nyx::int32 *) (bytecodes + bci + 1);
                 auto *object = new NInt(value);
-                push(object);
+                frame->push(object);
                 bci += 4;
                 break;
             }
             case CONST_D: {
                 double value = *(double *) (bytecodes + bci + 1);
                 auto *object = new NDouble(value);
-                push(object);
+                frame->push(object);
                 bci += 8;
                 break;
             }
             case CONST_NULL: {
-                push(nullptr);
+                frame->push(nullptr);
                 break;
             }
             case ADD: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 arithmetic<ADD>(object1, object2);
                 break;
             }
             case SUB: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 arithmetic<SUB>(object1, object2);
                 break;
             }
             case MUL: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 arithmetic<MUL>(object1, object2);
                 break;
             }
             case DIV: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 arithmetic<DIV>(object1, object2);
                 break;
             }
             case REM: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 arithmetic<REM>(object1, object2);
                 break;
             }
             case TEST: {
-                Object *object1 = pop();
+                Object *object1 = frame->pop();
                 compare<TEST>(object1, nullptr);
                 break;
             }
             case TEST_EQ: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 compare<TEST_EQ>(object1, object2);
                 break;
             }
             case TEST_NE: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 compare<TEST_NE>(object1, object2);
                 break;
             }
             case TEST_GE: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 compare<TEST_GE>(object1, object2);
                 break;
             }
             case TEST_GT: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 compare<TEST_GT>(object1, object2);
                 break;
             }
             case TEST_LE: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 compare<TEST_LE>(object1, object2);
                 break;
             }
             case TEST_LT: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 compare<TEST_LT>(object1, object2);
                 break;
             }
@@ -163,7 +146,7 @@ void Interpreter::execute() {
                 break;
             }
             case JMP_NE: {
-                auto *cond = dynamic_cast<NInt *>(pop());
+                auto *cond = dynamic_cast<NInt *>(frame->pop());
                 assert(cond->value == 0 || cond->value == 1);
                 if (cond->value == 0) {
                     // Goto target
@@ -176,7 +159,7 @@ void Interpreter::execute() {
                 break;
             }
             case JMP_EQ: {
-                auto *cond = dynamic_cast<NInt *>(pop());
+                auto *cond = dynamic_cast<NInt *>(frame->pop());
                 assert(cond->value == 0 || cond->value == 1);
                 if (cond->value == 1) {
                     // Goto target
@@ -189,37 +172,37 @@ void Interpreter::execute() {
                 break;
             }
             case AND: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 bitop<AND>(object1, object2);
                 break;
             }
             case OR: {
-                Object *object1 = pop();
-                Object *object2 = pop();
+                Object *object1 = frame->pop();
+                Object *object2 = frame->pop();
                 bitop<OR>(object1, object2);
                 break;
             }
             case NOT: {
-                Object *object1 = pop();
+                Object *object1 = frame->pop();
                 bitop<NOT>(object1, nullptr);
                 break;
             }
             case NEG: {
-                Object *object = pop();
+                Object *object = frame->pop();
                 neg(object);
                 break;
             }
             case LOAD: {
                 int index = bytecodes[bci + 1];
-                load(index);
+                frame->load(index);
                 bci++;
                 break;
             }
             case STORE: {
-                Object *value = pop();
+                Object *value = frame->pop();
                 int index = bytecodes[bci + 1];
-                store(index, value);
+                frame->store(index, value);
                 bci++;
                 break;
             }

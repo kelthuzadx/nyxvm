@@ -4,13 +4,23 @@
 #include <vector>
 #include "../runtime/Object.h"
 
-struct Frame {
+class Frame {
+private:
+    std::vector<Object *> slots;
+    Object **local;
+
+public:
     explicit Frame(int localSize);
 
     ~Frame();
 
-    std::vector<Object *> slots;
-    Object **local;
+    Object *pop();
+
+    void push(Object *obj);
+
+    void load(int index);
+
+    void store(int index, Object *value);
 };
 
 #endif //NYX_FRAME_H

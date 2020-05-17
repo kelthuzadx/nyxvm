@@ -132,7 +132,8 @@ struct AstNode {
 struct root_name : public AstNode{ \
     using AstNode::AstNode;\
     void visit(AstVisitor *visitor) override { visitor->visit##root_name(this); } \
-    std::string to_string() const override;
+    std::string to_string() const override;\
+    virtual ~root_name();
 
 #define AST_ROOT_END };
 
@@ -171,7 +172,8 @@ AST_ROOT_END
 struct expr_name : public Expr{ \
     using Expr::Expr;\
     void visit(AstVisitor *visitor) override { visitor->visit##expr_name(this); } \
-    std::string to_string() const override;
+    std::string to_string() const override;\
+    virtual ~expr_name();
 
 #define AST_EXPR_END };
 
@@ -253,7 +255,8 @@ AST_EXPR_END
 struct stmt_name : public Stmt{ \
     using Stmt::Stmt;\
     void visit(AstVisitor *visitor) override { visitor->visit##stmt_name(this); } \
-    std::string to_string() const override { return std::move(std::string(""#stmt_name));}
+    std::string to_string() const override { return std::move(std::string(""#stmt_name));}\
+    virtual ~stmt_name();
 
 #define AST_STMT_END };
 

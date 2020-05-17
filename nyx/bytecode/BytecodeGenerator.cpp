@@ -254,6 +254,7 @@ MetaArea *BytecodeGenerator::generate() {
     unit->visit(this);
     meta->bytecodeSize = bci;
     meta->localSize = local;
+    delete unit;
     return meta;
 }
 

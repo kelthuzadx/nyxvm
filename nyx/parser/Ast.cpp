@@ -118,3 +118,121 @@ std::string FuncCallExpr::to_string() const {
 std::string ClosureExpr::to_string() const {
     return std::move(std::string("ClosureExpr"));
 }
+
+#define FREE_FIELD(field) delete field;
+
+#define FREE_VEC(field) \
+for(auto&val:field){\
+delete val;\
+}
+
+
+Expr::~Expr() {}
+
+Stmt::~Stmt() {}
+
+Block::~Block() {
+    FREE_VEC(stmts)
+}
+
+FuncDef::~FuncDef() {
+    FREE_FIELD(block)
+}
+
+CompilationUnit::~CompilationUnit() {
+    FREE_VEC(definitions)
+    FREE_VEC(imports)
+    FREE_VEC(exports)
+    FREE_VEC(topStmts)
+}
+
+BoolExpr::~BoolExpr() {}
+
+CharExpr::~CharExpr() {}
+
+NullExpr::~NullExpr() {}
+
+IntExpr::~IntExpr() {}
+
+DoubleExpr::~DoubleExpr() {}
+
+StringExpr::~StringExpr() {}
+
+ArrayExpr::~ArrayExpr() {
+    FREE_VEC(literal)
+}
+
+IdentExpr::~IdentExpr() {}
+
+IndexExpr::~IndexExpr() {
+    FREE_FIELD(index)
+}
+
+BinaryExpr::~BinaryExpr() {
+    FREE_FIELD(lhs)
+    FREE_FIELD(rhs)
+}
+
+FuncCallExpr::~FuncCallExpr() {
+    FREE_VEC(args)
+}
+
+AssignExpr::~AssignExpr() {
+    FREE_FIELD(lhs)
+    FREE_FIELD(rhs)
+}
+
+ClosureExpr::~ClosureExpr() {
+    FREE_FIELD(block)
+}
+
+BreakStmt::~BreakStmt() {}
+
+ContinueStmt::~ContinueStmt() {}
+
+SimpleStmt::~SimpleStmt() {
+    FREE_FIELD(expr)
+}
+
+ReturnStmt::~ReturnStmt() {
+    FREE_FIELD(retval)
+}
+
+IfStmt::~IfStmt() {
+    FREE_FIELD(cond)
+    FREE_FIELD(block)
+    FREE_FIELD(elseBlock)
+}
+
+WhileStmt::~WhileStmt() {
+    FREE_FIELD(cond)
+    FREE_FIELD(block)
+}
+
+ForStmt::~ForStmt() {
+    FREE_FIELD(init)
+    FREE_FIELD(cond)
+    FREE_FIELD(post)
+    FREE_FIELD(block)
+}
+
+ForEachStmt::~ForEachStmt() {
+    FREE_FIELD(list)
+    FREE_FIELD(block)
+}
+
+MatchStmt::~MatchStmt() {
+    FREE_FIELD(cond)
+    for (auto&[a, b, c]:matches) {
+        FREE_FIELD(a)
+        FREE_FIELD(b)
+    }
+}
+
+ImportStmt::~ImportStmt() {
+    FREE_VEC(imports)
+}
+
+ExportStmt::~ExportStmt() {
+    FREE_VEC(exports)
+}

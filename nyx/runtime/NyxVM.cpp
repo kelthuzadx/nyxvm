@@ -11,7 +11,9 @@
 
 const char *((NyxVM::builtin[])[2]) = {
         {"nyxffi_println", (const char *) nyxffi_println},
-        {"nyxffi_print",   (const char *) nyxffi_print}
+        {"nyxffi_print",   (const char *) nyxffi_print},
+        {"nyxffi_typeof",  (const char *) nyxffi_typeof},
+        {"nyxffi_len",     (const char *) nyxffi_len}
 };
 
 void NyxVM::ignition(const char *script) {

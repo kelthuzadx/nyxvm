@@ -8,7 +8,7 @@ class BytecodeDump {
 private:
     std::ofstream ofs;
 public:
-    BytecodeDump(const std::string &logPath);
+    explicit BytecodeDump(const std::string &logPath);
 
     ~BytecodeDump();
 

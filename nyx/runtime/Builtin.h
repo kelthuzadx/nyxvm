@@ -17,4 +17,9 @@ extern "C" Object *nyxffi_println(int argc, Object **argv);
 // Internal string representation of given object's type
 //===----------------------------------------------------------------------===//
 extern "C" Object *nyxffi_typeof(int argc, Object **argv);
+
+//===----------------------------------------------------------------------===//
+// length of the array or string
+//===----------------------------------------------------------------------===//
+extern "C" Object *nyxffi_len(int argc, Object **argv);
 #endif //NYX_BUILTIN_H

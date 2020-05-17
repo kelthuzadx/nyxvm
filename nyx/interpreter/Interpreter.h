@@ -35,7 +35,7 @@ public:
 
     ~Interpreter();
 
-    void execute(Bytecode* bytecode);
+    void execute(Bytecode *bytecode);
 };
 
 template<int Operation>

@@ -9,6 +9,7 @@ private:
     std::ofstream ofs;
 public:
     BytecodeDump(const std::string &logPath);
+
     ~BytecodeDump();
 
     void dump(Bytecode *bytecode);

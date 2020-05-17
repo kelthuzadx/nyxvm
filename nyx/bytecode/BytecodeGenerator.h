@@ -81,7 +81,7 @@ private:
 private:
     Bytecode *generate(FuncDef *node);
 
-    void fixupBytecode(const std::string& funcName);
+    void fixupBytecode(const std::string &funcName);
 
     void constInt(nyx::int32 integer);
 

@@ -74,8 +74,8 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
 
                     const char *funcPtr = NyxVM::findBuiltin(funcName);
                     if (funcPtr != nullptr) {
-                        ((void (*)(int, Object **)) funcPtr)(funcArgc, funcArgv);
-
+                        Object *result = ((Object *(*)(int, Object **)) funcPtr)(funcArgc, funcArgv);
+                        frame->push(result);
                     } else {
                         if (auto iter = bytecode->functions.find(funcName);iter != bytecode->functions.cend()) {
                             Bytecode *userFunc = iter->second;
@@ -294,5 +294,5 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
 
 void Interpreter::execute(Bytecode *bytecode) {
     PhaseTime timer("execute bytecodes via simple c++ interpreter");
-    execute(bytecode,0,nullptr);
+    execute(bytecode, 0, nullptr);
 }

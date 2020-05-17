@@ -6,12 +6,15 @@ struct Object;
 //===----------------------------------------------------------------------===//
 // Print arbitrary arguments to standard output device
 //===----------------------------------------------------------------------===//
-extern "C" void nyxffi_print(int argc, Object **argv);
+extern "C" Object *nyxffi_print(int argc, Object **argv);
 
 //===----------------------------------------------------------------------===//
 // Print arbitrary arguments to standard output device with a line break char
 //===----------------------------------------------------------------------===//
-extern "C" void nyxffi_println(int argc, Object **argv);
+extern "C" Object *nyxffi_println(int argc, Object **argv);
 
-
+//===----------------------------------------------------------------------===//
+// Internal string representation of given object's type
+//===----------------------------------------------------------------------===//
+extern "C" Object *nyxffi_typeof(int argc, Object **argv);
 #endif //NYX_BUILTIN_H

@@ -22,151 +22,151 @@ void BytecodeDump::dump(Bytecode *bytecode) {
                     int funcNameIndex = bytecodes[bci + 1];
                     int funcArgc = bytecodes[bci + 2];
                     std::string funcName = bytecode->strings[funcNameIndex];
-                    ofs<< bci<<":"<<"call "<<funcName<<" "<< funcArgc<<"\n";
+                    ofs << bci << ":" << "call " << funcName << " " << funcArgc << "\n";
                     bci += 2;
                     break;
                 }
                 case CONST_I: {
                     nyx::int32 value = *(nyx::int32 *) (bytecodes + bci + 1);
-                    ofs<< bci<<":"<<"const_i "<<value<<"\n";
+                    ofs << bci << ":" << "const_i " << value << "\n";
                     bci += 4;
                     break;
                 }
                 case CONST_D: {
                     double value = *(double *) (bytecodes + bci + 1);
-                    ofs<< bci<<":"<<"const_d "<<value<<"\n";
+                    ofs << bci << ":" << "const_d " << value << "\n";
                     bci += 8;
                     break;
                 }
                 case CONST_NULL: {
-                    ofs<< bci<<":"<<"const_null"<<"\n";
+                    ofs << bci << ":" << "const_null" << "\n";
                     break;
                 }
                 case CONST_STR: {
                     int index = bytecodes[bci + 1];
                     auto &str = bytecode->strings[index];
-                    ofs<< bci<<":"<<"const_str '"<<str<<"'\n";
+                    ofs << bci << ":" << "const_str '" << str << "'\n";
                     bci++;
                     break;
                 }
                 case ADD: {
-                    ofs<< bci<<":"<<"add"<<"\n";
+                    ofs << bci << ":" << "add" << "\n";
                     break;
                 }
                 case SUB: {
-                    ofs<< bci<<":"<<"sub"<<"\n";
+                    ofs << bci << ":" << "sub" << "\n";
                     break;
                 }
                 case MUL: {
-                    ofs<< bci<<":"<<"mul"<<"\n";
+                    ofs << bci << ":" << "mul" << "\n";
                     break;
                 }
                 case DIV: {
-                    ofs<< bci<<":"<<"div"<<"\n";
+                    ofs << bci << ":" << "div" << "\n";
                     break;
                 }
                 case REM: {
-                    ofs<< bci<<":"<<"rem"<<"\n";
+                    ofs << bci << ":" << "rem" << "\n";
                     break;
                 }
                 case TEST_EQ: {
-                    ofs<< bci<<":"<<"test_eq"<<"\n";
+                    ofs << bci << ":" << "test_eq" << "\n";
                     break;
                 }
                 case TEST_NE: {
-                    ofs<< bci<<":"<<"test_ne"<<"\n";
+                    ofs << bci << ":" << "test_ne" << "\n";
                     break;
                 }
                 case TEST_GE: {
-                    ofs<< bci<<":"<<"test_ge"<<"\n";
+                    ofs << bci << ":" << "test_ge" << "\n";
                     break;
                 }
                 case TEST_GT: {
-                    ofs<< bci<<":"<<"test_gt"<<"\n";
+                    ofs << bci << ":" << "test_gt" << "\n";
                     break;
                 }
                 case TEST_LE: {
-                    ofs<< bci<<":"<<"test_le"<<"\n";
+                    ofs << bci << ":" << "test_le" << "\n";
                     break;
                 }
                 case TEST_LT: {
-                    ofs<< bci<<":"<<"test_lt"<<"\n";
+                    ofs << bci << ":" << "test_lt" << "\n";
                     break;
                 }
                 case JMP: {
                     int target = bytecodes[bci + 1];
-                    ofs<< bci<<":"<<"jmp "<<target<<"\n";
+                    ofs << bci << ":" << "jmp " << target << "\n";
                     bci++;
                     break;
                 }
                 case JMP_NE: {
                     int target = bytecodes[bci + 1];
-                    ofs<< bci<<":"<<"jmp_ne "<<target<<"\n";
+                    ofs << bci << ":" << "jmp_ne " << target << "\n";
                     bci++;
                     break;
                 }
                 case JMP_EQ: {
                     int target = bytecodes[bci + 1];
-                    ofs<< bci<<":"<<"jmp_eq "<<target<<"\n";
+                    ofs << bci << ":" << "jmp_eq " << target << "\n";
                     bci++;
                     break;
                 }
                 case AND: {
-                    ofs<< bci<<":"<<"and"<<"\n";
+                    ofs << bci << ":" << "and" << "\n";
                     break;
                 }
                 case OR: {
-                    ofs<< bci<<":"<<"or"<<"\n";
+                    ofs << bci << ":" << "or" << "\n";
                     break;
                 }
                 case NOT: {
-                    ofs<< bci<<":"<<"not"<<"\n";
+                    ofs << bci << ":" << "not" << "\n";
                     break;
                 }
                 case NEG: {
-                    ofs<< bci<<":"<<"neg"<<"\n";
+                    ofs << bci << ":" << "neg" << "\n";
                     break;
                 }
                 case LOAD: {
                     int index = bytecodes[bci + 1];
-                    ofs<< bci<<":"<<"load "<<index<<"\n";
+                    ofs << bci << ":" << "load " << index << "\n";
                     bci++;
                     break;
                 }
                 case STORE: {
                     int index = bytecodes[bci + 1];
-                    ofs<< bci<<":"<<"store "<<index<<"\n";
+                    ofs << bci << ":" << "store " << index << "\n";
                     bci++;
                     break;
                 }
                 case LOAD_INDEX: {
-                    ofs<< bci<<":"<<"load_index"<<"\n";
+                    ofs << bci << ":" << "load_index" << "\n";
                     break;
                 }
                 case STORE_INDEX: {
-                    ofs<< bci<<":"<<"store_index"<<"\n";
+                    ofs << bci << ":" << "store_index" << "\n";
                     break;
                 }
                 case NEW_ARR: {
                     int length = bytecodes[bci + 1];
-                    ofs<< bci<<":"<<"new_array "<<length<<"\n";
+                    ofs << bci << ":" << "new_array " << length << "\n";
                     bci++;
                     break;
                 }
                 case DUP: {
-                    ofs<< bci<<":"<<"dup"<<"\n";
+                    ofs << bci << ":" << "dup" << "\n";
                     break;
                 }
                 case RETURN: {
-                    ofs<< bci<<":"<<"return"<<"\n";
+                    ofs << bci << ":" << "return" << "\n";
                     break;
                 }
                 case RETURN_VAL: {
-                    ofs<< bci<<":"<<"return_val"<<"\n";
+                    ofs << bci << ":" << "return_val" << "\n";
                     break;
                 }
                 default:
-                    ofs<< bci<<":"<<"<illegal>"<<"\n";
+                    ofs << bci << ":" << "<illegal>" << "\n";
                     break;
             }
         }

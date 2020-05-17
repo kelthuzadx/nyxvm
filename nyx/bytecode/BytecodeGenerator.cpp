@@ -551,7 +551,7 @@ BytecodeGenerator::BytecodeGenerator() {
     this->local = 0;
 }
 
-void BytecodeGenerator::fixupBytecode(const std::string& funcName) {
+void BytecodeGenerator::fixupBytecode(const std::string &funcName) {
     bytecode->bytecodeSize = bci;
     bytecode->localSize = local;
     bytecode->funcName = funcName;

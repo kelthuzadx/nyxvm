@@ -28,3 +28,9 @@ void Frame::load(int index) {
 void Frame::store(int index, Object *value) {
     local[index] = value;
 }
+
+void Frame::dup() {
+    Object *object = pop();
+    push(object);
+    push(object);
+}

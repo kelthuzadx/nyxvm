@@ -1,4 +1,10 @@
-
+arr=[3,5.8,"sss"]
+arr[0]  =111
+println(arr[0])
+arr[0] = 1234567890
+println(arr[0])
+println(arr[1])
+println(arr[2])
 func hello(a,b){
     println("hello")
     println(a)

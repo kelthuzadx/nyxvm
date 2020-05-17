@@ -230,6 +230,30 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     bci++;
                     break;
                 }
+                case LOAD_INDEX: {
+                    auto *length = dynamic_cast<NInt *>(frame->pop());
+                    auto *array = dynamic_cast<NArray *>(frame->pop());
+                    auto *elem = array->array[length->value];
+                    frame->push(elem);
+                    break;
+                }
+                case STORE_INDEX: {
+                    auto *elemIndex = dynamic_cast<NInt *>(frame->pop());
+                    auto *object = frame->pop();
+                    auto *array = dynamic_cast<NArray *>(frame->pop());
+                    array->array[elemIndex->value] = object;
+                    break;
+                }
+                case NEW_ARR: {
+                    int length = bytecodes[bci + 1];
+                    frame->push(new NArray(length));
+                    bci++;
+                    break;
+                }
+                case DUP: {
+                    frame->dup();
+                    break;
+                }
                 default:
                     panic("invalid bytecode %d", bytecodes[bci]);
             }

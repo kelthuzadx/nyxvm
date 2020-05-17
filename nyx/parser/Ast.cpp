@@ -60,7 +60,7 @@ std::string IntExpr::to_string() const {
 }
 
 std::string IndexExpr::to_string() const {
-    std::string str("IntExpr{");
+    std::string str("IndexExpr{");
     str += identName;
     str += "}";
     return std::move(str);

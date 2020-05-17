@@ -21,6 +21,8 @@ public:
     void load(int index);
 
     void store(int index, Object *value);
+
+    void dup();
 };
 
 #endif //NYX_FRAME_H

@@ -110,6 +110,16 @@ void BytecodeGenerator::visitStringExpr(StringExpr *node) {
 }
 
 void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {
+    bytecode->bytecodes[bci++] = NEW_ARR;
+    bytecode->bytecodes[bci++] = node->literal.size();
+    for (int i = 0; i < node->literal.size(); i++) {
+        bytecode->bytecodes[bci++] = DUP;
+        node->literal[i]->visit(this);
+        bytecode->bytecodes[bci++] = CONST_I;
+        *(nyx::int32 *) (bytecode->bytecodes + bci) = i;
+        bci += 4;
+        bytecode->bytecodes[bci++] = STORE_INDEX;
+    }
 }
 
 void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {
@@ -121,7 +131,16 @@ void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {
     bytecode->bytecodes[bci++] = localIndex;
 }
 
-void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {}
+void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {
+    if (auto iter = localMap.find(node->identName);iter == localMap.cend()) {
+        panic("variable undefined but using");
+    }
+    int localIndex = localMap[node->identName];
+    bytecode->bytecodes[bci++] = LOAD;
+    bytecode->bytecodes[bci++] = localIndex;
+    node->index->visit(this);
+    bytecode->bytecodes[bci++] = LOAD_INDEX;
+}
 
 void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
     if (node->rhs == nullptr) {
@@ -232,12 +251,18 @@ void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
 }
 
 void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
-    node->rhs->visit(this);
     if (typeid(*node->lhs) == typeid(IndexExpr)) {
         // Array element
-        panic("shout not reach here");
+        auto *t = dynamic_cast<IndexExpr *>(node->lhs);
+        int localIndex = localMap[t->identName];
+        bytecode->bytecodes[bci++] = LOAD;
+        bytecode->bytecodes[bci++] = localIndex;
+        node->rhs->visit(this);
+        t->index->visit(this);
+        bytecode->bytecodes[bci++] = STORE_INDEX;
     } else if (typeid(*node->lhs) == typeid(IdentExpr)) {
         // Normal variable
+        node->rhs->visit(this);
         auto *t = dynamic_cast<IdentExpr *>(node->lhs);
         bytecode->bytecodes[bci++] = STORE;
         int localIndex = local++;
@@ -362,7 +387,6 @@ void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {}
 void BytecodeGenerator::visitImportStmt(ImportStmt *node) {}
 
 void BytecodeGenerator::visitExportStmt(ExportStmt *node) {}
-
 
 BytecodeGenerator::BytecodeGenerator() {
     this->bytecode = new Bytecode;

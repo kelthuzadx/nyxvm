@@ -72,15 +72,11 @@ void BytecodeGenerator::visitCompilationUnit(CompilationUnit *node) {
 }
 
 void BytecodeGenerator::visitBoolExpr(BoolExpr *node) {
-    bytecode->bytecodes[bci++] = CONST_I;
-    *(nyx::int32 *) (bytecode->bytecodes + bci) = node->literal;
-    bci += 4;
+    constInt(node->literal);
 }
 
 void BytecodeGenerator::visitCharExpr(CharExpr *node) {
-    bytecode->bytecodes[bci++] = CONST_I;
-    *(nyx::int32 *) (bytecode->bytecodes + bci) = node->literal;
-    bci += 4;
+    constInt(node->literal);
 }
 
 void BytecodeGenerator::visitNullExpr(NullExpr *node) {
@@ -88,9 +84,7 @@ void BytecodeGenerator::visitNullExpr(NullExpr *node) {
 }
 
 void BytecodeGenerator::visitIntExpr(IntExpr *node) {
-    bytecode->bytecodes[bci++] = CONST_I;
-    *(nyx::int32 *) (bytecode->bytecodes + bci) = node->literal;
-    bci += 4;
+    constInt(node->literal);
 }
 
 void BytecodeGenerator::visitExpr(Expr *expr) {
@@ -115,9 +109,7 @@ void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {
     for (int i = 0; i < node->literal.size(); i++) {
         bytecode->bytecodes[bci++] = DUP;
         node->literal[i]->visit(this);
-        bytecode->bytecodes[bci++] = CONST_I;
-        *(nyx::int32 *) (bytecode->bytecodes + bci) = i;
-        bci += 4;
+        constInt(i);
         bytecode->bytecodes[bci++] = STORE_INDEX;
     }
 }
@@ -127,8 +119,7 @@ void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {
         panic("variable undefined but using");
     }
     int localIndex = localMap[node->identName];
-    bytecode->bytecodes[bci++] = LOAD;
-    bytecode->bytecodes[bci++] = localIndex;
+    varLoad(localIndex);
 }
 
 void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {
@@ -136,8 +127,7 @@ void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {
         panic("variable undefined but using");
     }
     int localIndex = localMap[node->identName];
-    bytecode->bytecodes[bci++] = LOAD;
-    bytecode->bytecodes[bci++] = localIndex;
+    varLoad(localIndex);
     node->index->visit(this);
     bytecode->bytecodes[bci++] = LOAD_INDEX;
 }
@@ -255,8 +245,7 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
         // Array element
         auto *t = dynamic_cast<IndexExpr *>(node->lhs);
         int localIndex = localMap[t->identName];
-        bytecode->bytecodes[bci++] = LOAD;
-        bytecode->bytecodes[bci++] = localIndex;
+        varLoad(localIndex);
         node->rhs->visit(this);
         t->index->visit(this);
         bytecode->bytecodes[bci++] = STORE_INDEX;
@@ -388,6 +377,18 @@ void BytecodeGenerator::visitImportStmt(ImportStmt *node) {}
 
 void BytecodeGenerator::visitExportStmt(ExportStmt *node) {}
 
+void BytecodeGenerator::constInt(nyx::int32 integer) {
+    bytecode->bytecodes[bci++] = CONST_I;
+    *(nyx::int32 *) (bytecode->bytecodes + bci) = integer;
+    bci += 4;
+}
+
+void BytecodeGenerator::varLoad(int localIndex) {
+    bytecode->bytecodes[bci++] = LOAD;
+    bytecode->bytecodes[bci++] = localIndex;
+}
+
+
 BytecodeGenerator::BytecodeGenerator() {
     this->bytecode = new Bytecode;
     this->bci = 0;
@@ -398,7 +399,6 @@ void BytecodeGenerator::fixupBytecode() {
     bytecode->bytecodeSize = bci;
     bytecode->localSize = local;
 }
-
 
 Bytecode *BytecodeGenerator::generate(CompilationUnit *unit) {
     {

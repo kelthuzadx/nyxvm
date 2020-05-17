@@ -266,10 +266,10 @@ void Interpreter::bitop(Object *o1, Object *o2) {
     auto *t1 = dynamic_cast<NInt *>(o1);
     auto *t2 = dynamic_cast<NInt *>(o2);
     if (Operation == AND) {
-        auto *res = new NInt((nyx::int32)(t1->value & t2->value));
+        auto *res = new NInt((nyx::int32) (t1->value & t2->value));
         frame->push(res);
     } else if (Operation == OR) {
-        auto *res = new NInt((nyx::int32)(t1->value | t2->value));
+        auto *res = new NInt((nyx::int32) (t1->value | t2->value));
         frame->push(res);
     } else {
         panic("should not reach here");

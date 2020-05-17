@@ -83,6 +83,10 @@ private:
 
     void fixupBytecode();
 
+    void constInt(nyx::int32 integer);
+
+    void varLoad(int localIndex);
+
 public:
     explicit BytecodeGenerator();
 

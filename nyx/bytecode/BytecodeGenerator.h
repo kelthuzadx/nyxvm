@@ -87,6 +87,13 @@ private:
 
     void varLoad(int localIndex);
 
+    void varStore(int localIndex);
+
+    bool isShortCircuitAnd(Expr *expr);
+
+    bool isShortCircuitOr(Expr *expr);
+
+
 public:
     explicit BytecodeGenerator();
 

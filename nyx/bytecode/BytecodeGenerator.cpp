@@ -244,19 +244,73 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
     if (typeid(*node->lhs) == typeid(IndexExpr)) {
         // Array element
         auto *t = dynamic_cast<IndexExpr *>(node->lhs);
-        int localIndex = localMap[t->identName];
-        varLoad(localIndex);
-        node->rhs->visit(this);
-        t->index->visit(this);
-        bytecode->bytecodes[bci++] = STORE_INDEX;
+        if (node->opt == TK_ASSIGN) {
+            varLoad(localMap[t->identName]);
+            node->rhs->visit(this);
+            t->index->visit(this);
+            bytecode->bytecodes[bci++] = STORE_INDEX;
+        } else {
+            varLoad(localMap[t->identName]);
+            varLoad(localMap[t->identName]);
+            t->index->visit(this);
+            bytecode->bytecodes[bci++] = LOAD_INDEX;
+            node->rhs->visit(this);
+            switch (node->opt) {
+                case TK_PLUS_AGN:
+                    bytecode->bytecodes[bci++] = ADD;
+                    break;
+                case TK_MINUS_AGN:
+                    bytecode->bytecodes[bci++] = SUB;
+                    break;
+                case TK_TIMES_AGN:
+                    bytecode->bytecodes[bci++] = MUL;
+                    break;
+                case TK_DIV_AGN:
+                    bytecode->bytecodes[bci++] = DIV;
+                    break;
+                case TK_MOD_AGN:
+                    bytecode->bytecodes[bci++] = REM;
+                    break;
+                default:
+                    panic("should not reach here");
+            }
+            t->index->visit(this);
+            bytecode->bytecodes[bci++] = STORE_INDEX;
+        }
+
     } else if (typeid(*node->lhs) == typeid(IdentExpr)) {
         // Normal variable
-        node->rhs->visit(this);
         auto *t = dynamic_cast<IdentExpr *>(node->lhs);
-        bytecode->bytecodes[bci++] = STORE;
-        int localIndex = local++;
-        localMap.insert(std::make_pair(t->identName, localIndex));
-        bytecode->bytecodes[bci++] = localIndex;
+        if (node->opt == TK_ASSIGN) {
+            node->rhs->visit(this);
+            bytecode->bytecodes[bci++] = STORE;
+            int localIndex = local++;
+            localMap.insert(std::make_pair(t->identName, localIndex));
+            bytecode->bytecodes[bci++] = localIndex;
+        } else {
+            varLoad(localMap[t->identName]);
+            node->rhs->visit(this);
+            switch (node->opt) {
+                case TK_PLUS_AGN:
+                    bytecode->bytecodes[bci++] = ADD;
+                    break;
+                case TK_MINUS_AGN:
+                    bytecode->bytecodes[bci++] = SUB;
+                    break;
+                case TK_TIMES_AGN:
+                    bytecode->bytecodes[bci++] = MUL;
+                    break;
+                case TK_DIV_AGN:
+                    bytecode->bytecodes[bci++] = DIV;
+                    break;
+                case TK_MOD_AGN:
+                    bytecode->bytecodes[bci++] = REM;
+                    break;
+                default:
+                    panic("should not reach here");
+            }
+            varStore(localMap[t->identName]);
+        }
     }
 }
 
@@ -285,66 +339,67 @@ void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
 }
 
 void BytecodeGenerator::visitIfStmt(IfStmt *node) {
-    if (typeid(*(node->cond)) == typeid(BinaryExpr)) {
+    if (isShortCircuitAnd(node->cond)) {
         auto *shortCircuit = dynamic_cast<BinaryExpr *>(node->cond);
-        if (shortCircuit->opt == TK_LOGAND) {
-            if (node->elseBlock == nullptr) {
-                Label L_out(this);
+        if (node->elseBlock == nullptr) {
+            Label L_out(this);
 
-                shortCircuit->lhs->visit(this);
-                Jmp j1(this, &L_out, JMP_NE);
-                shortCircuit->rhs->visit(this);
-                Jmp j2(this, &L_out, JMP_NE);
-                node->block->visit(this);
-                L_out();
-            } else {
-                Label L_out(this);
-                Label L_else(this);
+            shortCircuit->lhs->visit(this);
+            Jmp j1(this, &L_out, JMP_NE);
+            shortCircuit->rhs->visit(this);
+            Jmp j2(this, &L_out, JMP_NE);
+            node->block->visit(this);
+            L_out();
+        } else {
+            Label L_out(this);
+            Label L_else(this);
 
-                shortCircuit->lhs->visit(this);
-                Jmp j1(this, &L_else, JMP_NE);
-                shortCircuit->rhs->visit(this);
-                Jmp j2(this, &L_else, JMP_NE);
-                node->block->visit(this);
-                Jmp j3(this, &L_out, JMP);
-                L_else();
-                node->elseBlock->visit(this);
-                L_out();
-            }
-            return;
-        } else if (shortCircuit->opt == TK_LOGOR) {
-            if (node->elseBlock == nullptr) {
-                Label L_then(this);
-                Label L_out(this);
-
-                shortCircuit->lhs->visit(this);
-                Jmp j1(this, &L_then, JMP_EQ);
-                shortCircuit->rhs->visit(this);
-                Jmp j2(this, &L_then, JMP_EQ);
-                Jmp j3(this, &L_out, JMP);
-                L_then();
-                node->block->visit(this);
-                L_out();
-            } else {
-                Label L_out(this);
-                Label L_else(this);
-                Label L_then(this);
-
-                shortCircuit->lhs->visit(this);
-                Jmp j1(this, &L_then, JMP_EQ);
-                shortCircuit->rhs->visit(this);
-                Jmp j2(this, &L_then, JMP_EQ);
-                Jmp j3(this, &L_else, JMP);
-                L_then();
-                node->block->visit(this);
-                Jmp j4(this, &L_out, JMP);
-                L_else();
-                node->elseBlock->visit(this);
-                L_out();
-            }
-            return;
+            shortCircuit->lhs->visit(this);
+            Jmp j1(this, &L_else, JMP_NE);
+            shortCircuit->rhs->visit(this);
+            Jmp j2(this, &L_else, JMP_NE);
+            node->block->visit(this);
+            Jmp j3(this, &L_out, JMP);
+            L_else();
+            node->elseBlock->visit(this);
+            L_out();
         }
+        return;
     }
+    if (isShortCircuitOr(node->cond)) {
+        auto *shortCircuit = dynamic_cast<BinaryExpr *>(node->cond);
+        if (node->elseBlock == nullptr) {
+            Label L_then(this);
+            Label L_out(this);
+
+            shortCircuit->lhs->visit(this);
+            Jmp j1(this, &L_then, JMP_EQ);
+            shortCircuit->rhs->visit(this);
+            Jmp j2(this, &L_then, JMP_EQ);
+            Jmp j3(this, &L_out, JMP);
+            L_then();
+            node->block->visit(this);
+            L_out();
+        } else {
+            Label L_out(this);
+            Label L_else(this);
+            Label L_then(this);
+
+            shortCircuit->lhs->visit(this);
+            Jmp j1(this, &L_then, JMP_EQ);
+            shortCircuit->rhs->visit(this);
+            Jmp j2(this, &L_then, JMP_EQ);
+            Jmp j3(this, &L_else, JMP);
+            L_then();
+            node->block->visit(this);
+            Jmp j4(this, &L_out, JMP);
+            L_else();
+            node->elseBlock->visit(this);
+            L_out();
+        }
+        return;
+    }
+
     node->cond->visit(this);
     if (node->elseBlock == nullptr) {
         Label L_out(this);
@@ -366,7 +421,68 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
     }
 }
 
-void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {}
+void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
+    /**
+ * cond:
+ * lhs:
+ * jmp_eq then
+ * rhs
+ * jmp_eq then
+ * jmp out
+ * then:
+ * <block>
+ * jmp cond
+ * out:
+ * */
+
+    if (isShortCircuitAnd(node->cond)) {
+        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        Label L_cond(this);
+        Label L_out(this);
+
+        t->lhs->visit(this);
+        Jmp j1(this, &L_out, JMP_NE);
+        t->rhs->visit(this);
+        Jmp j2(this, &L_out, JMP_NE);
+        node->block->visit(this);
+        Jmp j3(this, &L_cond, JMP);
+        L_out();
+        return;
+    }
+    if (isShortCircuitOr(node->cond)) {
+        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        Label L_cond(this);
+        Label L_out(this);
+        Label L_then(this);
+        t->lhs->visit(this);
+        Jmp j1(this, &L_then, JMP_EQ);
+        t->rhs->visit(this);
+        Jmp j2(this, &L_then, JMP_EQ);
+        Jmp j3(this, &L_out, JMP);
+        L_then();
+        node->block->visit(this);
+        Jmp j4(this, &L_cond, JMP);
+        L_out();
+        return;
+    }
+    // normal condition
+    /**
+     * cond:
+     * <cond>
+     * jmp_ne out
+     * <block>
+     * jmp cond
+     * out
+     */
+    Label L_cond(this);
+    Label L_out(this);
+
+    node->cond->visit(this);
+    Jmp j1(this, &L_out, JMP_NE);
+    node->block->visit(this);
+    Jmp j2(this, &L_cond, JMP);
+    L_out();
+}
 
 void BytecodeGenerator::visitForStmt(ForStmt *node) {}
 
@@ -389,6 +505,10 @@ void BytecodeGenerator::varLoad(int localIndex) {
     bytecode->bytecodes[bci++] = localIndex;
 }
 
+void BytecodeGenerator::varStore(int localIndex) {
+    bytecode->bytecodes[bci++] = STORE;
+    bytecode->bytecodes[bci++] = localIndex;
+}
 
 BytecodeGenerator::BytecodeGenerator() {
     this->bytecode = new Bytecode;
@@ -423,3 +543,19 @@ Bytecode *BytecodeGenerator::generate(FuncDef *node) {
     // don't delete node, it's responsibility of public generate() API
     return bytecode;
 }
+
+bool BytecodeGenerator::isShortCircuitOr(Expr *expr) {
+    if (typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGOR) {
+        return true;
+    }
+    return false;
+}
+
+bool BytecodeGenerator::isShortCircuitAnd(Expr *expr) {
+    if (typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGAND) {
+        return true;
+    }
+    return false;
+}
+
+

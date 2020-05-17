@@ -30,7 +30,7 @@ void Interpreter::neg(Object *object) {
     }
 }
 
-void Interpreter::createFrame(Bytecode *bytecode, int argc, Object **argv){
+void Interpreter::createFrame(Bytecode *bytecode, int argc, Object **argv) {
     // Create execution frame
     this->frame = new Frame(bytecode->localSize);
     for (int i = argc - 1, k = 0; i >= 0; i--, k++) {
@@ -52,7 +52,7 @@ void Interpreter::destroyFrame() {
 }
 
 void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
-    createFrame(bytecode,argc,argv);
+    createFrame(bytecode, argc, argv);
 
 
     // Set up bytecode size and max length

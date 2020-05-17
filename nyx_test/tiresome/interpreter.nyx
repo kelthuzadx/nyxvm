@@ -32,8 +32,14 @@ println("---")
 if(true||false){
 println("ok")
 }
+if(false||false){
+println("false")
+}
+if(false||true){
+println("true")
+}
 println("---")
-if(true&&true){println("ok1")}
+if(true&&true){println("true&&true")}
 if(true&&false){println("should not happen")}
 if(false||false){println("should not happen")}
-println("---")
+println("---xx-----")

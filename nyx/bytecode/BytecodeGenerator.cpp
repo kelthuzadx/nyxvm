@@ -270,17 +270,60 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
     if (typeid(*(node->cond)) == typeid(BinaryExpr)) {
         auto *shortCircuit = dynamic_cast<BinaryExpr *>(node->cond);
         if (shortCircuit->opt == TK_LOGAND) {
-/**
- * &&
- * cond1
- * jmp_ne out
- * cond2
- * jmp_ne out
- * <then>
- * jmp
- */
+            if (node->elseBlock == nullptr) {
+                Label L_out(this);
+
+                shortCircuit->lhs->visit(this);
+                Jmp j1(this, &L_out, JMP_NE);
+                shortCircuit->rhs->visit(this);
+                Jmp j2(this, &L_out, JMP_NE);
+                node->block->visit(this);
+                L_out();
+            } else {
+                Label L_out(this);
+                Label L_else(this);
+
+                shortCircuit->lhs->visit(this);
+                Jmp j1(this, &L_else, JMP_NE);
+                shortCircuit->rhs->visit(this);
+                Jmp j2(this, &L_else, JMP_NE);
+                node->block->visit(this);
+                Jmp j3(this, &L_out, JMP);
+                L_else();
+                node->elseBlock->visit(this);
+                L_out();
+            }
             return;
         } else if (shortCircuit->opt == TK_LOGOR) {
+            if (node->elseBlock == nullptr) {
+                Label L_then(this);
+                Label L_out(this);
+
+                shortCircuit->lhs->visit(this);
+                Jmp j1(this, &L_then, JMP_EQ);
+                shortCircuit->rhs->visit(this);
+                Jmp j2(this, &L_then, JMP_EQ);
+                Jmp j3(this, &L_out, JMP);
+                L_then();
+                node->block->visit(this);
+                L_out();
+            } else {
+                Label L_out(this);
+                Label L_else(this);
+                Label L_then(this);
+
+                shortCircuit->lhs->visit(this);
+                Jmp j1(this, &L_then, JMP_EQ);
+                shortCircuit->rhs->visit(this);
+                Jmp j2(this, &L_then, JMP_EQ);
+                Jmp j3(this, &L_else, JMP);
+                L_then();
+                node->block->visit(this);
+                Jmp j4(this, &L_out, JMP);
+                L_else();
+                node->elseBlock->visit(this);
+                L_out();
+            }
             return;
         }
     }

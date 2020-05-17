@@ -66,6 +66,7 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
             } else {
                 panic("should not reach here");
             }
+            break;
         case SUB:
             if (typeid(*o1) == typeid(NInt)) {
                 NInt *t1 = dynamic_cast<NInt *>(o1);

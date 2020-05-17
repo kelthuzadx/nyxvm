@@ -12,7 +12,6 @@ enum Opcode {
     CONST_D,
     CONST_STR,
     NEG,
-    TEST,
     TEST_EQ,
     TEST_NE,
     TEST_GE,
@@ -28,9 +27,10 @@ enum Opcode {
     DIV,
     REM,
     RETURN,
-
     LOAD,
     STORE,
+    LOAD_INDEX,
+    STORE_INDEX,
 };
 
 #endif //NYX_OPCODE_H

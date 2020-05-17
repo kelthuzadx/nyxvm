@@ -19,3 +19,11 @@ std::string NDouble::toString() {
 std::string NString::toString() {
     return value;
 }
+
+NArray::~NArray() {
+    delete[] array;
+}
+
+NArray::NArray(int length) {
+    array = new Object *[length];
+}

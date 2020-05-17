@@ -4,31 +4,36 @@ println(44.4+444.2)
 println(33-22)
 println(434*5523)
 println(4/3.0)
-
-
-if(80>30){
+println(6%4)
+println("---ok")
+if(80>130){
     println(5678)
 }else{
     println(1234)
 }
-
+println("---false")
 if(!true){
 println(-(-33))
 println(33)
 }
-
+if(!false){
+println(-(-334))
+println(334)
+}
+println("---bitopt")
 println(3&4)
 println(3&3)
 println(~3)
-
+println("---")
 a = 6666.0
 b = 6666.0
 if(a==b){ println("string contents")}else{println("another string contents")}
-
+println("---")
 if(true||false){
 println("ok")
 }
-
+println("---")
 if(true&&true){println("ok1")}
 if(true&&false){println("should not happen")}
 if(false||false){println("should not happen")}
+println("---")

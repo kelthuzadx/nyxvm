@@ -38,5 +38,12 @@ struct NString : public Object {
     std::string toString() override;
 };
 
+struct NArray : public Object {
+    explicit NArray(int length);
+
+    ~NArray();
+
+    Object **array;
+};
 
 #endif //NYX_OBJECT_H

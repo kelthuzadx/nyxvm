@@ -1,6 +1,54 @@
 #include "BytecodeGenerator.h"
 #include "Opcode.h"
 
+class Label;
+
+class Jmp {
+private:
+    int patching;
+public:
+    explicit Jmp(BytecodeGenerator *gen, Label *label, Opcode opcode);
+
+    int getPatching() const { return patching; }
+};
+
+class Label {
+private:
+    int destination;
+    BytecodeGenerator *gen;
+    std::vector<Jmp *> allJump;
+public:
+    explicit Label(BytecodeGenerator *gen) {
+        this->gen = gen;
+        this->destination = gen->bci;
+    }
+
+    void operator()() {
+        // reset destination
+        this->destination = gen->bci;
+    }
+
+    void addJump(Jmp *jmp) { allJump.push_back(jmp); }
+
+    ~Label();
+};
+
+Label::~Label() {
+    for (auto &i : allJump) {
+        gen->bytecode->bytecodes[i->getPatching()] = destination;
+    }
+}
+
+Jmp::Jmp(BytecodeGenerator *gen, Label *label, Opcode opcode) {
+    // Generate JMP* bytecode
+    gen->bytecode->bytecodes[gen->bci++] = opcode;
+    // Record JMP* target as patching address and temporarily set to -1
+    this->patching = gen->bci;
+    gen->bytecode->bytecodes[gen->bci++] = -1;
+    label->addJump(this);
+}
+
+
 void BytecodeGenerator::visitBlock(Block *node) {
     for (auto *stmt:node->stmts) {
         stmt->visit(this);
@@ -22,12 +70,14 @@ void BytecodeGenerator::visitCompilationUnit(CompilationUnit *node) {
 
 void BytecodeGenerator::visitBoolExpr(BoolExpr *node) {
     bytecode->bytecodes[bci++] = CONST_I;
-    bytecode->bytecodes[bci++] = (int) node->literal;
+    *(nyx::int32 *) (bytecode->bytecodes + bci) = node->literal;
+    bci += 4;
 }
 
 void BytecodeGenerator::visitCharExpr(CharExpr *node) {
     bytecode->bytecodes[bci++] = CONST_I;
-    bytecode->bytecodes[bci++] = (int) node->literal;
+    *(nyx::int32 *) (bytecode->bytecodes + bci) = node->literal;
+    bci += 4;
 }
 
 void BytecodeGenerator::visitNullExpr(NullExpr *node) {
@@ -46,10 +96,8 @@ void BytecodeGenerator::visitExpr(Expr *expr) {
 
 void BytecodeGenerator::visitDoubleExpr(DoubleExpr *node) {
     bytecode->bytecodes[bci++] = CONST_D;
-    for (int i = 0; i < 8; i++) {
-        bytecode->bytecodes[bci++] = (reinterpret_cast<nyx::int8 *>(&(node->literal)))[i];
-    }
-
+    *(double *) (bytecode->bytecodes + bci) = node->literal;
+    bci += 8;
 }
 
 void BytecodeGenerator::visitStringExpr(StringExpr *node) {
@@ -81,6 +129,9 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
                 bytecode->bytecodes[bci++] = NEG;
                 break;
             case TK_LOGNOT:
+                bytecode->bytecodes[bci++] = CONST_I;
+                *(nyx::int32 *) (bytecode->bytecodes + bci) = 1;
+                bci += 4;
                 bytecode->bytecodes[bci++] = TEST_NE;
                 break;
             case TK_BITNOT:
@@ -133,7 +184,7 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
             case TK_LE:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->bytecodes[bci++] = TEST_EQ;
+                bytecode->bytecodes[bci++] = TEST_LE;
                 break;
             case TK_PLUS:
                 node->lhs->visit(this);
@@ -210,39 +261,47 @@ void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
     if (node->retval == nullptr) {
         bytecode->bytecodes[bci++] = RETURN;
     } else {
-        node->retval->visit(this);
+        // TODO
     }
 
 }
 
 void BytecodeGenerator::visitIfStmt(IfStmt *node) {
     if (typeid(*(node->cond)) == typeid(BinaryExpr)) {
-        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
-        if (t->opt == TK_LOGAND || t->opt == TK_LOGOR) {
-            // TODO
+        auto *shortCircuit = dynamic_cast<BinaryExpr *>(node->cond);
+        if (shortCircuit->opt == TK_LOGAND) {
+/**
+ * &&
+ * cond1
+ * jmp_ne out
+ * cond2
+ * jmp_ne out
+ * <then>
+ * jmp
+ */
+            return;
+        } else if (shortCircuit->opt == TK_LOGOR) {
             return;
         }
     }
     node->cond->visit(this);
     if (node->elseBlock == nullptr) {
-        bytecode->bytecodes[bci++] = JMP_NE;
-        int patching = bci;
-        bytecode->bytecodes[bci++] = -1; // target, further patching
+        Label L_out(this);
+
+        Jmp j1(this, &L_out, JMP_NE);
         node->block->visit(this);
-        bytecode->bytecodes[patching] = bci;
+        L_out();
     } else {
-        bytecode->bytecodes[bci++] = JMP_NE;
-        int elsePatching = bci;
-        bytecode->bytecodes[bci++] = -1;
+        Label L_else(this);
+        Label L_out(this);
+
+        Jmp j1(this, &L_else, JMP_NE);
         node->block->visit(this);
-        bytecode->bytecodes[bci++] = JMP;
-        int normalPatching = bci;
-        bytecode->bytecodes[bci++] = -1;
-        bytecode->bytecodes[elsePatching] = bci;
+        Jmp j2(this, &L_out, JMP);
+        L_else();
         node->elseBlock->visit(this);
-        bytecode->bytecodes[bci++] = JMP;
-        bytecode->bytecodes[bci++] = bci + 1;
-        bytecode->bytecodes[normalPatching] = bci;
+        Jmp j3(this, &L_out, JMP);
+        L_out();
     }
 }
 

@@ -87,73 +87,68 @@ void Interpreter::execute() {
                 break;
             }
             case ADD: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 arithmetic<ADD>(object1, object2);
                 break;
             }
             case SUB: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 arithmetic<SUB>(object1, object2);
                 break;
             }
             case MUL: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 arithmetic<MUL>(object1, object2);
                 break;
             }
             case DIV: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 arithmetic<DIV>(object1, object2);
                 break;
             }
             case REM: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 arithmetic<REM>(object1, object2);
                 break;
             }
-            case TEST: {
-                Object *object1 = frame->pop();
-                compare<TEST>(object1, nullptr);
-                break;
-            }
             case TEST_EQ: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 compare<TEST_EQ>(object1, object2);
                 break;
             }
             case TEST_NE: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 compare<TEST_NE>(object1, object2);
                 break;
             }
             case TEST_GE: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 compare<TEST_GE>(object1, object2);
                 break;
             }
             case TEST_GT: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 compare<TEST_GT>(object1, object2);
                 break;
             }
             case TEST_LE: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 compare<TEST_LE>(object1, object2);
                 break;
             }
             case TEST_LT: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 compare<TEST_LT>(object1, object2);
                 break;
             }
@@ -189,14 +184,14 @@ void Interpreter::execute() {
                 break;
             }
             case AND: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 bitop<AND>(object1, object2);
                 break;
             }
             case OR: {
-                Object *object1 = frame->pop();
                 Object *object2 = frame->pop();
+                Object *object1 = frame->pop();
                 bitop<OR>(object1, object2);
                 break;
             }

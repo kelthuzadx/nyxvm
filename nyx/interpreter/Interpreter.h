@@ -52,6 +52,10 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value + t2->value);
                     frame->push(res);
+                } else if (typeid(*o2) == typeid(NString)) {
+                    auto *t2 = dynamic_cast<NString *>(o2);
+                    auto *res = new NString(std::to_string(t1->value) + t2->value);
+                    frame->push(res);
                 } else {
                     panic("should not reach here");
                 }
@@ -64,6 +68,27 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 } else if (typeid(*o2) == typeid(NDouble)) {
                     auto *t2 = dynamic_cast<NDouble *>(o2);
                     auto *res = new NDouble(t1->value + t2->value);
+                    frame->push(res);
+                } else if (typeid(*o2) == typeid(NString)) {
+                    auto *t2 = dynamic_cast<NString *>(o2);
+                    auto *res = new NString(std::to_string(t1->value) + t2->value);
+                    frame->push(res);
+                } else {
+                    panic("should not reach here");
+                }
+            } else if (typeid(*o1) == typeid(NString)) {
+                auto *t1 = dynamic_cast<NString *>(o1);
+                if (typeid(*o2) == typeid(NInt)) {
+                    NInt *t2 = dynamic_cast<NInt *>(o2);
+                    auto *res = new NString(t1->value + std::to_string(t2->value));
+                    frame->push(res);
+                } else if (typeid(*o2) == typeid(NDouble)) {
+                    auto *t2 = dynamic_cast<NDouble *>(o2);
+                    auto *res = new NString(t1->value + std::to_string(t2->value));
+                    frame->push(res);
+                } else if (typeid(*o2) == typeid(NString)) {
+                    auto *t2 = dynamic_cast<NString *>(o2);
+                    auto *res = new NString(t1->value + t2->value);
                     frame->push(res);
                 } else {
                     panic("should not reach here");

@@ -493,8 +493,8 @@ CompilationUnit *Parser::parse() {
                 unit->topStmts.push_back(parseStatement());
             }
         } while (getCurrentToken() != TK_EOF);
-        return unit;
     }
+    return unit;
 }
 
 //===----------------------------------------------------------------------===//

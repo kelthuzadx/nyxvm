@@ -171,6 +171,7 @@ void BytecodeDump::dump(Bytecode *bytecode) {
             }
         }
     }
+    ofs.flush();
 }
 
 

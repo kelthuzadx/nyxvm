@@ -24,7 +24,11 @@ public:
 
     void addJump(Jmp jmp) { allJump.push_back(jmp); }
 
+    void setGenerator(BytecodeGenerator *gen);
+
     ~Label();
+
+    Label();
 };
 
 Label::~Label() {
@@ -40,6 +44,16 @@ Label::Label(BytecodeGenerator *gen) {
 
 void Label::operator()() {
     // reset destination
+    this->destination = gen->bci;
+}
+
+Label::Label() {
+    this->gen = nullptr;
+    this->destination = -1;
+}
+
+void Label::setGenerator(BytecodeGenerator *gen) {
+    this->gen = gen;
     this->destination = gen->bci;
 }
 
@@ -638,13 +652,13 @@ void BytecodeGenerator::visitForStmt(ForStmt *node) {
 
 void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
     std::string prefix("__v");
-    prefix +=std::to_string( int(*(int*)node));
+    prefix += std::to_string(int(*(int *) node));
 
     // create iterator variable as iter
-    std::string iter = prefix+node->identName;
+    std::string iter = prefix + node->identName;
     varNew(iter);
     // create index variable as i
-    std::string index = prefix+="i";
+    std::string index = prefix += "i";
     varNew(index);
     // i = 0
     constInt(0);
@@ -657,7 +671,122 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
     //TODO
 }
 
-void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {}
+void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
+    // Variant 1:
+    // match{} or match(cond){}
+    if (node->matches.empty()) {
+        return;
+    }
+
+    // Variant 2:
+    // match(cond) {
+    //      a=> ...
+    //      b=> ...
+    // }
+    if (node->cond != nullptr) {
+        /**
+         * <cond>
+         *
+         * block_1:
+         * dup
+         * <match_1>
+         * test_eq
+         * jmp_ne block_2
+         * <block_1>
+         * jmp out
+         *
+         * block_2:
+         * dup
+         * <match_2>
+         * test_eq
+         * jmp_ne block_3
+         * <block_2>
+         * jmp out
+         *
+         * ...
+         * out:
+         */
+        Label L_out(this);
+        Label *L_blocks = new Label[node->matches.size()];
+        for (int i = 0; i < node->matches.size(); i++) {
+            L_blocks[i].setGenerator(this);
+        }
+
+        node->cond->visit(this);
+        for (int i = 0; i < node->matches.size(); i++) {
+            auto&[match, block, matchAll]= node->matches[i];
+            if (!matchAll) {
+                L_blocks[i]();
+                bytecode->bytecodes[bci++] = DUP;
+                match->visit(this);
+                bytecode->bytecodes[bci++] = TEST_EQ;
+                if (i == node->matches.size() - 1) {
+                    Jmp j1(this, &L_out, JMP_NE);
+                } else {
+                    Jmp j1(this, &L_blocks[i + 1], JMP_NE);
+                }
+                block->visit(this);
+                Jmp j2(this, &L_out, JMP);
+            } else {
+                L_blocks[i]();
+                block->visit(this);
+                Jmp j1(this, &L_out, JMP);
+            }
+        }
+        L_out();
+        delete[] L_blocks;
+    }
+
+    // Variant 3:
+    // match{
+    //      expr=> ...
+    //      expr=> ...
+    // }
+    if (node->cond == nullptr) {
+        /**
+         * block_1:
+         * <match_1>
+         * jmp_ne block_2
+         * <block_1>
+         * jmp out
+         *
+         * block_2:
+         * <match_2>
+         * jmp_ne block_3
+         * <block_2>
+         * jmp out
+         *
+         * ...
+         * out:
+         */
+        Label L_out(this);
+        Label *L_blocks = new Label[node->matches.size()];
+        for (int i = 0; i < node->matches.size(); i++) {
+            L_blocks[i].setGenerator(this);
+        }
+
+        for (int i = 0; i < node->matches.size(); i++) {
+            auto&[match, block, matchAll]= node->matches[i];
+            if (!matchAll) {
+                L_blocks[i]();
+                match->visit(this);
+                if (i == node->matches.size() - 1) {
+                    Jmp j1(this, &L_out, JMP_NE);
+                } else {
+                    Jmp j1(this, &L_blocks[i + 1], JMP_NE);
+                }
+                block->visit(this);
+                Jmp j2(this, &L_out, JMP);
+            } else {
+                L_blocks[i]();
+                block->visit(this);
+                Jmp j1(this, &L_out, JMP);
+            }
+        }
+        L_out();
+        delete[] L_blocks;
+    }
+}
 
 void BytecodeGenerator::visitImportStmt(ImportStmt *node) {}
 
@@ -679,7 +808,7 @@ void BytecodeGenerator::varStore(int localIndex) {
     bytecode->bytecodes[bci++] = localIndex;
 }
 
-void BytecodeGenerator::varNew(const std::string& name) {
+void BytecodeGenerator::varNew(const std::string &name) {
     bytecode->bytecodes[bci++] = STORE;
     int localIndex = local++;
     localMap.insert({name, localIndex});

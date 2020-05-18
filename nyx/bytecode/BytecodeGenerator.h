@@ -93,7 +93,7 @@ private:
 
     void varStore(int localIndex);
 
-    void varNew(const std::string& name);
+    void varNew(const std::string &name);
 
     static bool isShortCircuitAnd(Expr *expr);
 

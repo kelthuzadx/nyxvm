@@ -13,6 +13,7 @@
 
 #endif
 
+std::ofstream PhaseTime::ofs("phase_time.log", std::ios::out);
 
 [[noreturn]] void panic(const char *format, ...) {
     va_list args;
@@ -33,9 +34,6 @@ PhaseTime::PhaseTime(const char *name) : name(name) {
 PhaseTime::~PhaseTime() {
     long end = clock();
     double duration = (end - start) / 1000.0;
-    std::ofstream ofs;
-    std::string fileName("phase_time.log");
-    ofs.open(fileName, std::ios::out);
     ofs << "[PhaseTime] " << name << " ( " << duration << "s )\n";
     ofs.flush();
 }

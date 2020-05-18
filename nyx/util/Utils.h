@@ -15,6 +15,7 @@ int getPid();
 
 class PhaseTime {
 private:
+    static std::ofstream ofs;
     long start;
     const char *name;
 

@@ -228,6 +228,9 @@ SimpleStmt *Parser::parseExpressionStmt() {
     if (auto p = parseExpression(); p != nullptr) {
         node = new SimpleStmt(line, column);
         node->expr = p;
+        if(getCurrentToken()==TK_SEMICOLON){
+            currentToken = next();
+        }
     }
     return node;
 }

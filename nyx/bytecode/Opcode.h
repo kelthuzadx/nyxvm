@@ -33,6 +33,7 @@ enum Opcode {
     STORE_INDEX,
     NEW_ARR,
     DUP,
+    ARR_LEN
 };
 
 #endif //NYX_OPCODE_H

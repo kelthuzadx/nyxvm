@@ -284,6 +284,15 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     delete temp;
                     return;
                 }
+                case ARR_LEN:{
+                    auto* array = frame->pop();
+                    if(typeid(*array)!= typeid(NArray)){
+                        panic("array length is only operated on Array type");
+                    }
+                    int length = dynamic_cast<NArray*>(array)->length;
+                    frame->push(new NInt(length));
+                    break;
+                }
                 default:
                     panic("invalid bytecode %d", bytecodes[bci]);
             }
@@ -293,6 +302,6 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
 }
 
 void Interpreter::execute(Bytecode *bytecode) {
-    PhaseTime timer("execute bytecodes via simple c++ interpreter");
+    PhaseTime timer("execute bytecodes via c++ interpreter");
     execute(bytecode, 0, nullptr);
 }

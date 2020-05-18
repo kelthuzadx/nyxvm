@@ -1,0 +1,5 @@
+[PhaseTime] set up everything about VM ( 0s(0) )
+[PhaseTime] parse source code to Ast structure ( 0.29s(290000) )
+[PhaseTime] dump Ast to *.dot file ( 0.459s(459000) )
+[PhaseTime] generate bytecode from Ast ( 0.104s(104000) )
+[PhaseTime] dump bytecode ( 0.139s(139000) )

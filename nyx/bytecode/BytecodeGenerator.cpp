@@ -337,7 +337,9 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
     }
 }
 
-void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {}
+void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {
+    //TODO
+}
 
 void BytecodeGenerator::visitStmt(Stmt *node) {
     panic("should not reach here");
@@ -655,20 +657,49 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
     prefix += std::to_string(int(*(int *) node));
 
     // create iterator variable as iter
-    std::string iter = prefix + node->identName;
+    std::string iter = node->identName;
+    bytecode->bytecodes[bci++] = CONST_NULL;
     varNew(iter);
     // create index variable as i
     std::string index = prefix += "i";
+    bytecode->bytecodes[bci++] = CONST_NULL;
     varNew(index);
     // i = 0
     constInt(0);
     varStore(localMap[index]);
+
     // <new array>
     node->list->visit(this);
+
     // cond:
     Label L_cond(this);
     Label L_out(this);
-    //TODO
+    this->continuePoint = &L_cond;
+    this->breakPoint = &L_out;
+
+    // get array length
+    bytecode->bytecodes[bci++] = DUP;
+    bytecode->bytecodes[bci++]  =ARR_LEN;
+    // compare index and array length
+    varLoad(localMap[index]);
+    bytecode->bytecodes[bci++] = TEST_EQ;
+    // if not equal, go outside
+    Jmp j1(this,&L_out,JMP_NE);
+    // load array[index], and assign to iter
+    bytecode->bytecodes[bci++] = DUP;
+    varLoad(localMap[index]);
+    bytecode->bytecodes[bci++] = LOAD_INDEX;
+    varStore(localMap[iter]);
+    node->block->visit(this);
+
+    varLoad(localMap[index]);
+    varLoad(localMap[index]);
+    constInt(1);
+    bytecode->bytecodes[bci++] = ADD;
+    varStore(localMap[index]);
+    // conditional checking
+    Jmp j2(this,&L_cond,JMP);
+    L_out();
 }
 
 void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
@@ -788,9 +819,13 @@ void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
     }
 }
 
-void BytecodeGenerator::visitImportStmt(ImportStmt *node) {}
+void BytecodeGenerator::visitImportStmt(ImportStmt *node) {
+    // Pass
+}
 
-void BytecodeGenerator::visitExportStmt(ExportStmt *node) {}
+void BytecodeGenerator::visitExportStmt(ExportStmt *node) {
+    //Pass
+}
 
 void BytecodeGenerator::constInt(nyx::int32 integer) {
     bytecode->bytecodes[bci++] = CONST_I;

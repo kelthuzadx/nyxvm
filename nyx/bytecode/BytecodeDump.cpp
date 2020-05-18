@@ -165,6 +165,10 @@ void BytecodeDump::dump(Bytecode *bytecode) {
                     ofs << bci << ":" << "return_val" << "\n";
                     break;
                 }
+                case ARR_LEN:{
+                    ofs << bci << ":" << "arr_len" << "\n";
+                    break;
+                }
                 default:
                     ofs << bci << ":" << "<illegal>" << "\n";
                     break;

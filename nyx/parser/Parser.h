@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NYX_PARSER_H
+#define NYX_PARSER_H
 
 #include <cassert>
 #include <fstream>
@@ -64,7 +65,7 @@ namespace nyx {
         FuncDef *parseFuncDef();
 
     private:
-        short getPrecedence(Token op);
+        static short getPrecedence(Token op);
 
         std::tuple<Token, std::string> next();
 
@@ -86,3 +87,5 @@ namespace nyx {
         }
     };
 }  // namespace nyx
+
+#endif

@@ -6,7 +6,6 @@ AstNode::AstNode(int line, int column) : line(line), column(column) {
     id = IntegerIncrementer++;
 }
 
-
 std::string AstNode::to_string() const {
     return std::move(std::string("AstNode"));
 }

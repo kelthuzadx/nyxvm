@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include "Utils.h"
+#include <chrono>
 
 #ifdef _WIN32
 #include <process.h>
@@ -27,13 +28,17 @@ int getPid() {
     return (int) getpid();
 }
 
-PhaseTime::PhaseTime(const char *name) : name(name) {
-    start = clock();
+PhaseTime::PhaseTime(const char *name)
+:start(std::chrono::system_clock::now()),name(name) {
 }
 
 PhaseTime::~PhaseTime() {
-    long end = clock();
-    double duration = (end - start) / 1000.0;
-    ofs << "[PhaseTime] " << name << " ( " << duration << "s )\n";
+    auto end = std::chrono::system_clock::now();
+    auto duration=std::chrono::duration_cast<std::chrono::nanoseconds>(end-start);
+    ofs << "[PhaseTime] " << name << " ( "<<duration.count()/1000000.0<<"s("<<duration.count()<<") )\n";
     ofs.flush();
+}
+
+void PhaseTime::reset() {
+    start = std::chrono::system_clock::now();
 }

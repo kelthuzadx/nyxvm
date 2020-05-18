@@ -1,8 +1,10 @@
-#pragma once
+#ifndef NYX_UTILS_H
+#define NYX_UTILS_H
 
 #include <any>
 #include <deque>
 #include <string>
+#include <chrono>
 
 template<typename _DesireType, typename... _ArgumentType>
 inline bool anyone(_DesireType k, _ArgumentType... args) {
@@ -16,7 +18,7 @@ int getPid();
 class PhaseTime {
 private:
     static std::ofstream ofs;
-    long start;
+    std::chrono::time_point<std::chrono::system_clock> start;
     const char *name;
 
 public:
@@ -27,3 +29,4 @@ public:
     void reset();
 };
 
+#endif

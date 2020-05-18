@@ -18,15 +18,9 @@ private:
     BytecodeGenerator *gen;
     std::vector<Jmp *> allJump;
 public:
-    explicit Label(BytecodeGenerator *gen) {
-        this->gen = gen;
-        this->destination = gen->bci;
-    }
+    explicit Label(BytecodeGenerator *gen);
 
-    void operator()() {
-        // reset destination
-        this->destination = gen->bci;
-    }
+    void operator()();
 
     void addJump(Jmp *jmp) { allJump.push_back(jmp); }
 
@@ -37,6 +31,16 @@ Label::~Label() {
     for (auto &i : allJump) {
         gen->bytecode->bytecodes[i->getPatching()] = destination;
     }
+}
+
+Label::Label(BytecodeGenerator *gen) {
+    this->gen = gen;
+    this->destination = gen->bci;
+}
+
+void Label::operator()() {
+    // reset destination
+    this->destination = gen->bci;
 }
 
 Jmp::Jmp(BytecodeGenerator *gen, Label *label, Opcode opcode) {
@@ -286,8 +290,7 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
             node->rhs->visit(this);
             if (auto iter = localMap.find(t->identName);iter != localMap.cend()) {
                 // reassign existing variable a new value
-                bytecode->bytecodes[bci++] = STORE;
-                bytecode->bytecodes[bci++] = localMap[t->identName];
+                varStore(localMap[t->identName]);
             } else {
                 // create new variable
                 bytecode->bytecodes[bci++] = STORE;

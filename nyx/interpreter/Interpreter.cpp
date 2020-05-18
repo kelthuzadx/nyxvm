@@ -68,7 +68,7 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     std::string funcName = bytecode->strings[funcNameIndex];
 
                     auto **funcArgv = new Object *[funcArgc];
-                    for (int k = 0; k < funcArgc; k++) {
+                    for (int k = funcArgc - 1; k >= 0; k--) {
                         funcArgv[k] = frame->pop();
                     }
 

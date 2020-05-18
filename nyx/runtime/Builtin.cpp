@@ -41,3 +41,9 @@ extern "C" Object *nyxffi_len(int argc, Object **argv) {
     }
     return nullptr;
 }
+
+extern "C" Object *nyxffi_exit(int argc, Object **argv) {
+    assert(argc == 1 && typeid(*argv[0]) == typeid(NInt));
+    exit(dynamic_cast<NInt *>(argv[0])->value);
+    return nullptr;
+}

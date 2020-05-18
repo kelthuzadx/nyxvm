@@ -8,6 +8,8 @@
 #include "Bytecode.h"
 #include "Opcode.h"
 
+class Label;
+
 class BytecodeGenerator : public AstVisitor {
     friend class Label;
 
@@ -16,6 +18,8 @@ class BytecodeGenerator : public AstVisitor {
 private:
     std::unordered_map<std::string, int> localMap;
     Bytecode *bytecode{};
+    Label *continuePoint{};
+    Label *breakPoint{};
     int bci;
     int local;
 
@@ -88,6 +92,8 @@ private:
     void varLoad(int localIndex);
 
     void varStore(int localIndex);
+
+    void varNew(const std::string& name);
 
     static bool isShortCircuitAnd(Expr *expr);
 

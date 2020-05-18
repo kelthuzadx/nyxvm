@@ -29,13 +29,13 @@ int getPid() {
 }
 
 PhaseTime::PhaseTime(const char *name)
-:start(std::chrono::system_clock::now()),name(name) {
+        : start(std::chrono::system_clock::now()), name(name) {
 }
 
 PhaseTime::~PhaseTime() {
     auto end = std::chrono::system_clock::now();
-    auto duration=std::chrono::duration_cast<std::chrono::nanoseconds>(end-start);
-    ofs << "[PhaseTime] " << name << " ( "<<duration.count()/1000000.0<<"s("<<duration.count()<<") )\n";
+    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+    ofs << "[PhaseTime] " << name << " ( " << duration.count() / 1000000.0 << "s(" << duration.count() << ") )\n";
     ofs.flush();
 }
 

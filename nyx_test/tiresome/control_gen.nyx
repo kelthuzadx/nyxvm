@@ -1,0 +1,44 @@
+a = true
+b = false
+c = 100
+if(a&&b){
+exit(12)
+}
+
+if(b||b){
+exit(12)
+}
+
+for(i=0;i<10;i+=1){
+print(i," " )
+}
+
+println()
+
+for(i=0;i<10;i+=1){
+print(i," ")
+if(i==6){break}
+}
+
+println()
+
+for(i=0;i<10;i+=1){
+if(i%2==0){continue}else{print(i," ")}
+}
+
+println()
+
+for(i=0;true&&true;i+=1){
+i+=1
+if(i!=1){exit(22)}
+break
+}
+
+println("a","b","c")
+
+i = 10
+while(i>=-10){
+print(i," ")
+i-=1
+}
+

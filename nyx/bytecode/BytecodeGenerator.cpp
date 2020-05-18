@@ -16,20 +16,20 @@ class Label {
 private:
     int destination;
     BytecodeGenerator *gen;
-    std::vector<Jmp *> allJump;
+    std::vector<Jmp> allJump;
 public:
     explicit Label(BytecodeGenerator *gen);
 
     void operator()();
 
-    void addJump(Jmp *jmp) { allJump.push_back(jmp); }
+    void addJump(Jmp jmp) { allJump.push_back(jmp); }
 
     ~Label();
 };
 
 Label::~Label() {
     for (auto &i : allJump) {
-        gen->bytecode->bytecodes[i->getPatching()] = destination;
+        gen->bytecode->bytecodes[i.getPatching()] = destination;
     }
 }
 
@@ -49,7 +49,7 @@ Jmp::Jmp(BytecodeGenerator *gen, Label *label, Opcode opcode) {
     // Record JMP* target as patching address and temporarily set to -1
     this->patching = gen->bci;
     gen->bytecode->bytecodes[gen->bci++] = -1;
-    label->addJump(this);
+    label->addJump(*this);
 }
 
 
@@ -292,11 +292,8 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
                 // reassign existing variable a new value
                 varStore(localMap[t->identName]);
             } else {
-                // create new variable
-                bytecode->bytecodes[bci++] = STORE;
-                int localIndex = local++;
-                localMap.insert({t->identName, localIndex});
-                bytecode->bytecodes[bci++] = localIndex;
+                // create a new variable
+                varNew(t->identName);
             }
 
         } else {
@@ -332,9 +329,13 @@ void BytecodeGenerator::visitStmt(Stmt *node) {
     panic("should not reach here");
 }
 
-void BytecodeGenerator::visitBreakStmt(BreakStmt *node) {}
+void BytecodeGenerator::visitBreakStmt(BreakStmt *node) {
+    Jmp j1(this, this->breakPoint, JMP);
+}
 
-void BytecodeGenerator::visitContinueStmt(ContinueStmt *node) {}
+void BytecodeGenerator::visitContinueStmt(ContinueStmt *node) {
+    Jmp j1(this, this->continuePoint, JMP);
+}
 
 void BytecodeGenerator::visitSimpleStmt(SimpleStmt *node) {
     node->expr->visit(this);
@@ -347,7 +348,6 @@ void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
         node->retval->visit(this);
         bytecode->bytecodes[bci++] = RETURN_VAL;
     }
-
 }
 
 void BytecodeGenerator::visitIfStmt(IfStmt *node) {
@@ -412,17 +412,35 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
         return;
     }
 
-    node->cond->visit(this);
+
     if (node->elseBlock == nullptr) {
+        /**
+         * <cond>
+         * jmp_ne out
+         * <block>
+         * out:
+         */
         Label L_out(this);
 
+        node->cond->visit(this);
         Jmp j1(this, &L_out, JMP_NE);
         node->block->visit(this);
         L_out();
     } else {
+        /**
+         * <cond>
+         * jmp_ne else
+         * <block>
+         * jmp out
+         * else:
+         * <else-block>
+         * jmp out
+         * out:
+         */
         Label L_else(this);
         Label L_out(this);
 
+        node->cond->visit(this);
         Jmp j1(this, &L_else, JMP_NE);
         node->block->visit(this);
         Jmp j2(this, &L_out, JMP);
@@ -435,6 +453,16 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
 
 void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
     if (isShortCircuitAnd(node->cond)) {
+        /**
+         * cond:
+         * <cond_lhs>
+         * jmp_ne out
+         * <cond_rhs>
+         * jmp_ne out
+         * <block>
+         * jmp cond
+         * out:
+         */
         auto *t = dynamic_cast<BinaryExpr *>(node->cond);
         Label L_cond(this);
         Label L_out(this);
@@ -449,10 +477,23 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
         return;
     }
     if (isShortCircuitOr(node->cond)) {
+        /**
+         * cond:
+         * <cond_lhs>
+         * jmp_eq then
+         * <cond_rhs>
+         * jmp_ne then
+         * jmp out
+         * then:
+         * <block>
+         * jmp cond
+         * out:
+         */
         auto *t = dynamic_cast<BinaryExpr *>(node->cond);
         Label L_cond(this);
         Label L_out(this);
         Label L_then(this);
+
         t->lhs->visit(this);
         Jmp j1(this, &L_then, JMP_EQ);
         t->rhs->visit(this);
@@ -464,6 +505,15 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
         L_out();
         return;
     }
+
+    /**
+     * cond:
+     * <cond>
+     * jmp_neq out
+     * <block>
+     * jmp cond
+     * out:
+     */
     Label L_cond(this);
     Label L_out(this);
 
@@ -476,36 +526,68 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
 
 void BytecodeGenerator::visitForStmt(ForStmt *node) {
     if (isShortCircuitAnd(node->cond)) {
-        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
         /**
          * <init>
          * cond:
-         * lhs
+         * <cond_lhs>
          * jmp_ne out
-         * rhs
+         * <cond_rhs>
          * jmp_ne out
          * <block>
+         * continue:
          * <post>
          * jmp cond
-         * out
+         * out:
          */
+        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        node->init->visit(this);
+
         Label L_cond(this);
         Label L_out(this);
+        Label L_continue(this);
+        this->continuePoint = &L_continue;
+        this->breakPoint = &L_out;
 
         t->lhs->visit(this);
         Jmp j1(this, &L_out, JMP_NE);
         t->rhs->visit(this);
         Jmp j2(this, &L_out, JMP_NE);
         node->block->visit(this);
+        L_continue();
+        node->post->visit(this);
         Jmp j3(this, &L_cond, JMP);
         L_out();
+
+        this->continuePoint = nullptr;
+        this->breakPoint = nullptr;
         return;
     }
     if (isShortCircuitOr(node->cond)) {
+        /**
+         * <init>
+         * cond:
+         * <cond_lhs>
+         * jmp_eq then
+         * <cond_rhs>
+         * jmp_eq then
+         * jmp out
+         * then:
+         * <block>
+         * continue:
+         * <post>
+         * jmp cond
+         * out:
+         */
         auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        node->init->visit(this);
+
         Label L_cond(this);
-        Label L_out(this);
         Label L_then(this);
+        Label L_out(this);
+        Label L_continue(this);
+        this->continuePoint = &L_continue;
+        this->breakPoint = &L_out;
+
         t->lhs->visit(this);
         Jmp j1(this, &L_then, JMP_EQ);
         t->rhs->visit(this);
@@ -513,13 +595,67 @@ void BytecodeGenerator::visitForStmt(ForStmt *node) {
         Jmp j3(this, &L_out, JMP);
         L_then();
         node->block->visit(this);
+        L_continue();
+        node->post->visit(this);
         Jmp j4(this, &L_cond, JMP);
         L_out();
+
+        this->continuePoint = nullptr;
+        this->breakPoint = nullptr;
         return;
     }
+
+    /**
+     * <init>
+     * cond:
+     * <cond>
+     * jmp_ne out
+     * <block>
+     * continue:
+     * <post>
+     * jmp cond
+     * out:
+     */
+    node->init->visit(this);
+
+    Label L_cond(this);
+    Label L_out(this);
+    Label L_continue(this);
+    this->continuePoint = &L_continue;
+    this->breakPoint = &L_out;
+
+    node->cond->visit(this);
+    Jmp j1(this, &L_out, JMP_NE);
+    node->block->visit(this);
+    L_continue();
+    node->post->visit(this);
+    Jmp j2(this, &L_cond, JMP);
+    L_out();
+
+    this->continuePoint = nullptr;
+    this->breakPoint = nullptr;
 }
 
-void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {}
+void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
+    std::string prefix("__v");
+    prefix +=std::to_string( int(*(int*)node));
+
+    // create iterator variable as iter
+    std::string iter = prefix+node->identName;
+    varNew(iter);
+    // create index variable as i
+    std::string index = prefix+="i";
+    varNew(index);
+    // i = 0
+    constInt(0);
+    varStore(localMap[index]);
+    // <new array>
+    node->list->visit(this);
+    // cond:
+    Label L_cond(this);
+    Label L_out(this);
+    //TODO
+}
 
 void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {}
 
@@ -542,6 +678,14 @@ void BytecodeGenerator::varStore(int localIndex) {
     bytecode->bytecodes[bci++] = STORE;
     bytecode->bytecodes[bci++] = localIndex;
 }
+
+void BytecodeGenerator::varNew(const std::string& name) {
+    bytecode->bytecodes[bci++] = STORE;
+    int localIndex = local++;
+    localMap.insert({name, localIndex});
+    bytecode->bytecodes[bci++] = localIndex;
+}
+
 
 bool BytecodeGenerator::isShortCircuitOr(Expr *expr) {
     return typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGOR;
@@ -585,6 +729,5 @@ Bytecode *BytecodeGenerator::generate(FuncDef *node) {
     // don't delete node, it's responsibility of public generate() API
     return bytecode;
 }
-
 
 

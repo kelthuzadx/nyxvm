@@ -22,4 +22,9 @@ extern "C" Object *nyxffi_typeof(int argc, Object **argv);
 // length of the array or string
 //===----------------------------------------------------------------------===//
 extern "C" Object *nyxffi_len(int argc, Object **argv);
+
+//===----------------------------------------------------------------------===//
+// exit the program
+//===----------------------------------------------------------------------===//
+extern "C" Object *nyxffi_exit(int argc, Object **argv);
 #endif //NYX_BUILTIN_H

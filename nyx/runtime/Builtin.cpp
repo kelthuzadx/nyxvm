@@ -19,17 +19,17 @@ extern "C" Object *nyxffi_println(int argc, Object **argv) {
 extern "C" Object *nyxffi_typeof(int argc, Object **argv) {
     assert(argc == 1);
     if (argv[0] == nullptr) {
-        return new NString("Null");
+        return new NString("null");
     } else if (typeid(*argv[0]) == typeid(NInt)) {
-        return new NString("Int");
+        return new NString("int");
     } else if (typeid(*argv[0]) == typeid(NDouble)) {
-        return new NString("Double");
+        return new NString("double");
     } else if (typeid(*argv[0]) == typeid(NString)) {
-        return new NString("String");
+        return new NString("string");
     } else if (typeid(*argv[0]) == typeid(NArray)) {
-        return new NString("Array");
+        return new NString("array");
     }
-    return new NString("Object");
+    return new NString("object");
 }
 
 extern "C" Object *nyxffi_len(int argc, Object **argv) {

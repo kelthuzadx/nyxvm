@@ -180,76 +180,50 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
     }
 }
 
+template<typename T1, typename T2>
+bool genericCompare(int operation, T1 *t1, T2 *t2) {
+    bool cond;
+    switch (operation) {
+        case TEST_EQ:
+            cond = t1->value == t2->value;
+            break;
+        case TEST_NE:
+            cond = t1->value != t2->value;
+            break;
+        case TEST_GE:
+            cond = t1->value >= t2->value;
+            break;
+        case TEST_GT:
+            cond = t1->value > t2->value;
+            break;
+        case TEST_LE:
+            cond = t1->value <= t2->value;
+            break;
+        case TEST_LT:
+            cond = t1->value < t2->value;
+            break;
+        default:
+            panic("should not reach here");
+    }
+    return cond;
+}
 
 template<int Operation>
 void Interpreter::compare(Object *o1, Object *o2) {
-    // TEST
-    if (o2 == nullptr) {
-        if (typeid(*o1) == typeid(NInt)) {
-            auto *t1 = dynamic_cast<NInt *>(o1);
-            auto *res = new NInt(t1->value == 0);
-            frame->push(res);
-        } else {
-            panic("should not reach here");
-        }
-        return;
-    }
-    // Other test bytecodes
     if (typeid(*o1) == typeid(NInt) && typeid(*o2) == typeid(NInt)) {
         auto *t1 = dynamic_cast<NInt *>(o1);
         auto *t2 = dynamic_cast<NInt *>(o2);
-        bool cond;
-        switch (Operation) {
-            case TEST_EQ:
-                cond = t1->value == t2->value;
-                break;
-            case TEST_NE:
-                cond = t1->value != t2->value;
-                break;
-            case TEST_GE:
-                cond = t1->value >= t2->value;
-                break;
-            case TEST_GT:
-                cond = t1->value > t2->value;
-                break;
-            case TEST_LE:
-                cond = t1->value <= t2->value;
-                break;
-            case TEST_LT:
-                cond = t1->value < t2->value;
-                break;
-            default:
-                panic("should not reach here");
-        }
-        auto *res = new NInt(cond);
+        NInt *res = new NInt(genericCompare(Operation, t1, t2));
         frame->push(res);
     } else if (typeid(*o1) == typeid(NDouble) && typeid(*o2) == typeid(NDouble)) {
         auto *t1 = dynamic_cast<NDouble *>(o1);
         auto *t2 = dynamic_cast<NDouble *>(o2);
-        bool cond;
-        switch (Operation) {
-            case TEST_EQ:
-                cond = t1->value == t2->value;
-                break;
-            case TEST_NE:
-                cond = t1->value != t2->value;
-                break;
-            case TEST_GE:
-                cond = t1->value >= t2->value;
-                break;
-            case TEST_GT:
-                cond = t1->value > t2->value;
-                break;
-            case TEST_LE:
-                cond = t1->value <= t2->value;
-                break;
-            case TEST_LT:
-                cond = t1->value < t2->value;
-                break;
-            default:
-                panic("should not reach here");
-        }
-        auto *res = new NInt(cond);
+        NInt *res = new NInt(genericCompare(Operation, t1, t2));
+        frame->push(res);
+    } else if (typeid(*o1) == typeid(NString) && typeid(*o2) == typeid(NString)) {
+        auto *t1 = dynamic_cast<NString *>(o1);
+        auto *t2 = dynamic_cast<NString *>(o2);
+        NInt *res = new NInt(genericCompare(Operation, t1, t2));
         frame->push(res);
     } else {
         panic("should not reach here");

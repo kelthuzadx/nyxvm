@@ -189,6 +189,22 @@ Expr *Parser::parseUnaryExpr() {
 Expr *Parser::parseExpression(short oldPrecedence) {
     auto *p = parseUnaryExpr();
 
+    if(getCurrentToken()==TK_LPAREN){
+        auto* call = new FuncCallExpr(line,column);
+        call->funcName="";
+        call->closure = p;
+        currentToken = next();
+        while (getCurrentToken() != TK_RPAREN) {
+            call->args.push_back(parseExpression());
+            if (getCurrentToken() == TK_COMMA) {
+                currentToken = next();
+            }
+        }
+        assert(getCurrentToken() == TK_RPAREN);
+        currentToken = next();
+        return call;
+    }
+
     if (anyone(getCurrentToken(), TK_ASSIGN, TK_PLUS_AGN, TK_MINUS_AGN,
                TK_TIMES_AGN, TK_DIV_AGN, TK_MOD_AGN)) {
         if (typeid(*p) != typeid(IdentExpr) &&
@@ -317,12 +333,8 @@ MatchStmt *Parser::parseMatchStmt() {
                 block->stmts.push_back(parseExpressionStmt());
             }
 
-            if (typeid(*theCase) == typeid(IdentExpr) &&
-                dynamic_cast<IdentExpr *>(theCase)->identName == "_") {
-                node->matches.emplace_back(theCase, block, true);
-            } else {
-                node->matches.emplace_back(theCase, block, false);
-            }
+            node->matches.emplace_back(theCase, block, typeid(*theCase) == typeid(IdentExpr) &&
+                                                       dynamic_cast<IdentExpr *>(theCase)->identName == "_");
         } while (getCurrentToken() != TK_RBRACE);
     }
     currentToken = next();

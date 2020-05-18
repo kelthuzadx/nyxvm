@@ -116,6 +116,7 @@ void AstDump::visitAssignExpr(AssignExpr *node) {
 
 void AstDump::visitFuncCallExpr(FuncCallExpr *node) {
     VISIT_VEC_FIELD(args);
+    VISIT_FIELD(closure)
 }
 
 void AstDump::visitBinaryExpr(BinaryExpr *node) {

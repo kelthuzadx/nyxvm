@@ -339,6 +339,7 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
 
 void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {
     //TODO
+
 }
 
 void BytecodeGenerator::visitStmt(Stmt *node) {

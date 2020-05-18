@@ -1,3 +1,5 @@
 func f(){
-  println(func(){return 3}())
+  func(a){println(a)}(3)
 }
+
+f()

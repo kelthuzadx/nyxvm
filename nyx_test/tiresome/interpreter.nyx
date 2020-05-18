@@ -70,5 +70,5 @@ if(true&&true){println("true&&true")}
 if(true&&false){println("should not happen")}
 if(false||false){println("should not happen")}
 println("---------------------------------------------")
-i = [36,7,5,6,5,"test"]
+i = [36,"aaa","bb",i,i,i+1,"test",null,6.666666666,0.879,'c']
 println(i)

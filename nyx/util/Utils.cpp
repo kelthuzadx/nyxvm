@@ -27,7 +27,6 @@ int getPid() {
 }
 
 PhaseTime::PhaseTime(const char *name) : name(name) {
-
     start = clock();
 }
 
@@ -35,10 +34,8 @@ PhaseTime::~PhaseTime() {
     long end = clock();
     double duration = (end - start) / 1000.0;
     std::ofstream ofs;
-    std::string fileName("phase_time.");
-    fileName += std::to_string(getPid());
-    fileName += ".log";
-    ofs.open(fileName, std::ios::app);
+    std::string fileName("phase_time.log");
+    ofs.open(fileName, std::ios::out);
     ofs << "[PhaseTime] " << name << " ( " << duration << "s )\n";
     ofs.flush();
 }

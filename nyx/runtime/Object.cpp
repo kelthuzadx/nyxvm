@@ -38,12 +38,20 @@ std::string NString::toString() {
 
 std::string NArray::toString() {
     std::string str("[");
-    if (length > 1) {
+    if (length >= 1) {
         for (int i = 0; i < length - 2; i++) {
-            str += array[i]->toString();
+            if (array[i] != nullptr) {
+                str += array[i]->toString();
+            } else {
+                str += "null";
+            }
             str += ",";
         }
-        str += array[length - 1]->toString();
+        if (array[length - 1] != nullptr) {
+            str += array[length - 1]->toString();
+        } else {
+            str += "null";
+        }
     }
     str += "]";
 

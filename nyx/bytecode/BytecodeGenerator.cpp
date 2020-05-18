@@ -241,8 +241,8 @@ void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
 }
 
 void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
+    // arr[index] = value
     if (typeid(*node->lhs) == typeid(IndexExpr)) {
-        // Array element
         auto *t = dynamic_cast<IndexExpr *>(node->lhs);
         if (node->opt == TK_ASSIGN) {
             varLoad(localMap[t->identName]);
@@ -278,15 +278,24 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
             bytecode->bytecodes[bci++] = STORE_INDEX;
         }
 
-    } else if (typeid(*node->lhs) == typeid(IdentExpr)) {
-        // Normal variable
+    }
+        // var = value
+    else if (typeid(*node->lhs) == typeid(IdentExpr)) {
         auto *t = dynamic_cast<IdentExpr *>(node->lhs);
         if (node->opt == TK_ASSIGN) {
             node->rhs->visit(this);
-            bytecode->bytecodes[bci++] = STORE;
-            int localIndex = local++;
-            localMap.insert(std::make_pair(t->identName, localIndex));
-            bytecode->bytecodes[bci++] = localIndex;
+            if (auto iter = localMap.find(t->identName);iter != localMap.cend()) {
+                // reassign existing variable a new value
+                bytecode->bytecodes[bci++] = STORE;
+                bytecode->bytecodes[bci++] = localMap[t->identName];
+            } else {
+                // create new variable
+                bytecode->bytecodes[bci++] = STORE;
+                int localIndex = local++;
+                localMap.insert({t->identName, localIndex});
+                bytecode->bytecodes[bci++] = localIndex;
+            }
+
         } else {
             varLoad(localMap[t->identName]);
             node->rhs->visit(this);
@@ -532,17 +541,11 @@ void BytecodeGenerator::varStore(int localIndex) {
 }
 
 bool BytecodeGenerator::isShortCircuitOr(Expr *expr) {
-    if (typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGOR) {
-        return true;
-    }
-    return false;
+    return typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGOR;
 }
 
 bool BytecodeGenerator::isShortCircuitAnd(Expr *expr) {
-    if (typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGAND) {
-        return true;
-    }
-    return false;
+    return typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGAND;
 }
 
 BytecodeGenerator::BytecodeGenerator() {

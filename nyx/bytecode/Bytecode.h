@@ -10,8 +10,8 @@
 struct Bytecode {
     std::string funcName;
     std::vector<std::string> strings;
-    int localSize;
-    int bytecodeSize;
+    int localSize{};
+    int bytecodeSize{};
     nyx::int32 *bytecodes;
 
     explicit Bytecode();

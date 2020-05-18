@@ -89,9 +89,9 @@ private:
 
     void varStore(int localIndex);
 
-    bool isShortCircuitAnd(Expr *expr);
+    static bool isShortCircuitAnd(Expr *expr);
 
-    bool isShortCircuitOr(Expr *expr);
+    static bool isShortCircuitOr(Expr *expr);
 
 
 public:

@@ -76,8 +76,8 @@ void BytecodeGenerator::visitBlock(Block *node) {
 void BytecodeGenerator::visitFuncDef(FuncDef *node) {
     // Create new BytecodeGenerator and produce bytecodes
     BytecodeGenerator gen;
-    auto *funcBytecode = gen.generate(node);
-    bytecode->functions.insert(std::make_pair(node->funcName, funcBytecode));
+    auto *funcBytecode = gen.generateFuncDef(node);
+    bytecode->functions.insert({node->funcName, funcBytecode});
 }
 
 void BytecodeGenerator::visitCompilationUnit(CompilationUnit *node) {
@@ -90,19 +90,19 @@ void BytecodeGenerator::visitCompilationUnit(CompilationUnit *node) {
 }
 
 void BytecodeGenerator::visitBoolExpr(BoolExpr *node) {
-    constInt(node->literal);
+    genConstI(node->literal);
 }
 
 void BytecodeGenerator::visitCharExpr(CharExpr *node) {
-    constInt(node->literal);
+    genConstI(node->literal);
 }
 
 void BytecodeGenerator::visitNullExpr(NullExpr *node) {
-    bytecode->bytecodes[bci++] = CONST_NULL;
+    genConstNull();
 }
 
 void BytecodeGenerator::visitIntExpr(IntExpr *node) {
-    constInt(node->literal);
+    genConstI(node->literal);
 }
 
 void BytecodeGenerator::visitExpr(Expr *expr) {
@@ -110,13 +110,11 @@ void BytecodeGenerator::visitExpr(Expr *expr) {
 }
 
 void BytecodeGenerator::visitDoubleExpr(DoubleExpr *node) {
-    bytecode->bytecodes[bci++] = CONST_D;
-    *(double *) (bytecode->bytecodes + bci) = node->literal;
-    bci += 8;
+    genConstD(node->literal);
 }
 
 void BytecodeGenerator::visitStringExpr(StringExpr *node) {
-    constStr(node->literal);
+    genConstStr(node->literal);
 }
 
 void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {
@@ -125,7 +123,7 @@ void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {
     for (int i = 0; i < node->literal.size(); i++) {
         bytecode->bytecodes[bci++] = DUP;
         node->literal[i]->visit(this);
-        constInt(i);
+        genConstI(i);
         bytecode->bytecodes[bci++] = STORE_INDEX;
     }
 }
@@ -157,7 +155,7 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
                 bytecode->bytecodes[bci++] = NEG;
                 break;
             case TK_LOGNOT:
-                constInt(1);
+                genConstI(1);
                 bytecode->bytecodes[bci++] = TEST_NE;
                 break;
             case TK_BITNOT:
@@ -247,14 +245,20 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
 void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
     if (!node->funcName.empty()) {
         // normal function calling
-        constStr(node->funcName);
+        genConstStr(node->funcName);
         for (auto *arg:node->args) {
             arg->visit(this);
         }
         bytecode->bytecodes[bci++] = CALL;
         bytecode->bytecodes[bci++] = node->args.size();
     } else {
-        // closure calling
+        bytecode->bytecodes[bci++] = CONST_CLOSURE;
+        // TODO:push upvals
+        for (auto *arg:node->args) {
+            arg->visit(this);
+        }
+        bytecode->bytecodes[bci++] = CALL;
+        bytecode->bytecodes[bci++] = node->args.size(); //TODO: +upval.size();
     }
 
 }
@@ -298,7 +302,7 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
         }
 
     }
-        // var = value
+    // var = value
     else if (typeid(*node->lhs) == typeid(IdentExpr)) {
         auto *t = dynamic_cast<IdentExpr *>(node->lhs);
         if (node->opt == TK_ASSIGN) {
@@ -339,8 +343,10 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
 }
 
 void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {
-    //TODO
-
+    // Create new BytecodeGenerator and produce bytecodes
+    BytecodeGenerator gen;
+    auto *funcBytecode = gen.generateClosureExpr(this->bytecode,node);
+    bytecode->closures.insert({node->id, funcBytecode});
 }
 
 void BytecodeGenerator::visitStmt(Stmt *node) {
@@ -667,7 +673,7 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
     bytecode->bytecodes[bci++] = CONST_NULL;
     varNew(index);
     // i = 0
-    constInt(0);
+    genConstI(0);
     varStore(localMap[index]);
 
     // <new array>
@@ -696,7 +702,7 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
 
     varLoad(localMap[index]);
     varLoad(localMap[index]);
-    constInt(1);
+    genConstI(1);
     bytecode->bytecodes[bci++] = ADD;
     varStore(localMap[index]);
     // conditional checking
@@ -829,16 +835,26 @@ void BytecodeGenerator::visitExportStmt(ExportStmt *node) {
     //Pass
 }
 
-void BytecodeGenerator::constInt(nyx::int32 integer) {
+void BytecodeGenerator::genConstI(nyx::int32 integer) {
     bytecode->bytecodes[bci++] = CONST_I;
     *(nyx::int32 *) (bytecode->bytecodes + bci) = integer;
     bci += 4;
 }
 
-void BytecodeGenerator::constStr(const std::string &str) {
+void BytecodeGenerator::genConstStr(const std::string &str) {
     bytecode->strings.push_back(str);
     bytecode->bytecodes[bci++] = CONST_STR;
     bytecode->bytecodes[bci++] = bytecode->strings.size() - 1;
+}
+
+void BytecodeGenerator::genConstD(double d) {
+    bytecode->bytecodes[bci++] = CONST_D;
+    *(double *) (bytecode->bytecodes + bci) = d;
+    bci += 8;
+}
+
+void BytecodeGenerator::genConstNull() {
+    bytecode->bytecodes[bci++] = CONST_NULL;
 }
 
 void BytecodeGenerator::varLoad(int localIndex) {
@@ -879,27 +895,32 @@ void BytecodeGenerator::fixupBytecode(const std::string &funcName) {
     bytecode->funcName = funcName;
 }
 
+Bytecode *BytecodeGenerator::generateFuncDef(FuncDef *node) {
+    for (int i = 0; i < node->params.size(); i++) {
+        // create name in local map, interpreter will assign arguments to these parameters
+        localMap.insert({node->params[i], local++});
+    }
+    node->block->visit(this);
+    fixupBytecode(node->funcName);
+    return bytecode;
+}
+
+Bytecode *BytecodeGenerator::generateClosureExpr(Bytecode* enclosing,ClosureExpr *node) {
+    for (int i = 0; i < node->params.size(); i++) {
+        // create name in local map, interpreter will assign arguments to these parameters
+        localMap.insert({node->params[i], local++});
+    }
+    this->bytecode->enclosing = enclosing;
+    node->block->visit(this);
+    fixupBytecode("<closure>");
+    return bytecode;
+}
+
 Bytecode *BytecodeGenerator::generate(CompilationUnit *unit) {
     {
-        // Generate bytecode via visitor pattern
         PhaseTime timer("generate bytecode from Ast");
         unit->visit(this);
     }
     fixupBytecode("<top-level>");
     return bytecode;
 }
-
-Bytecode *BytecodeGenerator::generate(FuncDef *node) {
-    // Prepare parameters
-    for (int i = 0; i < node->params.size(); i++) {
-        localMap.insert({node->params[i], i});
-    }
-    // Generate bytecode via visitor pattern
-    node->block->visit(this);
-    // Fixup generated production
-    fixupBytecode(node->funcName);
-    // don't delete node, it's responsibility of public generate() API
-    return bytecode;
-}
-
-

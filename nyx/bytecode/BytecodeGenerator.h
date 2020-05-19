@@ -83,13 +83,19 @@ private:
     void visitExportStmt(ExportStmt *node) override;
 
 private:
-    Bytecode *generate(FuncDef *node);
+    Bytecode *generateFuncDef(FuncDef *node);
+
+    Bytecode* generateClosureExpr(Bytecode* enclosing,ClosureExpr* node);
 
     void fixupBytecode(const std::string &funcName);
 
-    void constInt(nyx::int32 integer);
+    void genConstI(nyx::int32 integer);
 
-    void constStr(const std::string &str);
+    void genConstStr(const std::string &str);
+
+    void genConstNull();
+
+    void genConstD(double d);
 
     void varLoad(int localIndex);
 
@@ -100,7 +106,6 @@ private:
     static bool isShortCircuitAnd(Expr *expr);
 
     static bool isShortCircuitOr(Expr *expr);
-
 
 public:
     explicit BytecodeGenerator();

@@ -10,8 +10,8 @@
 struct Bytecode {
     std::string funcName;
     std::vector<std::string> strings;
-    int localSize{};
-    int bytecodeSize{};
+    int localSize;
+    int bytecodeSize;
     nyx::int32 *bytecodes;
 
     explicit Bytecode();
@@ -19,6 +19,8 @@ struct Bytecode {
     ~Bytecode();
 
     std::unordered_map<std::string, Bytecode *> functions;
+    std::unordered_map<int, Bytecode*> closures;
+    Bytecode* enclosing;
 };
 
 

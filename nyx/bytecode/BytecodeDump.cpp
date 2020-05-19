@@ -12,6 +12,7 @@ BytecodeDump::~BytecodeDump() {
 }
 
 void BytecodeDump::dump(Bytecode *bytecode) {
+    ofs<<"====="<<bytecode->funcName<<"=====\n";
     int bytecodeSize = bytecode->bytecodeSize;
     auto *bytecodes = bytecode->bytecodes;
     {
@@ -172,6 +173,10 @@ void BytecodeDump::dump(Bytecode *bytecode) {
                     break;
             }
         }
+    }
+
+    for(auto& func:bytecode->functions){
+        dump(func.second);
     }
     ofs.flush();
 }

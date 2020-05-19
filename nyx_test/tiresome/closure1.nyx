@@ -1,5 +1,5 @@
-func f(){
-  func(a){println(a)}(3)
+func p(a,b,c){
+print(a,b,c)
 }
 
-f()
+p(3,"x",4)

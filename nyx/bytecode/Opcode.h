@@ -10,6 +10,7 @@ enum Opcode {
     CONST_NULL,
     CONST_D,
     CONST_STR,
+    CONST_CLOSURE,
     NEG,
     TEST_EQ,
     TEST_NE,

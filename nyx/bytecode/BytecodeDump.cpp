@@ -19,11 +19,9 @@ void BytecodeDump::dump(Bytecode *bytecode) {
         for (int bci = 0; bci < bytecodeSize; bci++) {
             switch (bytecodes[bci]) {
                 case CALL: {
-                    int funcNameIndex = bytecodes[bci + 1];
-                    int funcArgc = bytecodes[bci + 2];
-                    std::string funcName = bytecode->strings[funcNameIndex];
-                    ofs << bci << ":" << "call " << funcName << " " << funcArgc << "\n";
-                    bci += 2;
+                    int funcArgc = bytecodes[bci + 1];
+                    ofs << bci << ":" << "call " << funcArgc << "\n";
+                    bci++;
                     break;
                 }
                 case CONST_I: {
@@ -165,7 +163,7 @@ void BytecodeDump::dump(Bytecode *bytecode) {
                     ofs << bci << ":" << "return_val" << "\n";
                     break;
                 }
-                case ARR_LEN:{
+                case ARR_LEN: {
                     ofs << bci << ":" << "arr_len" << "\n";
                     break;
                 }

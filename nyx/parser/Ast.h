@@ -232,7 +232,7 @@ AST_EXPR(FuncCallExpr)
 
     std::string moduleName;
     std::string funcName;
-    Expr* closure;
+    ClosureExpr *closure{};
     std::vector<Expr *> args;
 AST_EXPR_END
 

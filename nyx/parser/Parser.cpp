@@ -189,10 +189,10 @@ Expr *Parser::parseUnaryExpr() {
 Expr *Parser::parseExpression(short oldPrecedence) {
     auto *p = parseUnaryExpr();
 
-    if(getCurrentToken()==TK_LPAREN){
-        auto* call = new FuncCallExpr(line,column);
-        call->funcName="";
-        call->closure = p;
+    if (getCurrentToken() == TK_LPAREN) {
+        auto *call = new FuncCallExpr(line, column);
+        call->funcName = "";
+        call->closure = dynamic_cast<ClosureExpr *>(p);
         currentToken = next();
         while (getCurrentToken() != TK_RPAREN) {
             call->args.push_back(parseExpression());
@@ -244,7 +244,7 @@ SimpleStmt *Parser::parseExpressionStmt() {
     if (auto p = parseExpression(); p != nullptr) {
         node = new SimpleStmt(line, column);
         node->expr = p;
-        if(getCurrentToken()==TK_SEMICOLON){
+        if (getCurrentToken() == TK_SEMICOLON) {
             currentToken = next();
         }
     }

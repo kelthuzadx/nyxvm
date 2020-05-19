@@ -63,28 +63,30 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
         for (int bci = 0; bci < bytecodeSize; bci++) {
             switch (bytecodes[bci]) {
                 case CALL: {
-                    int funcNameIndex = bytecodes[bci + 1];
-                    int funcArgc = bytecodes[bci + 2];
-                    std::string funcName = bytecode->strings[funcNameIndex];
+                    int funcArgc = bytecodes[bci + 1];
 
                     auto **funcArgv = new Object *[funcArgc];
                     for (int k = funcArgc - 1; k >= 0; k--) {
                         funcArgv[k] = frame->pop();
                     }
 
-                    const char *funcPtr = NyxVM::findBuiltin(funcName);
-                    if (funcPtr != nullptr) {
-                        Object *result = ((Object *(*)(int, Object **)) funcPtr)(funcArgc, funcArgv);
-                        frame->push(result);
-                    } else {
-                        if (auto iter = bytecode->functions.find(funcName);iter != bytecode->functions.cend()) {
-                            Bytecode *userFunc = iter->second;
-                            this->execute(userFunc, funcArgc, funcArgv);
+                    Object *callee = frame->pop();
+                    if (typeid(*callee) == typeid(NString)) {
+                        auto funcName = dynamic_cast<NString *>(callee)->value;
+                        const char *funcPtr = NyxVM::findBuiltin(funcName);
+                        if (funcPtr != nullptr) {
+                            Object *result = ((Object *(*)(int, Object **)) funcPtr)(funcArgc, funcArgv);
+                            frame->push(result);
+                        } else {
+                            if (auto iter = bytecode->functions.find(funcName);iter != bytecode->functions.cend()) {
+                                Bytecode *userFunc = iter->second;
+                                this->execute(userFunc, funcArgc, funcArgv);
+                            }
                         }
                     }
 
                     // TODO release funcArgv
-                    bci += 2;
+                    bci += 1;
                     break;
                 }
                 case CONST_I: {
@@ -284,12 +286,12 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     delete temp;
                     return;
                 }
-                case ARR_LEN:{
-                    auto* array = frame->pop();
-                    if(typeid(*array)!= typeid(NArray)){
+                case ARR_LEN: {
+                    auto *array = frame->pop();
+                    if (typeid(*array) != typeid(NArray)) {
                         panic("array length is only operated on Array type");
                     }
-                    int length = dynamic_cast<NArray*>(array)->length;
+                    int length = dynamic_cast<NArray *>(array)->length;
                     frame->push(new NInt(length));
                     break;
                 }

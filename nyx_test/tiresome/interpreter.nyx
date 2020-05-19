@@ -1,3 +1,8 @@
+if(!true){
+println(-(-33))
+println(33)
+}
+
 println([36,7,5,6,5,"test"])
 i=0
 while(i!=10){

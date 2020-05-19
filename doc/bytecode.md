@@ -3,8 +3,8 @@ This documentation describes nyx bytecode
 
 ## call
 + description: call the function either in this module or in one of imported modules
-+ format: call,func_name_index,arg_num
-+ stack: `(arg_n, arg_n-1,... arg2, arg1) -> ()`
++ format: call,arg_num
++ stack: `(arg_n, arg_n-1,... arg2, arg1,callee) -> ()`
 
 ## jmp
 + description: jump to target bytecode index

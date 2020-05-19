@@ -116,9 +116,7 @@ void BytecodeGenerator::visitDoubleExpr(DoubleExpr *node) {
 }
 
 void BytecodeGenerator::visitStringExpr(StringExpr *node) {
-    bytecode->strings.push_back(node->literal);
-    bytecode->bytecodes[bci++] = CONST_STR;
-    bytecode->bytecodes[bci++] = bytecode->strings.size() - 1;
+    constStr(node->literal);
 }
 
 void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {
@@ -159,9 +157,7 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
                 bytecode->bytecodes[bci++] = NEG;
                 break;
             case TK_LOGNOT:
-                bytecode->bytecodes[bci++] = CONST_I;
-                *(nyx::int32 *) (bytecode->bytecodes + bci) = 1;
-                bci += 4;
+                constInt(1);
                 bytecode->bytecodes[bci++] = TEST_NE;
                 break;
             case TK_BITNOT:
@@ -249,13 +245,18 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
 }
 
 void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
-    for (auto *arg:node->args) {
-        arg->visit(this);
+    if (!node->funcName.empty()) {
+        // normal function calling
+        constStr(node->funcName);
+        for (auto *arg:node->args) {
+            arg->visit(this);
+        }
+        bytecode->bytecodes[bci++] = CALL;
+        bytecode->bytecodes[bci++] = node->args.size();
+    } else {
+        // closure calling
     }
-    bytecode->bytecodes[bci++] = CALL;
-    bytecode->strings.push_back(node->funcName);
-    bytecode->bytecodes[bci++] = bytecode->strings.size() - 1;
-    bytecode->bytecodes[bci++] = node->args.size();
+
 }
 
 void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
@@ -680,12 +681,12 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
 
     // get array length
     bytecode->bytecodes[bci++] = DUP;
-    bytecode->bytecodes[bci++]  =ARR_LEN;
+    bytecode->bytecodes[bci++] = ARR_LEN;
     // compare index and array length
     varLoad(localMap[index]);
     bytecode->bytecodes[bci++] = TEST_EQ;
     // if not equal, go outside
-    Jmp j1(this,&L_out,JMP_NE);
+    Jmp j1(this, &L_out, JMP_NE);
     // load array[index], and assign to iter
     bytecode->bytecodes[bci++] = DUP;
     varLoad(localMap[index]);
@@ -699,7 +700,7 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
     bytecode->bytecodes[bci++] = ADD;
     varStore(localMap[index]);
     // conditional checking
-    Jmp j2(this,&L_cond,JMP);
+    Jmp j2(this, &L_cond, JMP);
     L_out();
 }
 
@@ -832,6 +833,12 @@ void BytecodeGenerator::constInt(nyx::int32 integer) {
     bytecode->bytecodes[bci++] = CONST_I;
     *(nyx::int32 *) (bytecode->bytecodes + bci) = integer;
     bci += 4;
+}
+
+void BytecodeGenerator::constStr(const std::string &str) {
+    bytecode->strings.push_back(str);
+    bytecode->bytecodes[bci++] = CONST_STR;
+    bytecode->bytecodes[bci++] = bytecode->strings.size() - 1;
 }
 
 void BytecodeGenerator::varLoad(int localIndex) {

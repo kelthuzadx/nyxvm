@@ -89,6 +89,8 @@ private:
 
     void constInt(nyx::int32 integer);
 
+    void constStr(const std::string &str);
+
     void varLoad(int localIndex);
 
     void varStore(int localIndex);

@@ -1,17 +1,18 @@
 #include "Bytecode.h"
 
 Bytecode::~Bytecode() {
-    delete[] bytecodes;
+    delete[] code;
     for (auto &val:functions) {
         delete val.second;
     }
 }
 
 Bytecode::Bytecode() {
-    bytecodes = new nyx::int32[65535];
-    this->bytecodeSize = -1;
+    code = new nyx::int32[65535];
+    this->codeSize = -1;
     this->funcName = "";
-    this->enclosing = nullptr;
-    this->localSize = 0;
+    this->parent = nullptr;
 }
 
+FreeVar::FreeVar(bool isEnclosing, Bytecode *otherEndpoint, int varIndex)
+: isEnclosing(isEnclosing), otherEndpoint(otherEndpoint), varIndex(varIndex) {}

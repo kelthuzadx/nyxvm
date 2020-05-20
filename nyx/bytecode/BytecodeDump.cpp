@@ -12,9 +12,9 @@ BytecodeDump::~BytecodeDump() {
 }
 
 void BytecodeDump::dump(Bytecode *bytecode) {
-    ofs<<"====="<<bytecode->funcName<<"=====\n";
-    int bytecodeSize = bytecode->bytecodeSize;
-    auto *bytecodes = bytecode->bytecodes;
+    ofs << "=====" << bytecode->funcName << "=====\n";
+    int bytecodeSize = bytecode->codeSize;
+    auto *bytecodes = bytecode->code;
     {
         PhaseTime timer("dump bytecode");
         for (int bci = 0; bci < bytecodeSize; bci++) {
@@ -168,6 +168,12 @@ void BytecodeDump::dump(Bytecode *bytecode) {
                     ofs << bci << ":" << "arr_len" << "\n";
                     break;
                 }
+                case LOAD_FREE:{
+                    int index = bytecodes[bci + 1];
+                    ofs << bci << ":" << "load_free " << index << "\n";
+                    bci++;
+                    break;
+                }
                 default:
                     ofs << bci << ":" << "<illegal>" << "\n";
                     break;
@@ -175,7 +181,7 @@ void BytecodeDump::dump(Bytecode *bytecode) {
         }
     }
 
-    for(auto& func:bytecode->functions){
+    for (auto &func:bytecode->functions) {
         dump(func.second);
     }
     ofs.flush();

@@ -31,9 +31,9 @@ void Interpreter::neg(Object *object) {
 
 void Interpreter::createFrame(Bytecode *bytecode, int argc, Object **argv) {
     // Create execution frame
-    this->frame = new Frame(bytecode->localSize);
+    this->frame = new Frame(bytecode->localMap.size());
     for (int i = argc - 1, k = 0; i >= 0; i--, k++) {
-        auto* obj = argv[i];
+        auto *obj = argv[i];
         frame->store(k, obj);
     }
     stack.push_back(frame);
@@ -56,8 +56,8 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
 
 
     // Set up bytecode size and max length
-    int bytecodeSize = bytecode->bytecodeSize;
-    auto *bytecodes = bytecode->bytecodes;
+    int bytecodeSize = bytecode->codeSize;
+    auto *bytecodes = bytecode->code;
 
     // Execute bytecode
     {
@@ -294,6 +294,9 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     }
                     int length = dynamic_cast<NArray *>(array)->length;
                     frame->push(new NInt(length));
+                    break;
+                }
+                case LOAD_FREE: {
                     break;
                 }
                 default:

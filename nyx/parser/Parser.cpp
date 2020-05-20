@@ -307,8 +307,8 @@ MatchStmt *Parser::parseMatchStmt() {
     auto *node = new MatchStmt(line, column);
 
     // If we met "{" after "match" keyword, we will skip consuming condition
-    // expression and the match statement degenerated to normaml multi
-    // conditonal checkings.
+    // expression and the match statement degenerated to normal multi
+    // conditional checkings.
     if (getCurrentToken() == TK_LPAREN) {
         currentToken = next();
         node->cond = parseExpression();

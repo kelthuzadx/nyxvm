@@ -27,4 +27,9 @@ extern "C" Object *nyxffi_len(int argc, Object **argv);
 // exit the program
 //===----------------------------------------------------------------------===//
 extern "C" Object *nyxffi_exit(int argc, Object **argv);
+
+//===----------------------------------------------------------------------===//
+// standard assertion
+//===----------------------------------------------------------------------===//
+extern "C" Object *nyxffi_assert(int argc, Object **argv);
 #endif //NYX_BUILTIN_H

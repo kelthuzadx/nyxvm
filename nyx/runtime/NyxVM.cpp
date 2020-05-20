@@ -14,7 +14,8 @@ const char *((NyxVM::builtin[])[2]) = {
         {"nyxffi_print",   (const char *) nyxffi_print},
         {"nyxffi_typeof",  (const char *) nyxffi_typeof},
         {"nyxffi_len",     (const char *) nyxffi_len},
-        {"nyxffi_exit",    (const char *) nyxffi_exit}
+        {"nyxffi_exit",    (const char *) nyxffi_exit},
+        {"nyxffi_assert",  (const char *) nyxffi_assert}
 };
 
 void NyxVM::ignition(const char *script) {

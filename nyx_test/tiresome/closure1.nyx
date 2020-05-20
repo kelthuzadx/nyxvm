@@ -1,5 +1,10 @@
+
+
 func p(a,b,c){
-print(a,b,c)
+    return func(){
+        println(a,b,c)
+    }
 }
 
-p(3,"x",4)
+t = p(3,"x",4)
+t()

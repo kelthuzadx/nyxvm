@@ -16,12 +16,10 @@ class BytecodeGenerator : public AstVisitor {
     friend class Jmp;
 
 private:
-    std::unordered_map<std::string, int> localMap;
     Bytecode *bytecode{};
     Label *continuePoint{};
     Label *breakPoint{};
     int bci;
-    int local;
 
 private:
     void visitBlock(Block *node) override;
@@ -85,9 +83,7 @@ private:
 private:
     Bytecode *generateFuncDef(FuncDef *node);
 
-    Bytecode* generateClosureExpr(Bytecode* enclosing,ClosureExpr* node);
-
-    void fixupBytecode(const std::string &funcName);
+    Bytecode *generateClosureExpr(Bytecode *enclosing, ClosureExpr *node);
 
     void genConstI(nyx::int32 integer);
 
@@ -97,11 +93,17 @@ private:
 
     void genConstD(double d);
 
-    void varLoad(int localIndex);
+    void genLoad(const std::string&name);
 
-    void varStore(int localIndex);
+    void genStore(const std::string&name);
 
-    void varNew(const std::string &name);
+    void genLoadIndex(const std::string&array, Expr* index);
+
+    void genStoreIndex(const std::string&array,Expr*value, Expr* index);
+
+    void genLoadFree(Bytecode* enclosing,const std::string& name);
+
+    void genArray(std::vector<Expr *> node);
 
     static bool isShortCircuitAnd(Expr *expr);
 

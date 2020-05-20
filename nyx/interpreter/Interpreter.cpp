@@ -36,69 +36,102 @@ void Interpreter::createFrame(Bytecode *bytecode, int argc, Object **argv) {
         auto *obj = argv[i];
         frame->store(k, obj);
     }
+
+    if(!bytecode->freeVars.empty()){
+        for(auto* freeVar: bytecode->freeVars){
+            if(freeVar->isEnclosing){
+                freeVar->value = &frame->local()[freeVar->varIndex];
+            }
+        }
+    }
+
     stack.push_back(frame);
 }
 
-void Interpreter::destroyFrame() {
+void Interpreter::destroyFrame(Bytecode *bytecode,bool hasReturnValue) {
     // Destroy current frame, current frame may points to next frame
     auto *temp = stack.back();
+    Object* returnVale = nullptr;
+    if(hasReturnValue){
+        returnVale = temp->pop();
+    }
     stack.pop_back();
     if (!stack.empty()) {
         this->frame = stack.back();
+        if(returnVale!= nullptr){
+            this->frame->push(returnVale);
+        }
     } else {
         this->frame = nullptr;
     }
-    delete temp;
+
+    if(!bytecode->freeVars.empty()){
+        for(auto* freeVar: bytecode->freeVars){
+            if(freeVar->isEnclosing){
+                // "Move" free variable to endpoint
+                freeVar->endpoint->value = freeVar->value;
+                temp->local()[freeVar->varIndex] = nullptr;
+            }
+        }
+    }
+   // delete temp;
+}
+
+void Interpreter::call(Bytecode* bytecode, int bci) {
+    int funcArgc = bytecode->code[bci + 1];
+
+    auto **funcArgv = new Object *[funcArgc];
+    for (int k = funcArgc - 1; k >= 0; k--) {
+        funcArgv[k] = frame->pop();
+    }
+
+    Object *callee = frame->pop();
+    if (typeid(*callee) == typeid(NString)) {
+        auto funcName = dynamic_cast<NString *>(callee)->value;
+        const char *funcPtr = NyxVM::findBuiltin(funcName);
+        if (funcPtr != nullptr) {
+            Object *result = ((Object *(*)(int, Object **)) funcPtr)(funcArgc, funcArgv);
+            frame->push(result);
+        } else {
+            if (auto iter = bytecode->functions.find(funcName);iter != bytecode->functions.cend()) {
+                Bytecode *userFunc = iter->second;
+                this->execute(userFunc, funcArgc, funcArgv);
+            }else{
+                int closureIndex = bytecode->localMap[funcName];
+                if(typeid(*frame->local()[closureIndex]) == typeid(NClosure)){
+                    auto* closureObject = dynamic_cast<NClosure*>(frame->local()[closureIndex]);
+                    this->execute(closureObject->code, funcArgc, funcArgv);
+                }
+
+            }
+
+        }
+    }
+
+    // TODO release funcArgv
 }
 
 void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
     createFrame(bytecode, argc, argv);
-
-
-    // Set up bytecode size and max length
-    int bytecodeSize = bytecode->codeSize;
-    auto *bytecodes = bytecode->code;
-
+    auto *code = bytecode->code;
     // Execute bytecode
     {
-        for (int bci = 0; bci < bytecodeSize; bci++) {
-            switch (bytecodes[bci]) {
+        for (int bci = 0; bci < bytecode->codeSize; bci++) {
+            switch (code[bci]) {
                 case CALL: {
-                    int funcArgc = bytecodes[bci + 1];
-
-                    auto **funcArgv = new Object *[funcArgc];
-                    for (int k = funcArgc - 1; k >= 0; k--) {
-                        funcArgv[k] = frame->pop();
-                    }
-
-                    Object *callee = frame->pop();
-                    if (typeid(*callee) == typeid(NString)) {
-                        auto funcName = dynamic_cast<NString *>(callee)->value;
-                        const char *funcPtr = NyxVM::findBuiltin(funcName);
-                        if (funcPtr != nullptr) {
-                            Object *result = ((Object *(*)(int, Object **)) funcPtr)(funcArgc, funcArgv);
-                            frame->push(result);
-                        } else {
-                            if (auto iter = bytecode->functions.find(funcName);iter != bytecode->functions.cend()) {
-                                Bytecode *userFunc = iter->second;
-                                this->execute(userFunc, funcArgc, funcArgv);
-                            }
-                        }
-                    }
-
-                    // TODO release funcArgv
+                    call(bytecode, bci);
                     bci += 1;
                     break;
                 }
                 case CONST_I: {
-                    nyx::int32 value = *(nyx::int32 *) (bytecodes + bci + 1);
+                    nyx::int32 value = *(nyx::int32 *) (code + bci + 1);
                     auto *object = new NInt(value);
                     frame->push(object);
                     bci += 4;
                     break;
                 }
                 case CONST_D: {
-                    double value = *(double *) (bytecodes + bci + 1);
+                    double value = *(double *) (code + bci + 1);
                     auto *object = new NDouble(value);
                     frame->push(object);
                     bci += 8;
@@ -109,7 +142,7 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     break;
                 }
                 case CONST_STR: {
-                    int index = bytecodes[bci + 1];
+                    int index = code[bci + 1];
                     auto &str = bytecode->strings[index];
                     Object *object = new NString(str);
                     frame->push(object);
@@ -183,7 +216,7 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     break;
                 }
                 case JMP: {
-                    int target = bytecodes[bci + 1];
+                    int target = code[bci + 1];
                     bci = target - 1;
                     break;
                 }
@@ -192,7 +225,7 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     assert(cond->value == 0 || cond->value == 1);
                     if (cond->value == 0) {
                         // Goto target
-                        int target = bytecodes[bci + 1];
+                        int target = code[bci + 1];
                         bci = target - 1;
                     } else {
                         // Otherwise, just forward bci
@@ -205,7 +238,7 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     assert(cond->value == 0 || cond->value == 1);
                     if (cond->value == 1) {
                         // Goto target
-                        int target = bytecodes[bci + 1];
+                        int target = code[bci + 1];
                         bci = target - 1;
                     } else {
                         // Otherwise, just forward bci
@@ -236,14 +269,14 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     break;
                 }
                 case LOAD: {
-                    int index = bytecodes[bci + 1];
+                    int index = code[bci + 1];
                     frame->load(index);
                     bci++;
                     break;
                 }
                 case STORE: {
                     Object *value = frame->pop();
-                    int index = bytecodes[bci + 1];
+                    int index = code[bci + 1];
                     frame->store(index, value);
                     bci++;
                     break;
@@ -263,7 +296,7 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     break;
                 }
                 case NEW_ARR: {
-                    int length = bytecodes[bci + 1];
+                    int length = code[bci + 1];
                     frame->push(new NArray(length));
                     bci++;
                     break;
@@ -273,18 +306,11 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     break;
                 }
                 case RETURN: {
-                    destroyFrame();
+                    destroyFrame(bytecode,false);
                     return;
                 }
                 case RETURN_VAL: {
-                    auto *temp = stack.back();
-                    stack.pop_back();
-                    if (stack.empty()) {
-                        panic("return from top context");
-                    }
-                    this->frame = stack.back();
-                    this->frame->push(temp->pop());
-                    delete temp;
+                    destroyFrame(bytecode, true);
                     return;
                 }
                 case ARR_LEN: {
@@ -296,15 +322,30 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     frame->push(new NInt(length));
                     break;
                 }
+                case CONST_CLOSURE:{
+                    int closureIndex = code[bci+1];
+                    frame->push(new NClosure(bytecode->closures[closureIndex]));
+                    bci++;
+                    break;
+                }
                 case LOAD_FREE: {
+                    int freeIndex = code[bci+1];
+                    FreeVar* freeVar = bytecode->freeVars[freeIndex];
+                    if(*(freeVar->value)!=nullptr){
+                        Object* obj = *(freeVar->value);
+                        frame->push(*(freeVar->value));
+                    }else{
+                        frame->push(*(freeVar->endpoint->value));
+                    }
+                    bci++;
                     break;
                 }
                 default:
-                    panic("invalid bytecode %d", bytecodes[bci]);
+                    panic("invalid bytecode %d", code[bci]);
             }
         }
     }
-    destroyFrame();
+    destroyFrame(bytecode, false);
 }
 
 void Interpreter::execute(Bytecode *bytecode) {

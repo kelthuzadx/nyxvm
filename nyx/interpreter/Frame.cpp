@@ -1,11 +1,11 @@
 #include "Frame.h"
 
 Frame::Frame(int localSize) {
-    local = new Object *[localSize];
+    locals = new Object *[localSize];
 }
 
 Frame::~Frame() {
-    delete[] local;
+    delete[] locals;
     for (auto &slot:slots) {
         delete slot;
     }
@@ -22,11 +22,11 @@ void Frame::push(Object *obj) {
 }
 
 void Frame::load(int index) {
-    slots.push_back(local[index]);
+    slots.push_back(locals[index]);
 }
 
 void Frame::store(int index, Object *value) {
-    local[index] = value;
+    locals[index] = value;
 }
 
 void Frame::dup() {

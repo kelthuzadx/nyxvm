@@ -10,10 +10,17 @@ NArray::~NArray() {
     delete[] array;
 }
 
+
 NArray::NArray(int length) {
     this->length = length;
     this->array = new Object *[length];
 }
+
+
+NClosure::NClosure(Bytecode *code):code(code) {
+
+}
+
 
 std::string Object::toString() {
     int addr = *((int *) (this));
@@ -57,4 +64,3 @@ std::string NArray::toString() {
 
     return str;
 }
-

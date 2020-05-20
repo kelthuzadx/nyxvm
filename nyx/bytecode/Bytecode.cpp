@@ -14,5 +14,3 @@ Bytecode::Bytecode() {
     this->parent = nullptr;
 }
 
-FreeVar::FreeVar(bool isEnclosing, Bytecode *otherEndpoint, int varIndex)
-: isEnclosing(isEnclosing), otherEndpoint(otherEndpoint), varIndex(varIndex) {}

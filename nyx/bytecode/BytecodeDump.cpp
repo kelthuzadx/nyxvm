@@ -174,6 +174,12 @@ void BytecodeDump::dump(Bytecode *bytecode) {
                     bci++;
                     break;
                 }
+                case CONST_CLOSURE:{
+                    int index = bytecodes[bci + 1];
+                    ofs << bci << ":" << "const_closure " << index << "\n";
+                    bci++;
+                    break;
+                }
                 default:
                     ofs << bci << ":" << "<illegal>" << "\n";
                     break;
@@ -182,6 +188,10 @@ void BytecodeDump::dump(Bytecode *bytecode) {
     }
 
     for (auto &func:bytecode->functions) {
+        dump(func.second);
+    }
+
+    for(auto& func:bytecode->closures){
         dump(func.second);
     }
     ofs.flush();

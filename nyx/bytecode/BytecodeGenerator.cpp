@@ -885,16 +885,24 @@ void BytecodeGenerator::genStoreIndex(const std::string &array, Expr *value, Exp
 }
 
 void BytecodeGenerator::genLoadFree(Bytecode* enclosing, const std::string &name) {
-    int freeIndex = bytecode->localMap[name];
+    auto* refer = new FreeVar;
+    auto* referent = new FreeVar;
 
-    auto* refer = new FreeVar(false,enclosing,freeIndex);
-    auto* referent = new FreeVar(true,this->bytecode,freeIndex);
+    refer->isEnclosing = false;
+    refer->endpoint = referent;
+    refer->value = nullptr;
+    refer->varIndex =  enclosing->localMap[name];
+
+    referent->isEnclosing = true;
+    referent->endpoint = refer;
+    referent->value = nullptr;
+    referent->varIndex = enclosing->localMap[name];
 
     enclosing->freeVars.push_back(referent);
     bytecode->freeVars.push_back(refer);
 
     bytecode->code[bci++] = LOAD_FREE;
-    bytecode->code[bci++] = freeIndex;
+    bytecode->code[bci++] = bytecode->freeVars.size()-1;
 }
 
 inline bool BytecodeGenerator::isShortCircuitOr(Expr *expr) {
@@ -915,8 +923,10 @@ void BytecodeGenerator::visitFuncDef(FuncDef *node) {
 void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {
     // Create new BytecodeGenerator and produce bytecodes
     BytecodeGenerator gen;
-    auto *funcBytecode = gen.generateClosureExpr(this->bytecode, node);
-    bytecode->closures.insert({node->id, funcBytecode});
+    auto *closureBytecode = gen.generateClosureExpr(this->bytecode, node);
+    bytecode->closures.insert({node->id, closureBytecode});
+    bytecode->code[bci++] = CONST_CLOSURE;
+    bytecode->code[bci++] = node->id;
 }
 
 

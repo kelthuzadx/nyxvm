@@ -5,6 +5,8 @@
 
 #include "Global.h"
 
+struct Bytecode;
+
 struct Object {
 
     Object() = default;
@@ -47,6 +49,12 @@ struct NArray : public Object {
 
     int length;
     Object **array;
+};
+
+struct NClosure: public Object{
+    explicit NClosure(Bytecode* code);
+
+    Bytecode* code;
 };
 
 #endif //NYX_OBJECT_H

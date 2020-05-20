@@ -26,7 +26,9 @@ private:
 
     void createFrame(Bytecode *bytecode, int argc, Object **argv);
 
-    void destroyFrame();
+    void destroyFrame(Bytecode *bytecode,bool hasReturnValue);
+
+    void call(Bytecode* bytecodes, int bci);
 
     void execute(Bytecode *bytecode, int argc, Object **argv);
 

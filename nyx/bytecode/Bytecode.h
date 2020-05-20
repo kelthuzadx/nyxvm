@@ -5,15 +5,16 @@
 #include <string>
 #include <unordered_map>
 #include "../runtime/Global.h"
+#include "../runtime/Object.h"
 
 struct Bytecode;
 
 struct FreeVar{
     bool isEnclosing;
-    Bytecode* otherEndpoint{};
+    FreeVar* endpoint{};
     int varIndex{};
+    Object** value{};
 
-    FreeVar(bool isEnclosing, Bytecode *otherEndpoint, int varIndex);
 };
 
 struct Bytecode {

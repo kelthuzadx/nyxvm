@@ -1,10 +1,11 @@
 
 
-func p(a,b,c){
+func p(){
+q = 12
     return func(){
-        println(a,b,c)
+        println(q)
     }
 }
 
-t = p(3,"x",4)
+t = p()
 t()

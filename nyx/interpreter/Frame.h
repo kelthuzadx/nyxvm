@@ -7,7 +7,7 @@
 class Frame {
 private:
     std::vector<Object *> slots;
-    Object **local;
+    Object **locals;
 
 public:
     explicit Frame(int localSize);
@@ -23,6 +23,8 @@ public:
     void store(int index, Object *value);
 
     void dup();
+
+    Object** local(){return locals;}
 };
 
 #endif //NYX_FRAME_H

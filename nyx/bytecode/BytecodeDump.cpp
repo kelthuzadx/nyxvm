@@ -168,13 +168,13 @@ void BytecodeDump::dump(Bytecode *bytecode) {
                     ofs << bci << ":" << "arr_len" << "\n";
                     break;
                 }
-                case LOAD_FREE:{
+                case LOAD_FREE: {
                     int index = bytecodes[bci + 1];
                     ofs << bci << ":" << "load_free " << index << "\n";
                     bci++;
                     break;
                 }
-                case CONST_CLOSURE:{
+                case CONST_CLOSURE: {
                     int index = bytecodes[bci + 1];
                     ofs << bci << ":" << "const_closure " << index << "\n";
                     bci++;
@@ -191,7 +191,7 @@ void BytecodeDump::dump(Bytecode *bytecode) {
         dump(func.second);
     }
 
-    for(auto& func:bytecode->closures){
+    for (auto &func:bytecode->closures) {
         dump(func.second);
     }
     ofs.flush();

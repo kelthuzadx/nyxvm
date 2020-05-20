@@ -1,11 +1,9 @@
-
-
-func p(){
-q = 12
-    return func(){
-        println(q)
+func p(a){
+    q = 12 + a
+    return func(t){
+        return q+t
     }
 }
 
-t = p()
-t()
+t = p(13)
+assert(t(25)==50)

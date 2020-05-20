@@ -37,9 +37,9 @@ void Interpreter::createFrame(Bytecode *bytecode, int argc, Object **argv) {
         frame->store(k, obj);
     }
 
-    if(!bytecode->freeVars.empty()){
-        for(auto* freeVar: bytecode->freeVars){
-            if(freeVar->isEnclosing){
+    if (!bytecode->freeVars.empty()) {
+        for (auto *freeVar: bytecode->freeVars) {
+            if (freeVar->isEnclosing) {
                 freeVar->value = &frame->local()[freeVar->varIndex];
             }
         }
@@ -48,36 +48,36 @@ void Interpreter::createFrame(Bytecode *bytecode, int argc, Object **argv) {
     stack.push_back(frame);
 }
 
-void Interpreter::destroyFrame(Bytecode *bytecode,bool hasReturnValue) {
+void Interpreter::destroyFrame(Bytecode *bytecode, bool hasReturnValue) {
     // Destroy current frame, current frame may points to next frame
     auto *temp = stack.back();
-    Object* returnVale = nullptr;
-    if(hasReturnValue){
+    Object *returnVale = nullptr;
+    if (hasReturnValue) {
         returnVale = temp->pop();
     }
     stack.pop_back();
     if (!stack.empty()) {
         this->frame = stack.back();
-        if(returnVale!= nullptr){
+        if (returnVale != nullptr) {
             this->frame->push(returnVale);
         }
     } else {
         this->frame = nullptr;
     }
 
-    if(!bytecode->freeVars.empty()){
-        for(auto* freeVar: bytecode->freeVars){
-            if(freeVar->isEnclosing){
-                // "Move" free variable to endpoint
-                freeVar->endpoint->value = freeVar->value;
+    if (!bytecode->freeVars.empty()) {
+        for (auto *freeVar: bytecode->freeVars) {
+            if (freeVar->isEnclosing) {
+                // This is a trick, it "moves" free variable to endpoint
+                freeVar->endpoint->value = (Object **) (*(freeVar->value));
                 temp->local()[freeVar->varIndex] = nullptr;
             }
         }
     }
-   // delete temp;
+    delete temp;
 }
 
-void Interpreter::call(Bytecode* bytecode, int bci) {
+void Interpreter::call(Bytecode *bytecode, int bci) {
     int funcArgc = bytecode->code[bci + 1];
 
     auto **funcArgv = new Object *[funcArgc];
@@ -96,10 +96,10 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
             if (auto iter = bytecode->functions.find(funcName);iter != bytecode->functions.cend()) {
                 Bytecode *userFunc = iter->second;
                 this->execute(userFunc, funcArgc, funcArgv);
-            }else{
+            } else {
                 int closureIndex = bytecode->localMap[funcName];
-                if(typeid(*frame->local()[closureIndex]) == typeid(NClosure)){
-                    auto* closureObject = dynamic_cast<NClosure*>(frame->local()[closureIndex]);
+                if (typeid(*frame->local()[closureIndex]) == typeid(NClosure)) {
+                    auto *closureObject = dynamic_cast<NClosure *>(frame->local()[closureIndex]);
                     this->execute(closureObject->code, funcArgc, funcArgv);
                 }
 
@@ -306,7 +306,7 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     break;
                 }
                 case RETURN: {
-                    destroyFrame(bytecode,false);
+                    destroyFrame(bytecode, false);
                     return;
                 }
                 case RETURN_VAL: {
@@ -322,20 +322,19 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     frame->push(new NInt(length));
                     break;
                 }
-                case CONST_CLOSURE:{
-                    int closureIndex = code[bci+1];
+                case CONST_CLOSURE: {
+                    int closureIndex = code[bci + 1];
                     frame->push(new NClosure(bytecode->closures[closureIndex]));
                     bci++;
                     break;
                 }
                 case LOAD_FREE: {
-                    int freeIndex = code[bci+1];
-                    FreeVar* freeVar = bytecode->freeVars[freeIndex];
-                    if(*(freeVar->value)!=nullptr){
-                        Object* obj = *(freeVar->value);
-                        frame->push(*(freeVar->value));
-                    }else{
-                        frame->push(*(freeVar->endpoint->value));
+                    int freeIndex = code[bci + 1];
+                    FreeVar *freeVar = bytecode->freeVars[freeIndex];
+                    if (*(freeVar->value) != nullptr) {
+                        frame->push((Object *) (freeVar->value));
+                    } else {
+                        frame->push((Object *) (freeVar->endpoint->value));
                     }
                     bci++;
                     break;

@@ -51,10 +51,10 @@ struct NArray : public Object {
     Object **array;
 };
 
-struct NClosure: public Object{
-    explicit NClosure(Bytecode* code);
+struct NClosure : public Object {
+    explicit NClosure(Bytecode *code);
 
-    Bytecode* code;
+    Bytecode *code;
 };
 
 #endif //NYX_OBJECT_H

@@ -9,11 +9,11 @@
 
 struct Bytecode;
 
-struct FreeVar{
+struct FreeVar {
     bool isEnclosing;
-    FreeVar* endpoint{};
+    FreeVar *endpoint{};
     int varIndex{};
-    Object** value{};
+    Object **value{};
 
 };
 
@@ -22,7 +22,7 @@ struct Bytecode {
     std::vector<std::string> strings;
     std::unordered_map<std::string, int> localMap;
 
-    std::vector<FreeVar*> freeVars;
+    std::vector<FreeVar *> freeVars;
 
     int codeSize;
     nyx::int32 *code;

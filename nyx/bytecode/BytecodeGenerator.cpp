@@ -125,7 +125,7 @@ void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {
     while (parent != nullptr) {
         if (auto iter = parent->localMap.find(node->identName);
                 iter != parent->localMap.cend()) {
-            genLoadFree(parent,node->identName);
+            genLoadFree(parent, node->identName);
             return;
         }
         parent = parent->parent;
@@ -135,7 +135,7 @@ void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {
 }
 
 void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {
-    genLoadIndex(node->identName,node->index);
+    genLoadIndex(node->identName, node->index);
 }
 
 void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
@@ -261,11 +261,11 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
         auto *t = dynamic_cast<IndexExpr *>(node->lhs);
         if (node->opt == TK_ASSIGN) {
             // TODO: store freeval
-            genStoreIndex(t->identName,node->rhs,t->index);
+            genStoreIndex(t->identName, node->rhs, t->index);
         } else {
             // arr[index] += value
             genLoad(t->identName);
-            genLoadIndex(t->identName,t->index);
+            genLoadIndex(t->identName, t->index);
             node->rhs->visit(this);
             switch (node->opt) {
                 case TK_PLUS_AGN:
@@ -324,6 +324,7 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
         }
     }
 }
+
 void BytecodeGenerator::visitStmt(Stmt *node) {
     panic("should not reach here");
 }
@@ -849,7 +850,7 @@ void BytecodeGenerator::genLoad(const std::string &name) {
     bytecode->code[bci++] = localIndex;
 }
 
-void BytecodeGenerator::genStore(const std::string&name) {
+void BytecodeGenerator::genStore(const std::string &name) {
     if (auto iter = bytecode->localMap.find(name);iter != bytecode->localMap.cend()) {
         // reassign existing variable a new value
         int localIndex = bytecode->localMap[name];
@@ -865,7 +866,7 @@ void BytecodeGenerator::genStore(const std::string&name) {
     }
 }
 
-void BytecodeGenerator::genLoadIndex(const std::string&array, Expr* index) {
+void BytecodeGenerator::genLoadIndex(const std::string &array, Expr *index) {
     if (auto iter = bytecode->localMap.find(array);iter == bytecode->localMap.cend()) {
         panic("variable undefined but using");
     }
@@ -884,14 +885,14 @@ void BytecodeGenerator::genStoreIndex(const std::string &array, Expr *value, Exp
     bytecode->code[bci++] = STORE_INDEX;
 }
 
-void BytecodeGenerator::genLoadFree(Bytecode* enclosing, const std::string &name) {
-    auto* refer = new FreeVar;
-    auto* referent = new FreeVar;
+void BytecodeGenerator::genLoadFree(Bytecode *enclosing, const std::string &name) {
+    auto *refer = new FreeVar;
+    auto *referent = new FreeVar;
 
     refer->isEnclosing = false;
     refer->endpoint = referent;
     refer->value = nullptr;
-    refer->varIndex =  enclosing->localMap[name];
+    refer->varIndex = enclosing->localMap[name];
 
     referent->isEnclosing = true;
     referent->endpoint = refer;
@@ -902,7 +903,7 @@ void BytecodeGenerator::genLoadFree(Bytecode* enclosing, const std::string &name
     bytecode->freeVars.push_back(refer);
 
     bytecode->code[bci++] = LOAD_FREE;
-    bytecode->code[bci++] = bytecode->freeVars.size()-1;
+    bytecode->code[bci++] = bytecode->freeVars.size() - 1;
 }
 
 inline bool BytecodeGenerator::isShortCircuitOr(Expr *expr) {
@@ -937,7 +938,7 @@ BytecodeGenerator::BytecodeGenerator() {
 
 Bytecode *BytecodeGenerator::generateFuncDef(FuncDef *node) {
     // create name in local map, interpreter will assign arguments to these parameters
-    for (auto & param : node->params) {
+    for (auto &param : node->params) {
         bytecode->localMap.insert({param, bytecode->localMap.size()});
     }
 
@@ -949,7 +950,7 @@ Bytecode *BytecodeGenerator::generateFuncDef(FuncDef *node) {
 
 Bytecode *BytecodeGenerator::generateClosureExpr(Bytecode *enclosing, ClosureExpr *node) {
     // create name in local map, interpreter will assign arguments to these parameters
-    for (auto & param : node->params) {
+    for (auto &param : node->params) {
         bytecode->localMap.insert({param, bytecode->localMap.size()});
     }
     this->bytecode->parent = enclosing;

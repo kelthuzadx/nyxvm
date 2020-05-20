@@ -93,15 +93,15 @@ private:
 
     void genConstD(double d);
 
-    void genLoad(const std::string&name);
+    void genLoad(const std::string &name);
 
-    void genStore(const std::string&name);
+    void genStore(const std::string &name);
 
-    void genLoadIndex(const std::string&array, Expr* index);
+    void genLoadIndex(const std::string &array, Expr *index);
 
-    void genStoreIndex(const std::string&array,Expr*value, Expr* index);
+    void genStoreIndex(const std::string &array, Expr *value, Expr *index);
 
-    void genLoadFree(Bytecode* enclosing,const std::string& name);
+    void genLoadFree(Bytecode *enclosing, const std::string &name);
 
     void genArray(std::vector<Expr *> node);
 

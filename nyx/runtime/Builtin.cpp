@@ -49,9 +49,13 @@ extern "C" Object *nyxffi_exit(int argc, Object **argv) {
 }
 
 extern "C" Object *nyxffi_assert(int argc, Object **argv) {
-    assert(argc == 2 && typeid(*argv[0]) == typeid(NInt) && typeid(*argv[2]) == typeid(NString));
+    assert((argc == 1 || argc == 2) && typeid(*argv[0]) == typeid(NInt));
     if (dynamic_cast<NInt *>(argv[0])->value == 0) {
-        std::cerr << "\\n\\033[31m" << dynamic_cast<NString *>(argv[1])->value << "\n";
+        if (argc == 2 && typeid(*argv[1]) == typeid(NString)) {
+            std::cerr << dynamic_cast<NString *>(argv[1])->value << "\n";
+        } else {
+            std::cerr << "Assertion failure!\n";
+        }
         exit(1);
     }
     return nullptr;

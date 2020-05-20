@@ -24,7 +24,7 @@ public:
 
     void dup();
 
-    Object** local(){return locals;}
+    Object **local() { return locals; }
 };
 
 #endif //NYX_FRAME_H

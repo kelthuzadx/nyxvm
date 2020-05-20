@@ -17,7 +17,7 @@ NArray::NArray(int length) {
 }
 
 
-NClosure::NClosure(Bytecode *code):code(code) {
+NClosure::NClosure(Bytecode *code) : code(code) {
 
 }
 

@@ -7,3 +7,18 @@ func p(a){
 
 t = p(13)
 assert(t(25)==50)
+
+func test(a){
+    b = 1
+    return func(t1){
+        c = 1
+        return func(t2){
+            return a+b+c+t1+t2
+        }
+    }
+}
+t = test(3)
+t = t(1)
+t = t(1)
+
+assert(t==7)

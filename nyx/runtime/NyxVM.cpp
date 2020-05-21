@@ -46,6 +46,7 @@ const char *NyxVM::findBuiltin(const std::string &name) {
 
 void NyxVM::setup() {
     PhaseTime timer("set up everything about VM");
+    Opcode::initialize();
 }
 
 

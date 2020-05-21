@@ -43,7 +43,7 @@ public:
 template<int Operation>
 void Interpreter::arithmetic(Object *o1, Object *o2) {
     switch (Operation) {
-        case ADD:
+        case Opcode::ADD:
             if (typeid(*o1) == typeid(NInt)) {
                 NInt *t1 = dynamic_cast<NInt *>(o1);
                 if (typeid(*o2) == typeid(NInt)) {
@@ -99,7 +99,7 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 panic("should not reach here");
             }
             break;
-        case SUB:
+        case Opcode::SUB:
             if (typeid(*o1) == typeid(NInt)) {
                 NInt *t1 = dynamic_cast<NInt *>(o1);
                 if (typeid(*o2) == typeid(NInt)) {
@@ -130,7 +130,7 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 panic("should not reach here");
             }
             break;
-        case MUL:
+        case Opcode::MUL:
             if (typeid(*o1) == typeid(NInt)) {
                 NInt *t1 = dynamic_cast<NInt *>(o1);
                 if (typeid(*o2) == typeid(NInt)) {
@@ -161,7 +161,7 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 panic("should not reach here");
             }
             break;
-        case DIV:
+        case Opcode::DIV:
             if (typeid(*o1) == typeid(NInt)) {
                 NInt *t1 = dynamic_cast<NInt *>(o1);
                 if (typeid(*o2) == typeid(NInt)) {
@@ -192,7 +192,7 @@ void Interpreter::arithmetic(Object *o1, Object *o2) {
                 panic("should not reach here");
             }
             break;
-        case REM: {
+        case Opcode::REM: {
             if (typeid(*o1) != typeid(NInt) || typeid(*o2) != typeid(NInt)) {
                 panic("operator % needs both integer operand");
             }
@@ -211,22 +211,22 @@ template<typename T1, typename T2>
 bool genericCompare(int operation, T1 *t1, T2 *t2) {
     bool cond;
     switch (operation) {
-        case TEST_EQ:
+        case Opcode::TEST_EQ:
             cond = t1->value == t2->value;
             break;
-        case TEST_NE:
+        case Opcode::TEST_NE:
             cond = t1->value != t2->value;
             break;
-        case TEST_GE:
+        case Opcode::TEST_GE:
             cond = t1->value >= t2->value;
             break;
-        case TEST_GT:
+        case Opcode::TEST_GT:
             cond = t1->value > t2->value;
             break;
-        case TEST_LE:
+        case Opcode::TEST_LE:
             cond = t1->value <= t2->value;
             break;
-        case TEST_LT:
+        case Opcode::TEST_LT:
             cond = t1->value < t2->value;
             break;
         default:
@@ -272,10 +272,10 @@ void Interpreter::bitop(Object *o1, Object *o2) {
     }
     auto *t1 = dynamic_cast<NInt *>(o1);
     auto *t2 = dynamic_cast<NInt *>(o2);
-    if (Operation == AND) {
+    if (Operation == Opcode::AND) {
         auto *res = new NInt((nyx::int32) (t1->value & t2->value));
         frame->push(res);
-    } else if (Operation == OR) {
+    } else if (Operation == Opcode::OR) {
         auto *res = new NInt((nyx::int32) (t1->value | t2->value));
         frame->push(res);
     } else {

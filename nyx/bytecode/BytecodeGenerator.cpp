@@ -8,7 +8,7 @@ class Jmp {
 private:
     int patching;
 public:
-    explicit Jmp(BytecodeGenerator *gen, Label *label, Opcode opcode);
+    explicit Jmp(BytecodeGenerator *gen, Label *label, Opcode::Mnemonic opcode);
 
     [[nodiscard]] int getPatching() const { return patching; }
 };
@@ -58,7 +58,7 @@ void Label::setGenerator(BytecodeGenerator *gen) {
     this->destination = gen->bci;
 }
 
-Jmp::Jmp(BytecodeGenerator *gen, Label *label, Opcode opcode) {
+Jmp::Jmp(BytecodeGenerator *gen, Label *label, Opcode::Mnemonic opcode) {
     // Generate JMP* bytecode
     gen->bytecode->code[gen->bci++] = opcode;
     // Record JMP* target as patching address and temporarily set to -1
@@ -145,14 +145,14 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
         node->lhs->visit(this);
         switch (node->opt) {
             case TK_MINUS:
-                bytecode->code[bci++] = NEG;
+                bytecode->code[bci++] = Opcode::NEG;
                 break;
             case TK_LOGNOT:
                 genConstI(1);
-                bytecode->code[bci++] = TEST_NE;
+                bytecode->code[bci++] = Opcode::TEST_NE;
                 break;
             case TK_BITNOT:
-                bytecode->code[bci++] = NOT;
+                bytecode->code[bci++] = Opcode::NOT;
                 break;
             default:
                 panic("should not reach here");
@@ -163,12 +163,12 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
             case TK_BITOR:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = OR;
+                bytecode->code[bci++] = Opcode::OR;
                 break;
             case TK_BITAND:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = AND;
+                bytecode->code[bci++] = Opcode::AND;
                 break;
             case TK_LOGOR:
             case TK_LOGAND:
@@ -176,57 +176,57 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
             case TK_EQ:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = TEST_EQ;
+                bytecode->code[bci++] = Opcode::TEST_EQ;
                 break;
             case TK_NE:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = TEST_NE;
+                bytecode->code[bci++] = Opcode::TEST_NE;
                 break;
             case TK_GT:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = TEST_GT;
+                bytecode->code[bci++] = Opcode::TEST_GT;
                 break;
             case TK_GE:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = TEST_GE;
+                bytecode->code[bci++] = Opcode::TEST_GE;
                 break;
             case TK_LT:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = TEST_LT;
+                bytecode->code[bci++] = Opcode::TEST_LT;
                 break;
             case TK_LE:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = TEST_LE;
+                bytecode->code[bci++] = Opcode::TEST_LE;
                 break;
             case TK_PLUS:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = ADD;
+                bytecode->code[bci++] = Opcode::ADD;
                 break;
             case TK_MINUS:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = SUB;
+                bytecode->code[bci++] = Opcode::SUB;
                 break;
             case TK_MOD:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = REM;
+                bytecode->code[bci++] = Opcode::REM;
                 break;
             case TK_TIMES:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = MUL;
+                bytecode->code[bci++] = Opcode::MUL;
                 break;
             case TK_DIV:
                 node->lhs->visit(this);
                 node->rhs->visit(this);
-                bytecode->code[bci++] = DIV;
+                bytecode->code[bci++] = Opcode::DIV;
                 break;
             default:
                 panic("should not reach here");
@@ -242,15 +242,15 @@ void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
         for (auto *arg:node->args) {
             arg->visit(this);
         }
-        bytecode->code[bci++] = CALL;
+        bytecode->code[bci++] = Opcode::CALL;
         bytecode->code[bci++] = node->args.size();
     } else {
-        bytecode->code[bci++] = CONST_CLOSURE;
+        bytecode->code[bci++] = Opcode::CONST_CLOSURE;
         // TODO:push upvals
         for (auto *arg:node->args) {
             arg->visit(this);
         }
-        bytecode->code[bci++] = CALL;
+        bytecode->code[bci++] = Opcode::CALL;
         bytecode->code[bci++] = node->args.size(); //TODO: +upval.size();
     }
 
@@ -270,25 +270,25 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
             node->rhs->visit(this);
             switch (node->opt) {
                 case TK_PLUS_AGN:
-                    bytecode->code[bci++] = ADD;
+                    bytecode->code[bci++] = Opcode::ADD;
                     break;
                 case TK_MINUS_AGN:
-                    bytecode->code[bci++] = SUB;
+                    bytecode->code[bci++] = Opcode::SUB;
                     break;
                 case TK_TIMES_AGN:
-                    bytecode->code[bci++] = MUL;
+                    bytecode->code[bci++] = Opcode::MUL;
                     break;
                 case TK_DIV_AGN:
-                    bytecode->code[bci++] = DIV;
+                    bytecode->code[bci++] = Opcode::DIV;
                     break;
                 case TK_MOD_AGN:
-                    bytecode->code[bci++] = REM;
+                    bytecode->code[bci++] = Opcode::REM;
                     break;
                 default:
                     panic("should not reach here");
             }
             t->index->visit(this);
-            bytecode->code[bci++] = STORE_INDEX;
+            bytecode->code[bci++] = Opcode::STORE_INDEX;
         }
 
     }
@@ -304,19 +304,19 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
             node->rhs->visit(this);
             switch (node->opt) {
                 case TK_PLUS_AGN:
-                    bytecode->code[bci++] = ADD;
+                    bytecode->code[bci++] = Opcode::ADD;
                     break;
                 case TK_MINUS_AGN:
-                    bytecode->code[bci++] = SUB;
+                    bytecode->code[bci++] = Opcode::SUB;
                     break;
                 case TK_TIMES_AGN:
-                    bytecode->code[bci++] = MUL;
+                    bytecode->code[bci++] = Opcode::MUL;
                     break;
                 case TK_DIV_AGN:
-                    bytecode->code[bci++] = DIV;
+                    bytecode->code[bci++] = Opcode::DIV;
                     break;
                 case TK_MOD_AGN:
-                    bytecode->code[bci++] = REM;
+                    bytecode->code[bci++] = Opcode::REM;
                     break;
                 default:
                     panic("should not reach here");
@@ -331,11 +331,11 @@ void BytecodeGenerator::visitStmt(Stmt *node) {
 }
 
 void BytecodeGenerator::visitBreakStmt(BreakStmt *node) {
-    Jmp j1(this, this->breakPoint, JMP);
+    Jmp j1(this, this->breakPoint, Opcode::JMP);
 }
 
 void BytecodeGenerator::visitContinueStmt(ContinueStmt *node) {
-    Jmp j1(this, this->continuePoint, JMP);
+    Jmp j1(this, this->continuePoint, Opcode::JMP);
 }
 
 void BytecodeGenerator::visitSimpleStmt(SimpleStmt *node) {
@@ -344,10 +344,10 @@ void BytecodeGenerator::visitSimpleStmt(SimpleStmt *node) {
 
 void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
     if (node->retval == nullptr) {
-        bytecode->code[bci++] = RETURN;
+        bytecode->code[bci++] = Opcode::RETURN;
     } else {
         node->retval->visit(this);
-        bytecode->code[bci++] = RETURN_VAL;
+        bytecode->code[bci++] = Opcode::RETURN_VAL;
     }
 }
 
@@ -358,9 +358,9 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
             Label L_out(this);
 
             shortCircuit->lhs->visit(this);
-            Jmp j1(this, &L_out, JMP_NE);
+            Jmp j1(this, &L_out, Opcode::JMP_NE);
             shortCircuit->rhs->visit(this);
-            Jmp j2(this, &L_out, JMP_NE);
+            Jmp j2(this, &L_out, Opcode::JMP_NE);
             node->block->visit(this);
             L_out();
         } else {
@@ -368,11 +368,11 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
             Label L_else(this);
 
             shortCircuit->lhs->visit(this);
-            Jmp j1(this, &L_else, JMP_NE);
+            Jmp j1(this, &L_else, Opcode::JMP_NE);
             shortCircuit->rhs->visit(this);
-            Jmp j2(this, &L_else, JMP_NE);
+            Jmp j2(this, &L_else, Opcode::JMP_NE);
             node->block->visit(this);
-            Jmp j3(this, &L_out, JMP);
+            Jmp j3(this, &L_out, Opcode::JMP);
             L_else();
             node->elseBlock->visit(this);
             L_out();
@@ -386,10 +386,10 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
             Label L_out(this);
 
             shortCircuit->lhs->visit(this);
-            Jmp j1(this, &L_then, JMP_EQ);
+            Jmp j1(this, &L_then, Opcode::JMP_EQ);
             shortCircuit->rhs->visit(this);
-            Jmp j2(this, &L_then, JMP_EQ);
-            Jmp j3(this, &L_out, JMP);
+            Jmp j2(this, &L_then, Opcode::JMP_EQ);
+            Jmp j3(this, &L_out, Opcode::JMP);
             L_then();
             node->block->visit(this);
             L_out();
@@ -399,13 +399,13 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
             Label L_then(this);
 
             shortCircuit->lhs->visit(this);
-            Jmp j1(this, &L_then, JMP_EQ);
+            Jmp j1(this, &L_then, Opcode::JMP_EQ);
             shortCircuit->rhs->visit(this);
-            Jmp j2(this, &L_then, JMP_EQ);
-            Jmp j3(this, &L_else, JMP);
+            Jmp j2(this, &L_then, Opcode::JMP_EQ);
+            Jmp j3(this, &L_else, Opcode::JMP);
             L_then();
             node->block->visit(this);
-            Jmp j4(this, &L_out, JMP);
+            Jmp j4(this, &L_out, Opcode::JMP);
             L_else();
             node->elseBlock->visit(this);
             L_out();
@@ -424,7 +424,7 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
         Label L_out(this);
 
         node->cond->visit(this);
-        Jmp j1(this, &L_out, JMP_NE);
+        Jmp j1(this, &L_out, Opcode::JMP_NE);
         node->block->visit(this);
         L_out();
     } else {
@@ -442,12 +442,12 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
         Label L_out(this);
 
         node->cond->visit(this);
-        Jmp j1(this, &L_else, JMP_NE);
+        Jmp j1(this, &L_else, Opcode::JMP_NE);
         node->block->visit(this);
-        Jmp j2(this, &L_out, JMP);
+        Jmp j2(this, &L_out, Opcode::JMP);
         L_else();
         node->elseBlock->visit(this);
-        Jmp j3(this, &L_out, JMP);
+        Jmp j3(this, &L_out, Opcode::JMP);
         L_out();
     }
 }
@@ -469,11 +469,11 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
         Label L_out(this);
 
         t->lhs->visit(this);
-        Jmp j1(this, &L_out, JMP_NE);
+        Jmp j1(this, &L_out, Opcode::JMP_NE);
         t->rhs->visit(this);
-        Jmp j2(this, &L_out, JMP_NE);
+        Jmp j2(this, &L_out, Opcode::JMP_NE);
         node->block->visit(this);
-        Jmp j3(this, &L_cond, JMP);
+        Jmp j3(this, &L_cond, Opcode::JMP);
         L_out();
         return;
     }
@@ -496,13 +496,13 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
         Label L_then(this);
 
         t->lhs->visit(this);
-        Jmp j1(this, &L_then, JMP_EQ);
+        Jmp j1(this, &L_then, Opcode::JMP_EQ);
         t->rhs->visit(this);
-        Jmp j2(this, &L_then, JMP_EQ);
-        Jmp j3(this, &L_out, JMP);
+        Jmp j2(this, &L_then, Opcode::JMP_EQ);
+        Jmp j3(this, &L_out, Opcode::JMP);
         L_then();
         node->block->visit(this);
-        Jmp j4(this, &L_cond, JMP);
+        Jmp j4(this, &L_cond, Opcode::JMP);
         L_out();
         return;
     }
@@ -519,9 +519,9 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
     Label L_out(this);
 
     node->cond->visit(this);
-    Jmp j1(this, &L_out, JMP_NE);
+    Jmp j1(this, &L_out, Opcode::JMP_NE);
     node->block->visit(this);
-    Jmp j2(this, &L_cond, JMP);
+    Jmp j2(this, &L_cond, Opcode::JMP);
     L_out();
 }
 
@@ -550,13 +550,13 @@ void BytecodeGenerator::visitForStmt(ForStmt *node) {
         this->breakPoint = &L_out;
 
         t->lhs->visit(this);
-        Jmp j1(this, &L_out, JMP_NE);
+        Jmp j1(this, &L_out, Opcode::JMP_NE);
         t->rhs->visit(this);
-        Jmp j2(this, &L_out, JMP_NE);
+        Jmp j2(this, &L_out, Opcode::JMP_NE);
         node->block->visit(this);
         L_continue();
         node->post->visit(this);
-        Jmp j3(this, &L_cond, JMP);
+        Jmp j3(this, &L_cond, Opcode::JMP);
         L_out();
 
         this->continuePoint = nullptr;
@@ -590,15 +590,15 @@ void BytecodeGenerator::visitForStmt(ForStmt *node) {
         this->breakPoint = &L_out;
 
         t->lhs->visit(this);
-        Jmp j1(this, &L_then, JMP_EQ);
+        Jmp j1(this, &L_then, Opcode::JMP_EQ);
         t->rhs->visit(this);
-        Jmp j2(this, &L_then, JMP_EQ);
-        Jmp j3(this, &L_out, JMP);
+        Jmp j2(this, &L_then, Opcode::JMP_EQ);
+        Jmp j3(this, &L_out, Opcode::JMP);
         L_then();
         node->block->visit(this);
         L_continue();
         node->post->visit(this);
-        Jmp j4(this, &L_cond, JMP);
+        Jmp j4(this, &L_cond, Opcode::JMP);
         L_out();
 
         this->continuePoint = nullptr;
@@ -626,11 +626,11 @@ void BytecodeGenerator::visitForStmt(ForStmt *node) {
     this->breakPoint = &L_out;
 
     node->cond->visit(this);
-    Jmp j1(this, &L_out, JMP_NE);
+    Jmp j1(this, &L_out, Opcode::JMP_NE);
     node->block->visit(this);
     L_continue();
     node->post->visit(this);
-    Jmp j2(this, &L_cond, JMP);
+    Jmp j2(this, &L_cond, Opcode::JMP);
     L_out();
 
     this->continuePoint = nullptr;
@@ -643,11 +643,11 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
 
     // create iterator variable as iter
     std::string iter = node->identName;
-    bytecode->code[bci++] = CONST_NULL;
+    bytecode->code[bci++] = Opcode::CONST_NULL;
     genStore(iter);
     // create index variable as i
     std::string index = prefix += "i";
-    bytecode->code[bci++] = CONST_NULL;
+    bytecode->code[bci++] = Opcode::CONST_NULL;
     genStore(index);
     // i = 0
     genConstI(0);
@@ -663,27 +663,27 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
     this->breakPoint = &L_out;
 
     // get array length
-    bytecode->code[bci++] = DUP;
-    bytecode->code[bci++] = ARR_LEN;
+    bytecode->code[bci++] = Opcode::DUP;
+    bytecode->code[bci++] = Opcode::ARR_LEN;
     // compare index and array length
     genLoad(index);
-    bytecode->code[bci++] = TEST_EQ;
+    bytecode->code[bci++] = Opcode::TEST_EQ;
     // if not equal, go outside
-    Jmp j1(this, &L_out, JMP_NE);
+    Jmp j1(this, &L_out, Opcode::JMP_NE);
     // load array[index], and assign to iter
-    bytecode->code[bci++] = DUP;
+    bytecode->code[bci++] = Opcode::DUP;
     genLoad(index);
-    bytecode->code[bci++] = LOAD_INDEX;
+    bytecode->code[bci++] = Opcode::LOAD_INDEX;
     genStore(iter);
     node->block->visit(this);
 
     genLoad(index);
     genLoad(index);
     genConstI(1);
-    bytecode->code[bci++] = ADD;
+    bytecode->code[bci++] = Opcode::ADD;
     genStore(index);
     // conditional checking
-    Jmp j2(this, &L_cond, JMP);
+    Jmp j2(this, &L_cond, Opcode::JMP);
     L_out();
 }
 
@@ -733,20 +733,20 @@ void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
             auto&[match, block, matchAll]= node->matches[i];
             if (!matchAll) {
                 L_blocks[i]();
-                bytecode->code[bci++] = DUP;
+                bytecode->code[bci++] = Opcode::DUP;
                 match->visit(this);
-                bytecode->code[bci++] = TEST_EQ;
+                bytecode->code[bci++] = Opcode::TEST_EQ;
                 if (i == node->matches.size() - 1) {
-                    Jmp j1(this, &L_out, JMP_NE);
+                    Jmp j1(this, &L_out, Opcode::JMP_NE);
                 } else {
-                    Jmp j1(this, &L_blocks[i + 1], JMP_NE);
+                    Jmp j1(this, &L_blocks[i + 1], Opcode::JMP_NE);
                 }
                 block->visit(this);
-                Jmp j2(this, &L_out, JMP);
+                Jmp j2(this, &L_out, Opcode::JMP);
             } else {
                 L_blocks[i]();
                 block->visit(this);
-                Jmp j1(this, &L_out, JMP);
+                Jmp j1(this, &L_out, Opcode::JMP);
             }
         }
         L_out();
@@ -787,16 +787,16 @@ void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
                 L_blocks[i]();
                 match->visit(this);
                 if (i == node->matches.size() - 1) {
-                    Jmp j1(this, &L_out, JMP_NE);
+                    Jmp j1(this, &L_out, Opcode::JMP_NE);
                 } else {
-                    Jmp j1(this, &L_blocks[i + 1], JMP_NE);
+                    Jmp j1(this, &L_blocks[i + 1], Opcode::JMP_NE);
                 }
                 block->visit(this);
-                Jmp j2(this, &L_out, JMP);
+                Jmp j2(this, &L_out, Opcode::JMP);
             } else {
                 L_blocks[i]();
                 block->visit(this);
-                Jmp j1(this, &L_out, JMP);
+                Jmp j1(this, &L_out, Opcode::JMP);
             }
         }
         L_out();
@@ -813,41 +813,41 @@ void BytecodeGenerator::visitExportStmt(ExportStmt *node) {
 }
 
 void BytecodeGenerator::genConstI(nyx::int32 integer) {
-    bytecode->code[bci++] = CONST_I;
+    bytecode->code[bci++] = Opcode::CONST_I;
     *(nyx::int32 *) (bytecode->code + bci) = integer;
     bci += 4;
 }
 
 void BytecodeGenerator::genConstStr(const std::string &str) {
     bytecode->strings.push_back(str);
-    bytecode->code[bci++] = CONST_STR;
+    bytecode->code[bci++] = Opcode::CONST_STR;
     bytecode->code[bci++] = bytecode->strings.size() - 1;
 }
 
 void BytecodeGenerator::genConstD(double d) {
-    bytecode->code[bci++] = CONST_D;
+    bytecode->code[bci++] = Opcode::CONST_D;
     *(double *) (bytecode->code + bci) = d;
     bci += 8;
 }
 
 void BytecodeGenerator::genConstNull() {
-    bytecode->code[bci++] = CONST_NULL;
+    bytecode->code[bci++] = Opcode::CONST_NULL;
 }
 
 void BytecodeGenerator::genArray(std::vector<Expr *> elems) {
-    bytecode->code[bci++] = NEW_ARR;
+    bytecode->code[bci++] = Opcode::NEW_ARR;
     bytecode->code[bci++] = elems.size();
     for (int i = 0; i < elems.size(); i++) {
-        bytecode->code[bci++] = DUP;
+        bytecode->code[bci++] = Opcode::DUP;
         elems[i]->visit(this);
         genConstI(i);
-        bytecode->code[bci++] = STORE_INDEX;
+        bytecode->code[bci++] = Opcode::STORE_INDEX;
     }
 }
 
 void BytecodeGenerator::genLoad(const std::string &name) {
     int localIndex = bytecode->localMap[name];
-    bytecode->code[bci++] = LOAD;
+    bytecode->code[bci++] = Opcode::LOAD;
     bytecode->code[bci++] = localIndex;
 }
 
@@ -855,12 +855,12 @@ void BytecodeGenerator::genStore(const std::string &name) {
     if (auto iter = bytecode->localMap.find(name);iter != bytecode->localMap.cend()) {
         // reassign existing variable a new value
         int localIndex = bytecode->localMap[name];
-        bytecode->code[bci++] = STORE;
+        bytecode->code[bci++] = Opcode::STORE;
         bytecode->code[bci++] = localIndex;
     } else {
         // create a new variable
         int localIndex = bytecode->localMap.size();
-        bytecode->code[bci++] = STORE;
+        bytecode->code[bci++] = Opcode::STORE;
         bytecode->code[bci++] = localIndex;
 
         bytecode->localMap.insert({name, localIndex});
@@ -873,7 +873,7 @@ void BytecodeGenerator::genLoadIndex(const std::string &array, Expr *index) {
     }
     genLoad(array);
     index->visit(this);
-    bytecode->code[bci++] = LOAD_INDEX;
+    bytecode->code[bci++] = Opcode::LOAD_INDEX;
 }
 
 void BytecodeGenerator::genStoreIndex(const std::string &array, Expr *value, Expr *index) {
@@ -883,7 +883,7 @@ void BytecodeGenerator::genStoreIndex(const std::string &array, Expr *value, Exp
     genLoad(array);
     value->visit(this);
     index->visit(this);
-    bytecode->code[bci++] = STORE_INDEX;
+    bytecode->code[bci++] = Opcode::STORE_INDEX;
 }
 
 void BytecodeGenerator::genLoadFree(Bytecode *enclosing, const std::string &name) {
@@ -903,7 +903,7 @@ void BytecodeGenerator::genLoadFree(Bytecode *enclosing, const std::string &name
     enclosing->freeVars.push_back(referent);
     bytecode->freeVars.push_back(refer);
 
-    bytecode->code[bci++] = LOAD_FREE;
+    bytecode->code[bci++] = Opcode::LOAD_FREE;
     bytecode->code[bci++] = bytecode->freeVars.size() - 1;
 }
 
@@ -927,7 +927,7 @@ void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {
     BytecodeGenerator gen;
     auto *closureBytecode = gen.generateClosureExpr(this->bytecode, node);
     bytecode->closures.insert({node->id, closureBytecode});
-    bytecode->code[bci++] = CONST_CLOSURE;
+    bytecode->code[bci++] = Opcode::CONST_CLOSURE;
     bytecode->code[bci++] = node->id;
 }
 

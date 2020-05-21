@@ -17,162 +17,162 @@ void BytecodeDump::dump(Bytecode *bytecode) {
     auto *bytecodes = bytecode->code;
     for (int bci = 0; bci < bytecodeSize; bci++) {
         switch (bytecodes[bci]) {
-            case CALL: {
+            case Opcode::CALL: {
                 int funcArgc = bytecodes[bci + 1];
                 ofs << bci << ":" << "call " << funcArgc << "\n";
                 bci++;
                 break;
             }
-            case CONST_I: {
+            case Opcode::CONST_I: {
                 nyx::int32 value = *(nyx::int32 *) (bytecodes + bci + 1);
                 ofs << bci << ":" << "const_i " << value << "\n";
                 bci += 4;
                 break;
             }
-            case CONST_D: {
+            case Opcode::CONST_D: {
                 double value = *(double *) (bytecodes + bci + 1);
                 ofs << bci << ":" << "const_d " << value << "\n";
                 bci += 8;
                 break;
             }
-            case CONST_NULL: {
+            case Opcode::CONST_NULL: {
                 ofs << bci << ":" << "const_null" << "\n";
                 break;
             }
-            case CONST_STR: {
+            case Opcode::CONST_STR: {
                 int index = bytecodes[bci + 1];
                 auto &str = bytecode->strings[index];
                 ofs << bci << ":" << "const_str '" << str << "'\n";
                 bci++;
                 break;
             }
-            case ADD: {
+            case Opcode::ADD: {
                 ofs << bci << ":" << "add" << "\n";
                 break;
             }
-            case SUB: {
+            case Opcode::SUB: {
                 ofs << bci << ":" << "sub" << "\n";
                 break;
             }
-            case MUL: {
+            case Opcode::MUL: {
                 ofs << bci << ":" << "mul" << "\n";
                 break;
             }
-            case DIV: {
+            case Opcode::DIV: {
                 ofs << bci << ":" << "div" << "\n";
                 break;
             }
-            case REM: {
+            case Opcode::REM: {
                 ofs << bci << ":" << "rem" << "\n";
                 break;
             }
-            case TEST_EQ: {
+            case Opcode::TEST_EQ: {
                 ofs << bci << ":" << "test_eq" << "\n";
                 break;
             }
-            case TEST_NE: {
+            case Opcode::TEST_NE: {
                 ofs << bci << ":" << "test_ne" << "\n";
                 break;
             }
-            case TEST_GE: {
+            case Opcode::TEST_GE: {
                 ofs << bci << ":" << "test_ge" << "\n";
                 break;
             }
-            case TEST_GT: {
+            case Opcode::TEST_GT: {
                 ofs << bci << ":" << "test_gt" << "\n";
                 break;
             }
-            case TEST_LE: {
+            case Opcode::TEST_LE: {
                 ofs << bci << ":" << "test_le" << "\n";
                 break;
             }
-            case TEST_LT: {
+            case Opcode::TEST_LT: {
                 ofs << bci << ":" << "test_lt" << "\n";
                 break;
             }
-            case JMP: {
+            case Opcode::JMP: {
                 int target = bytecodes[bci + 1];
                 ofs << bci << ":" << "jmp " << target << "\n";
                 bci++;
                 break;
             }
-            case JMP_NE: {
+            case Opcode::JMP_NE: {
                 int target = bytecodes[bci + 1];
                 ofs << bci << ":" << "jmp_ne " << target << "\n";
                 bci++;
                 break;
             }
-            case JMP_EQ: {
+            case Opcode::JMP_EQ: {
                 int target = bytecodes[bci + 1];
                 ofs << bci << ":" << "jmp_eq " << target << "\n";
                 bci++;
                 break;
             }
-            case AND: {
+            case Opcode::AND: {
                 ofs << bci << ":" << "and" << "\n";
                 break;
             }
-            case OR: {
+            case Opcode::OR: {
                 ofs << bci << ":" << "or" << "\n";
                 break;
             }
-            case NOT: {
+            case Opcode::NOT: {
                 ofs << bci << ":" << "not" << "\n";
                 break;
             }
-            case NEG: {
+            case Opcode::NEG: {
                 ofs << bci << ":" << "neg" << "\n";
                 break;
             }
-            case LOAD: {
+            case Opcode::LOAD: {
                 int index = bytecodes[bci + 1];
                 ofs << bci << ":" << "load " << index << "\n";
                 bci++;
                 break;
             }
-            case STORE: {
+            case Opcode::STORE: {
                 int index = bytecodes[bci + 1];
                 ofs << bci << ":" << "store " << index << "\n";
                 bci++;
                 break;
             }
-            case LOAD_INDEX: {
+            case Opcode::LOAD_INDEX: {
                 ofs << bci << ":" << "load_index" << "\n";
                 break;
             }
-            case STORE_INDEX: {
+            case Opcode::STORE_INDEX: {
                 ofs << bci << ":" << "store_index" << "\n";
                 break;
             }
-            case NEW_ARR: {
+            case Opcode::NEW_ARR: {
                 int length = bytecodes[bci + 1];
                 ofs << bci << ":" << "new_array " << length << "\n";
                 bci++;
                 break;
             }
-            case DUP: {
+            case Opcode::DUP: {
                 ofs << bci << ":" << "dup" << "\n";
                 break;
             }
-            case RETURN: {
+            case Opcode::RETURN: {
                 ofs << bci << ":" << "return" << "\n";
                 break;
             }
-            case RETURN_VAL: {
+            case Opcode::RETURN_VAL: {
                 ofs << bci << ":" << "return_val" << "\n";
                 break;
             }
-            case ARR_LEN: {
+            case Opcode::ARR_LEN: {
                 ofs << bci << ":" << "arr_len" << "\n";
                 break;
             }
-            case LOAD_FREE: {
+            case Opcode::LOAD_FREE: {
                 int index = bytecodes[bci + 1];
                 ofs << bci << ":" << "load_free " << index << "\n";
                 bci++;
                 break;
             }
-            case CONST_CLOSURE: {
+            case Opcode::CONST_CLOSURE: {
                 int index = bytecodes[bci + 1];
                 ofs << bci << ":" << "const_closure " << index << "\n";
                 bci++;

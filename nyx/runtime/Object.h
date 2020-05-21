@@ -48,17 +48,17 @@ struct NArray : public Object {
     std::string toString() override;
 
     int length;
-    Object **array;
+    Object** array;
 };
 
 struct NClosure : public Object {
-    explicit NClosure(Bytecode *code);
+    explicit NClosure(Bytecode* code);
 
     ~NClosure() override;
 
     std::string toString() override;
 
-    Bytecode *code;
+    Bytecode* code;
 };
 
-#endif //NYX_OBJECT_H
+#endif // NYX_OBJECT_H

@@ -1,31 +1,33 @@
 #include "BytecodeGenerator.h"
-#include "Opcode.h"
 #include "Bytecode.h"
+#include "Opcode.h"
 
 class Label;
 
 class Jmp {
-private:
+  private:
     int patching;
-public:
-    explicit Jmp(BytecodeGenerator *gen, Label *label, Opcode::Mnemonic opcode);
+
+  public:
+    explicit Jmp(BytecodeGenerator* gen, Label* label, Opcode::Mnemonic opcode);
 
     [[nodiscard]] int getPatching() const { return patching; }
 };
 
 class Label {
-private:
+  private:
     int destination;
-    BytecodeGenerator *gen;
+    BytecodeGenerator* gen;
     std::vector<Jmp> allJump;
-public:
-    explicit Label(BytecodeGenerator *gen);
+
+  public:
+    explicit Label(BytecodeGenerator* gen);
 
     void operator()();
 
     void addJump(Jmp jmp) { allJump.push_back(jmp); }
 
-    void setGenerator(BytecodeGenerator *gen);
+    void setGenerator(BytecodeGenerator* gen);
 
     ~Label();
 
@@ -33,12 +35,12 @@ public:
 };
 
 Label::~Label() {
-    for (auto &i : allJump) {
+    for (auto& i : allJump) {
         gen->bytecode->code[i.getPatching()] = destination;
     }
 }
 
-Label::Label(BytecodeGenerator *gen) {
+Label::Label(BytecodeGenerator* gen) {
     this->gen = gen;
     this->destination = gen->bci;
 }
@@ -53,12 +55,12 @@ Label::Label() {
     this->destination = -1;
 }
 
-void Label::setGenerator(BytecodeGenerator *gen) {
+void Label::setGenerator(BytecodeGenerator* gen) {
     this->gen = gen;
     this->destination = gen->bci;
 }
 
-Jmp::Jmp(BytecodeGenerator *gen, Label *label, Opcode::Mnemonic opcode) {
+Jmp::Jmp(BytecodeGenerator* gen, Label* label, Opcode::Mnemonic opcode) {
     // Generate JMP* bytecode
     gen->bytecode->code[gen->bci++] = opcode;
     // Record JMP* target as patching address and temporarily set to -1
@@ -67,65 +69,64 @@ Jmp::Jmp(BytecodeGenerator *gen, Label *label, Opcode::Mnemonic opcode) {
     label->addJump(*this);
 }
 
-void BytecodeGenerator::visitBlock(Block *node) {
-    for (auto *stmt:node->stmts) {
+void BytecodeGenerator::visitBlock(Block* node) {
+    for (auto* stmt : node->stmts) {
         stmt->visit(this);
     }
 }
 
-void BytecodeGenerator::visitCompilationUnit(CompilationUnit *node) {
-    for (auto *definition:node->definitions) {
+void BytecodeGenerator::visitCompilationUnit(CompilationUnit* node) {
+    for (auto* definition : node->definitions) {
         definition->visit(this);
     }
-    for (auto *stmt:node->topStmts) {
+    for (auto* stmt : node->topStmts) {
         stmt->visit(this);
     }
 }
 
-void BytecodeGenerator::visitBoolExpr(BoolExpr *node) {
+void BytecodeGenerator::visitBoolExpr(BoolExpr* node) {
     genConstI(node->literal);
 }
 
-void BytecodeGenerator::visitCharExpr(CharExpr *node) {
+void BytecodeGenerator::visitCharExpr(CharExpr* node) {
     genConstI(node->literal);
 }
 
-void BytecodeGenerator::visitNullExpr(NullExpr *node) {
-    genConstNull();
-}
+void BytecodeGenerator::visitNullExpr(NullExpr* node) { genConstNull(); }
 
-void BytecodeGenerator::visitIntExpr(IntExpr *node) {
+void BytecodeGenerator::visitIntExpr(IntExpr* node) {
     genConstI(node->literal);
 }
 
-void BytecodeGenerator::visitExpr(Expr *expr) {
+void BytecodeGenerator::visitExpr(Expr* expr) {
     panic("should not reach here");
 }
 
-void BytecodeGenerator::visitDoubleExpr(DoubleExpr *node) {
+void BytecodeGenerator::visitDoubleExpr(DoubleExpr* node) {
     genConstD(node->literal);
 }
 
-void BytecodeGenerator::visitStringExpr(StringExpr *node) {
+void BytecodeGenerator::visitStringExpr(StringExpr* node) {
     genConstStr(node->literal);
 }
 
-void BytecodeGenerator::visitArrayExpr(ArrayExpr *node) {
+void BytecodeGenerator::visitArrayExpr(ArrayExpr* node) {
     genArray(node->literal);
 }
 
-void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {
+void BytecodeGenerator::visitIdentExpr(IdentExpr* node) {
     // find variable in current function scope
-    if (auto iter = bytecode->localMap.find(node->identName);iter != bytecode->localMap.cend()) {
+    if (auto iter = bytecode->localMap.find(node->identName);
+        iter != bytecode->localMap.cend()) {
         genLoad(node->identName);
         return;
     }
 
     // find in parent function scope
-    Bytecode *parent = bytecode->parent;
+    Bytecode* parent = bytecode->parent;
     while (parent != nullptr) {
         if (auto iter = parent->localMap.find(node->identName);
-                iter != parent->localMap.cend()) {
+            iter != parent->localMap.cend()) {
             genLoadFree(parent, node->identName);
             return;
         }
@@ -135,111 +136,110 @@ void BytecodeGenerator::visitIdentExpr(IdentExpr *node) {
     panic("variable undefined but using");
 }
 
-void BytecodeGenerator::visitIndexExpr(IndexExpr *node) {
+void BytecodeGenerator::visitIndexExpr(IndexExpr* node) {
     genLoadIndex(node->identName, node->index);
 }
 
-void BytecodeGenerator::visitBinaryExpr(BinaryExpr *node) {
+void BytecodeGenerator::visitBinaryExpr(BinaryExpr* node) {
     if (node->rhs == nullptr) {
         // unary expression
         node->lhs->visit(this);
         switch (node->opt) {
-            case TK_MINUS:
-                bytecode->code[bci++] = Opcode::NEG;
-                break;
-            case TK_LOGNOT:
-                genConstI(1);
-                bytecode->code[bci++] = Opcode::TEST_NE;
-                break;
-            case TK_BITNOT:
-                bytecode->code[bci++] = Opcode::NOT;
-                break;
-            default:
-                panic("should not reach here");
+        case TK_MINUS:
+            bytecode->code[bci++] = Opcode::NEG;
+            break;
+        case TK_LOGNOT:
+            genConstI(1);
+            bytecode->code[bci++] = Opcode::TEST_NE;
+            break;
+        case TK_BITNOT:
+            bytecode->code[bci++] = Opcode::NOT;
+            break;
+        default:
+            panic("should not reach here");
         }
     } else {
         // binary expression
         switch (node->opt) {
-            case TK_BITOR:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::OR;
-                break;
-            case TK_BITAND:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::AND;
-                break;
-            case TK_LOGOR:
-            case TK_LOGAND:
-                panic("should be specially handled in control flow statements");
-            case TK_EQ:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::TEST_EQ;
-                break;
-            case TK_NE:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::TEST_NE;
-                break;
-            case TK_GT:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::TEST_GT;
-                break;
-            case TK_GE:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::TEST_GE;
-                break;
-            case TK_LT:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::TEST_LT;
-                break;
-            case TK_LE:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::TEST_LE;
-                break;
-            case TK_PLUS:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::ADD;
-                break;
-            case TK_MINUS:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::SUB;
-                break;
-            case TK_MOD:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::REM;
-                break;
-            case TK_TIMES:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::MUL;
-                break;
-            case TK_DIV:
-                node->lhs->visit(this);
-                node->rhs->visit(this);
-                bytecode->code[bci++] = Opcode::DIV;
-                break;
-            default:
-                panic("should not reach here");
+        case TK_BITOR:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::OR;
+            break;
+        case TK_BITAND:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::AND;
+            break;
+        case TK_LOGOR:
+        case TK_LOGAND:
+            panic("should be specially handled in control flow statements");
+        case TK_EQ:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::TEST_EQ;
+            break;
+        case TK_NE:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::TEST_NE;
+            break;
+        case TK_GT:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::TEST_GT;
+            break;
+        case TK_GE:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::TEST_GE;
+            break;
+        case TK_LT:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::TEST_LT;
+            break;
+        case TK_LE:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::TEST_LE;
+            break;
+        case TK_PLUS:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::ADD;
+            break;
+        case TK_MINUS:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::SUB;
+            break;
+        case TK_MOD:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::REM;
+            break;
+        case TK_TIMES:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::MUL;
+            break;
+        case TK_DIV:
+            node->lhs->visit(this);
+            node->rhs->visit(this);
+            bytecode->code[bci++] = Opcode::DIV;
+            break;
+        default:
+            panic("should not reach here");
         }
     }
-
 }
 
-void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
+void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr* node) {
     if (!node->funcName.empty()) {
         // normal function calling
         genConstStr(node->funcName);
-        for (auto *arg:node->args) {
+        for (auto* arg : node->args) {
             arg->visit(this);
         }
         bytecode->code[bci++] = Opcode::CALL;
@@ -247,19 +247,18 @@ void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr *node) {
     } else {
         bytecode->code[bci++] = Opcode::CONST_CLOSURE;
         // TODO:push upvals
-        for (auto *arg:node->args) {
+        for (auto* arg : node->args) {
             arg->visit(this);
         }
         bytecode->code[bci++] = Opcode::CALL;
-        bytecode->code[bci++] = node->args.size(); //TODO: +upval.size();
+        bytecode->code[bci++] = node->args.size(); // TODO: +upval.size();
     }
-
 }
 
-void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
+void BytecodeGenerator::visitAssignExpr(AssignExpr* node) {
     // arr[index] = value
     if (typeid(*node->lhs) == typeid(IndexExpr)) {
-        auto *t = dynamic_cast<IndexExpr *>(node->lhs);
+        auto* t = dynamic_cast<IndexExpr*>(node->lhs);
         if (node->opt == TK_ASSIGN) {
             // TODO: store freeval
             genStoreIndex(t->identName, node->rhs, t->index);
@@ -269,32 +268,32 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
             genLoadIndex(t->identName, t->index);
             node->rhs->visit(this);
             switch (node->opt) {
-                case TK_PLUS_AGN:
-                    bytecode->code[bci++] = Opcode::ADD;
-                    break;
-                case TK_MINUS_AGN:
-                    bytecode->code[bci++] = Opcode::SUB;
-                    break;
-                case TK_TIMES_AGN:
-                    bytecode->code[bci++] = Opcode::MUL;
-                    break;
-                case TK_DIV_AGN:
-                    bytecode->code[bci++] = Opcode::DIV;
-                    break;
-                case TK_MOD_AGN:
-                    bytecode->code[bci++] = Opcode::REM;
-                    break;
-                default:
-                    panic("should not reach here");
+            case TK_PLUS_AGN:
+                bytecode->code[bci++] = Opcode::ADD;
+                break;
+            case TK_MINUS_AGN:
+                bytecode->code[bci++] = Opcode::SUB;
+                break;
+            case TK_TIMES_AGN:
+                bytecode->code[bci++] = Opcode::MUL;
+                break;
+            case TK_DIV_AGN:
+                bytecode->code[bci++] = Opcode::DIV;
+                break;
+            case TK_MOD_AGN:
+                bytecode->code[bci++] = Opcode::REM;
+                break;
+            default:
+                panic("should not reach here");
             }
             t->index->visit(this);
             bytecode->code[bci++] = Opcode::STORE_INDEX;
         }
 
     }
-        // var = value
+    // var = value
     else if (typeid(*node->lhs) == typeid(IdentExpr)) {
-        auto *t = dynamic_cast<IdentExpr *>(node->lhs);
+        auto* t = dynamic_cast<IdentExpr*>(node->lhs);
         if (node->opt == TK_ASSIGN) {
             // TODO: store freeval
             node->rhs->visit(this);
@@ -303,46 +302,46 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr *node) {
             genLoad(t->identName);
             node->rhs->visit(this);
             switch (node->opt) {
-                case TK_PLUS_AGN:
-                    bytecode->code[bci++] = Opcode::ADD;
-                    break;
-                case TK_MINUS_AGN:
-                    bytecode->code[bci++] = Opcode::SUB;
-                    break;
-                case TK_TIMES_AGN:
-                    bytecode->code[bci++] = Opcode::MUL;
-                    break;
-                case TK_DIV_AGN:
-                    bytecode->code[bci++] = Opcode::DIV;
-                    break;
-                case TK_MOD_AGN:
-                    bytecode->code[bci++] = Opcode::REM;
-                    break;
-                default:
-                    panic("should not reach here");
+            case TK_PLUS_AGN:
+                bytecode->code[bci++] = Opcode::ADD;
+                break;
+            case TK_MINUS_AGN:
+                bytecode->code[bci++] = Opcode::SUB;
+                break;
+            case TK_TIMES_AGN:
+                bytecode->code[bci++] = Opcode::MUL;
+                break;
+            case TK_DIV_AGN:
+                bytecode->code[bci++] = Opcode::DIV;
+                break;
+            case TK_MOD_AGN:
+                bytecode->code[bci++] = Opcode::REM;
+                break;
+            default:
+                panic("should not reach here");
             }
             genStore(t->identName);
         }
     }
 }
 
-void BytecodeGenerator::visitStmt(Stmt *node) {
+void BytecodeGenerator::visitStmt(Stmt* node) {
     panic("should not reach here");
 }
 
-void BytecodeGenerator::visitBreakStmt(BreakStmt *node) {
+void BytecodeGenerator::visitBreakStmt(BreakStmt* node) {
     Jmp j1(this, this->breakPoint, Opcode::JMP);
 }
 
-void BytecodeGenerator::visitContinueStmt(ContinueStmt *node) {
+void BytecodeGenerator::visitContinueStmt(ContinueStmt* node) {
     Jmp j1(this, this->continuePoint, Opcode::JMP);
 }
 
-void BytecodeGenerator::visitSimpleStmt(SimpleStmt *node) {
+void BytecodeGenerator::visitSimpleStmt(SimpleStmt* node) {
     node->expr->visit(this);
 }
 
-void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
+void BytecodeGenerator::visitReturnStmt(ReturnStmt* node) {
     if (node->retval == nullptr) {
         bytecode->code[bci++] = Opcode::RETURN;
     } else {
@@ -351,9 +350,9 @@ void BytecodeGenerator::visitReturnStmt(ReturnStmt *node) {
     }
 }
 
-void BytecodeGenerator::visitIfStmt(IfStmt *node) {
+void BytecodeGenerator::visitIfStmt(IfStmt* node) {
     if (isShortCircuitAnd(node->cond)) {
-        auto *shortCircuit = dynamic_cast<BinaryExpr *>(node->cond);
+        auto* shortCircuit = dynamic_cast<BinaryExpr*>(node->cond);
         if (node->elseBlock == nullptr) {
             Label L_out(this);
 
@@ -380,7 +379,7 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
         return;
     }
     if (isShortCircuitOr(node->cond)) {
-        auto *shortCircuit = dynamic_cast<BinaryExpr *>(node->cond);
+        auto* shortCircuit = dynamic_cast<BinaryExpr*>(node->cond);
         if (node->elseBlock == nullptr) {
             Label L_then(this);
             Label L_out(this);
@@ -412,7 +411,6 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
         }
         return;
     }
-
 
     if (node->elseBlock == nullptr) {
         /**
@@ -452,7 +450,7 @@ void BytecodeGenerator::visitIfStmt(IfStmt *node) {
     }
 }
 
-void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
+void BytecodeGenerator::visitWhileStmt(WhileStmt* node) {
     if (isShortCircuitAnd(node->cond)) {
         /**
          * cond:
@@ -464,7 +462,7 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
          * jmp cond
          * out:
          */
-        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        auto* t = dynamic_cast<BinaryExpr*>(node->cond);
         Label L_cond(this);
         Label L_out(this);
 
@@ -490,7 +488,7 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
          * jmp cond
          * out:
          */
-        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        auto* t = dynamic_cast<BinaryExpr*>(node->cond);
         Label L_cond(this);
         Label L_out(this);
         Label L_then(this);
@@ -525,7 +523,7 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt *node) {
     L_out();
 }
 
-void BytecodeGenerator::visitForStmt(ForStmt *node) {
+void BytecodeGenerator::visitForStmt(ForStmt* node) {
     if (isShortCircuitAnd(node->cond)) {
         /**
          * <init>
@@ -540,7 +538,7 @@ void BytecodeGenerator::visitForStmt(ForStmt *node) {
          * jmp cond
          * out:
          */
-        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        auto* t = dynamic_cast<BinaryExpr*>(node->cond);
         node->init->visit(this);
 
         Label L_cond(this);
@@ -579,7 +577,7 @@ void BytecodeGenerator::visitForStmt(ForStmt *node) {
          * jmp cond
          * out:
          */
-        auto *t = dynamic_cast<BinaryExpr *>(node->cond);
+        auto* t = dynamic_cast<BinaryExpr*>(node->cond);
         node->init->visit(this);
 
         Label L_cond(this);
@@ -637,9 +635,9 @@ void BytecodeGenerator::visitForStmt(ForStmt *node) {
     this->breakPoint = nullptr;
 }
 
-void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
+void BytecodeGenerator::visitForEachStmt(ForEachStmt* node) {
     std::string prefix("__v");
-    prefix += std::to_string(int(*(int *) node));
+    prefix += std::to_string(int(*(int*)node));
 
     // create iterator variable as iter
     std::string iter = node->identName;
@@ -687,7 +685,7 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt *node) {
     L_out();
 }
 
-void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
+void BytecodeGenerator::visitMatchStmt(MatchStmt* node) {
     // Variant 1:
     // match{} or match(cond){}
     if (node->matches.empty()) {
@@ -723,14 +721,14 @@ void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
          * out:
          */
         Label L_out(this);
-        auto *L_blocks = new Label[node->matches.size()];
+        auto* L_blocks = new Label[node->matches.size()];
         for (int i = 0; i < node->matches.size(); i++) {
             L_blocks[i].setGenerator(this);
         }
 
         node->cond->visit(this);
         for (int i = 0; i < node->matches.size(); i++) {
-            auto&[match, block, matchAll]= node->matches[i];
+            auto& [match, block, matchAll] = node->matches[i];
             if (!matchAll) {
                 L_blocks[i]();
                 bytecode->code[bci++] = Opcode::DUP;
@@ -776,13 +774,13 @@ void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
          * out:
          */
         Label L_out(this);
-        auto *L_blocks = new Label[node->matches.size()];
+        auto* L_blocks = new Label[node->matches.size()];
         for (int i = 0; i < node->matches.size(); i++) {
             L_blocks[i].setGenerator(this);
         }
 
         for (int i = 0; i < node->matches.size(); i++) {
-            auto&[match, block, matchAll]= node->matches[i];
+            auto& [match, block, matchAll] = node->matches[i];
             if (!matchAll) {
                 L_blocks[i]();
                 match->visit(this);
@@ -804,21 +802,21 @@ void BytecodeGenerator::visitMatchStmt(MatchStmt *node) {
     }
 }
 
-void BytecodeGenerator::visitImportStmt(ImportStmt *node) {
+void BytecodeGenerator::visitImportStmt(ImportStmt* node) {
     // Pass
 }
 
-void BytecodeGenerator::visitExportStmt(ExportStmt *node) {
-    //Pass
+void BytecodeGenerator::visitExportStmt(ExportStmt* node) {
+    // Pass
 }
 
 void BytecodeGenerator::genConstI(nyx::int32 integer) {
     bytecode->code[bci++] = Opcode::CONST_I;
-    *(nyx::int32 *) (bytecode->code + bci) = integer;
+    *(nyx::int32*)(bytecode->code + bci) = integer;
     bci += 4;
 }
 
-void BytecodeGenerator::genConstStr(const std::string &str) {
+void BytecodeGenerator::genConstStr(const std::string& str) {
     bytecode->strings.push_back(str);
     bytecode->code[bci++] = Opcode::CONST_STR;
     bytecode->code[bci++] = bytecode->strings.size() - 1;
@@ -826,7 +824,7 @@ void BytecodeGenerator::genConstStr(const std::string &str) {
 
 void BytecodeGenerator::genConstD(double d) {
     bytecode->code[bci++] = Opcode::CONST_D;
-    *(double *) (bytecode->code + bci) = d;
+    *(double*)(bytecode->code + bci) = d;
     bci += 8;
 }
 
@@ -834,7 +832,7 @@ void BytecodeGenerator::genConstNull() {
     bytecode->code[bci++] = Opcode::CONST_NULL;
 }
 
-void BytecodeGenerator::genArray(std::vector<Expr *> elems) {
+void BytecodeGenerator::genArray(std::vector<Expr*> elems) {
     bytecode->code[bci++] = Opcode::NEW_ARR;
     bytecode->code[bci++] = elems.size();
     for (int i = 0; i < elems.size(); i++) {
@@ -845,14 +843,15 @@ void BytecodeGenerator::genArray(std::vector<Expr *> elems) {
     }
 }
 
-void BytecodeGenerator::genLoad(const std::string &name) {
+void BytecodeGenerator::genLoad(const std::string& name) {
     int localIndex = bytecode->localMap[name];
     bytecode->code[bci++] = Opcode::LOAD;
     bytecode->code[bci++] = localIndex;
 }
 
-void BytecodeGenerator::genStore(const std::string &name) {
-    if (auto iter = bytecode->localMap.find(name);iter != bytecode->localMap.cend()) {
+void BytecodeGenerator::genStore(const std::string& name) {
+    if (auto iter = bytecode->localMap.find(name);
+        iter != bytecode->localMap.cend()) {
         // reassign existing variable a new value
         int localIndex = bytecode->localMap[name];
         bytecode->code[bci++] = Opcode::STORE;
@@ -867,8 +866,9 @@ void BytecodeGenerator::genStore(const std::string &name) {
     }
 }
 
-void BytecodeGenerator::genLoadIndex(const std::string &array, Expr *index) {
-    if (auto iter = bytecode->localMap.find(array);iter == bytecode->localMap.cend()) {
+void BytecodeGenerator::genLoadIndex(const std::string& array, Expr* index) {
+    if (auto iter = bytecode->localMap.find(array);
+        iter == bytecode->localMap.cend()) {
         panic("variable undefined but using");
     }
     genLoad(array);
@@ -876,8 +876,10 @@ void BytecodeGenerator::genLoadIndex(const std::string &array, Expr *index) {
     bytecode->code[bci++] = Opcode::LOAD_INDEX;
 }
 
-void BytecodeGenerator::genStoreIndex(const std::string &array, Expr *value, Expr *index) {
-    if (auto iter = bytecode->localMap.find(array);iter == bytecode->localMap.cend()) {
+void BytecodeGenerator::genStoreIndex(const std::string& array, Expr* value,
+                                      Expr* index) {
+    if (auto iter = bytecode->localMap.find(array);
+        iter == bytecode->localMap.cend()) {
         panic("variable undefined but using");
     }
     genLoad(array);
@@ -886,9 +888,10 @@ void BytecodeGenerator::genStoreIndex(const std::string &array, Expr *value, Exp
     bytecode->code[bci++] = Opcode::STORE_INDEX;
 }
 
-void BytecodeGenerator::genLoadFree(Bytecode *enclosing, const std::string &name) {
-    auto *refer = new FreeVar;
-    auto *referent = new FreeVar;
+void BytecodeGenerator::genLoadFree(Bytecode* enclosing,
+                                    const std::string& name) {
+    auto* refer = new FreeVar;
+    auto* referent = new FreeVar;
 
     refer->isEnclosing = false;
     refer->endpoint = referent;
@@ -907,39 +910,41 @@ void BytecodeGenerator::genLoadFree(Bytecode *enclosing, const std::string &name
     bytecode->code[bci++] = bytecode->freeVars.size() - 1;
 }
 
-inline bool BytecodeGenerator::isShortCircuitOr(Expr *expr) {
-    return typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGOR;
+inline bool BytecodeGenerator::isShortCircuitOr(Expr* expr) {
+    return typeid(*expr) == typeid(BinaryExpr) &&
+           dynamic_cast<BinaryExpr*>(expr)->opt == TK_LOGOR;
 }
 
-inline bool BytecodeGenerator::isShortCircuitAnd(Expr *expr) {
-    return typeid(*expr) == typeid(BinaryExpr) && dynamic_cast<BinaryExpr *>(expr)->opt == TK_LOGAND;
+inline bool BytecodeGenerator::isShortCircuitAnd(Expr* expr) {
+    return typeid(*expr) == typeid(BinaryExpr) &&
+           dynamic_cast<BinaryExpr*>(expr)->opt == TK_LOGAND;
 }
 
-void BytecodeGenerator::visitFuncDef(FuncDef *node) {
+void BytecodeGenerator::visitFuncDef(FuncDef* node) {
     // Create new BytecodeGenerator and produce bytecodes
     BytecodeGenerator gen;
-    auto *funcBytecode = gen.generateFuncDef(node);
+    auto* funcBytecode = gen.generateFuncDef(node);
     bytecode->functions.insert({node->funcName, funcBytecode});
 }
 
-void BytecodeGenerator::visitClosureExpr(ClosureExpr *node) {
+void BytecodeGenerator::visitClosureExpr(ClosureExpr* node) {
     // Create new BytecodeGenerator and produce bytecodes
     BytecodeGenerator gen;
-    auto *closureBytecode = gen.generateClosureExpr(this->bytecode, node);
+    auto* closureBytecode = gen.generateClosureExpr(this->bytecode, node);
     bytecode->closures.insert({node->id, closureBytecode});
     bytecode->code[bci++] = Opcode::CONST_CLOSURE;
     bytecode->code[bci++] = node->id;
 }
-
 
 BytecodeGenerator::BytecodeGenerator() {
     this->bytecode = new Bytecode;
     this->bci = 0;
 }
 
-Bytecode *BytecodeGenerator::generateFuncDef(FuncDef *node) {
-    // create name in local map, interpreter will assign arguments to these parameters
-    for (auto &param : node->params) {
+Bytecode* BytecodeGenerator::generateFuncDef(FuncDef* node) {
+    // create name in local map, interpreter will assign arguments to these
+    // parameters
+    for (auto& param : node->params) {
         bytecode->localMap.insert({param, bytecode->localMap.size()});
     }
 
@@ -949,9 +954,11 @@ Bytecode *BytecodeGenerator::generateFuncDef(FuncDef *node) {
     return bytecode;
 }
 
-Bytecode *BytecodeGenerator::generateClosureExpr(Bytecode *enclosing, ClosureExpr *node) {
-    // create name in local map, interpreter will assign arguments to these parameters
-    for (auto &param : node->params) {
+Bytecode* BytecodeGenerator::generateClosureExpr(Bytecode* enclosing,
+                                                 ClosureExpr* node) {
+    // create name in local map, interpreter will assign arguments to these
+    // parameters
+    for (auto& param : node->params) {
         bytecode->localMap.insert({param, bytecode->localMap.size()});
     }
     this->bytecode->parent = enclosing;
@@ -962,7 +969,7 @@ Bytecode *BytecodeGenerator::generateClosureExpr(Bytecode *enclosing, ClosureExp
     return bytecode;
 }
 
-Bytecode *BytecodeGenerator::generate(CompilationUnit *unit) {
+Bytecode* BytecodeGenerator::generate(CompilationUnit* unit) {
     {
         PhaseTime timer("generate bytecode from Ast");
         unit->visit(this);

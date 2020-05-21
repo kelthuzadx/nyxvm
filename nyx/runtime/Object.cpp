@@ -6,49 +6,32 @@ NDouble::NDouble(double value) : value(value) {}
 
 NString::NString(std::string value) : value(std::move(value)) {}
 
-NArray::~NArray() {
-    delete[] array;
-}
-
+NArray::~NArray() { delete[] array; }
 
 NArray::NArray(int length) {
     this->length = length;
-    this->array = new Object *[length];
+    this->array = new Object*[length];
 }
 
+NClosure::NClosure(Bytecode* code) : code(code) {}
 
-NClosure::NClosure(Bytecode *code) : code(code) {
+NClosure::~NClosure() { this->code = nullptr; }
 
-}
-
-NClosure::~NClosure() {
-    this->code = nullptr;
-}
-
-std::string NClosure::toString() {
-    return "Closure";
-}
-
+std::string NClosure::toString() { return "Closure"; }
 
 std::string Object::toString() {
-    int addr = *((int *) (this));
+    int addr = *((int*)(this));
     std::string str("Object[");
     str += std::to_string(addr);
     str += "]";
     return str;
 }
 
-std::string NInt::toString() {
-    return std::to_string(value);
-}
+std::string NInt::toString() { return std::to_string(value); }
 
-std::string NDouble::toString() {
-    return std::to_string(value);
-}
+std::string NDouble::toString() { return std::to_string(value); }
 
-std::string NString::toString() {
-    return value;
-}
+std::string NString::toString() { return value; }
 
 std::string NArray::toString() {
     std::string str("[");

@@ -2,7 +2,7 @@
 
 Bytecode::~Bytecode() {
     delete[] code;
-    for (auto &val:functions) {
+    for (auto& val : functions) {
         delete val.second;
     }
 }
@@ -13,4 +13,3 @@ Bytecode::Bytecode() {
     this->funcName = "";
     this->parent = nullptr;
 }
-

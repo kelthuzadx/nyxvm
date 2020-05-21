@@ -1,22 +1,22 @@
 #ifndef NYX_NYXVM_H
 #define NYX_NYXVM_H
 
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 class NyxVM {
-private:
-    static const char *((builtin[])[2]);
-public:
-    static const char *findBuiltin(const std::string &name);
+  private:
+    static const char*((builtin[])[2]);
 
-public:
+  public:
+    static const char* findBuiltin(const std::string& name);
+
+  public:
     NyxVM() = default;
 
     static void setup();
 
-    void ignition(const char *script);
+    void ignition(const char* script);
 };
 
-
-#endif //NYX_NYXVM_H
+#endif // NYX_NYXVM_H

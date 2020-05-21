@@ -1,10 +1,10 @@
+#include "Utils.h"
+#include <chrono>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
-#include <iostream>
 #include <fstream>
-#include "Utils.h"
-#include <chrono>
+#include <iostream>
 
 #ifdef _WIN32
 #include <process.h>
@@ -16,7 +16,7 @@
 
 std::ofstream PhaseTime::ofs("phase_time.log", std::ios::out);
 
-[[noreturn]] void panic(const char *format, ...) {
+[[noreturn]] void panic(const char* format, ...) {
     va_list args;
     va_start(args, format);
     vfprintf(stdout, format, args);
@@ -24,21 +24,18 @@ std::ofstream PhaseTime::ofs("phase_time.log", std::ios::out);
     exit(EXIT_FAILURE);
 }
 
-int getPid() {
-    return (int) getpid();
-}
+int getPid() { return (int)getpid(); }
 
-PhaseTime::PhaseTime(const char *name)
-        : start(std::chrono::system_clock::now()), name(name) {
-}
+PhaseTime::PhaseTime(const char* name)
+    : start(std::chrono::system_clock::now()), name(name) {}
 
 PhaseTime::~PhaseTime() {
     auto end = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    ofs << "[PhaseTime] " << name << " ( " << duration.count() / 1000000.0 << "s(" << duration.count() << ") )\n";
+    auto duration =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+    ofs << "[PhaseTime] " << name << " ( " << duration.count() / 1000000.0
+        << "s(" << duration.count() << ") )\n";
     ofs.flush();
 }
 
-void PhaseTime::reset() {
-    start = std::chrono::system_clock::now();
-}
+void PhaseTime::reset() { start = std::chrono::system_clock::now(); }

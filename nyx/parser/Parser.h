@@ -1,6 +1,8 @@
 #ifndef NYX_PARSER_H
 #define NYX_PARSER_H
 
+#include "Ast.h"
+#include "Token.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -9,83 +11,84 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
-#include "Ast.h"
-#include "Token.h"
 
 namespace nyx {
-    class Parser {
-    private:
-        const std::unordered_map<std::string, Token> keywords;
-        std::tuple<Token, std::string> currentToken;
-        std::fstream fs;
-        int line = 1;
-        int column = 0;
+//===----------------------------------------------------------------------===//
+// Parser accepts source code and produce an Ast structure CompilationUnit which
+// represent the whole source code
+//===----------------------------------------------------------------------===//
+class Parser {
+  private:
+    const std::unordered_map<std::string, Token> keywords;
+    std::tuple<Token, std::string> currentToken;
+    std::fstream fs;
+    int line = 1;
+    int column = 0;
 
-    public:
-        explicit Parser(const std::string &fileName);
+  public:
+    explicit Parser(const std::string& fileName);
 
-        ~Parser();
+    ~Parser();
 
-    public:
-        CompilationUnit *parse();
+  public:
+    CompilationUnit* parse();
 
-        static void printLex(const std::string &fileName);
+    static void dumpLex(const std::string& saveFileName,
+                        const std::string& sourceFileName);
 
-    private:
-        Expr *parsePrimaryExpr();
+  private:
+    Expr* parsePrimaryExpr();
 
-        Expr *parseUnaryExpr();
+    Expr* parseUnaryExpr();
 
-        Expr *parseExpression(short oldPrecedence = 1);
+    Expr* parseExpression(short oldPrecedence = 1);
 
-        SimpleStmt *parseExpressionStmt();
+    SimpleStmt* parseExpressionStmt();
 
-        IfStmt *parseIfStmt();
+    IfStmt* parseIfStmt();
 
-        WhileStmt *parseWhileStmt();
+    WhileStmt* parseWhileStmt();
 
-        Stmt *parseForStmt();
+    Stmt* parseForStmt();
 
-        MatchStmt *parseMatchStmt();
+    MatchStmt* parseMatchStmt();
 
-        ReturnStmt *parseReturnStmt();
+    ReturnStmt* parseReturnStmt();
 
-        ImportStmt *parseImportStmt();
+    ImportStmt* parseImportStmt();
 
-        ExportStmt *parseExportStmt();
+    ExportStmt* parseExportStmt();
 
-        Stmt *parseStatement();
+    Stmt* parseStatement();
 
-        std::vector<Stmt *> parseStatementList();
+    std::vector<Stmt*> parseStatementList();
 
-        Block *parseBlock();
+    Block* parseBlock();
 
-        std::vector<std::string> parseParameterList();
+    std::vector<std::string> parseParameterList();
 
-        FuncDef *parseFuncDef();
+    FuncDef* parseFuncDef();
 
-    private:
-        static short getPrecedence(Token op);
+  private:
+    static short getPrecedence(Token op);
 
-        std::tuple<Token, std::string> next();
+    std::tuple<Token, std::string> next();
 
-        inline char getNextChar() {
-            column++;
-            return static_cast<char>(fs.get());
-        }
+    inline char getNextChar() {
+        column++;
+        return static_cast<char>(fs.get());
+    }
 
-        inline char peekNextChar() {
-            return static_cast<char>(fs.peek());
-        }
+    inline char peekNextChar() { return static_cast<char>(fs.peek()); }
 
-        inline Token getCurrentToken() const {
-            return std::get<Token>(currentToken);
-        }
+    inline Token getCurrentToken() const {
+        return std::get<Token>(currentToken);
+    }
 
-        inline std::string getCurrentLexeme() const {
-            return std::get<std::string>(currentToken);
-        }
-    };
-}  // namespace nyx
+    inline std::string getCurrentLexeme() const {
+        return std::get<std::string>(currentToken);
+    }
+};
+} // namespace nyx
 
 #endif

@@ -1,10 +1,9 @@
-#include <cstring>
 #include "Opcode.h"
 #include "../util/Utils.h"
+#include <cstring>
 
-const char *Opcode::name[Opcode::num_of_mnemonic];
+const char* Opcode::name[Opcode::num_of_mnemonic];
 int Opcode::format[Opcode::num_of_mnemonic];
-
 
 void Opcode::initialize() {
     defineOpcode(CALL, "call", 1);
@@ -43,27 +42,22 @@ void Opcode::initialize() {
     defineOpcode(LOAD_FREE, "load_free", 1);
     defineOpcode(STORE_FREE, "store_free", 1);
 
-
     verify();
 }
 
-void Opcode::defineOpcode(Opcode::Mnemonic m, const char *n, int f) {
+void Opcode::defineOpcode(Opcode::Mnemonic m, const char* n, int f) {
     name[m] = n;
     format[m] = f;
 }
 
 void Opcode::verify() {
-    for (auto &i : name) {
+    for (auto& i : name) {
         if (strlen(i) == 0) {
             panic("incomplete opcode information");
         }
     }
 }
 
-const char *Opcode::forName(int mnemonic) {
-    return name[mnemonic];
-}
+const char* Opcode::forName(int mnemonic) { return name[mnemonic]; }
 
-int Opcode::forFormat(int mnemonic) {
-    return format[mnemonic];
-}
+int Opcode::forFormat(int mnemonic) { return format[mnemonic]; }

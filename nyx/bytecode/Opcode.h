@@ -1,9 +1,8 @@
 #ifndef NYX_OPCODE_H
 #define NYX_OPCODE_H
 
-
 struct Opcode {
-public:
+  public:
     enum Mnemonic : int {
         CALL,
         JMP,
@@ -43,20 +42,20 @@ public:
         num_of_mnemonic
     };
 
-private:
-    static const char *name[];
+  private:
+    static const char* name[];
     static int format[];
 
-    static void defineOpcode(Mnemonic m, const char *n, int f);
+    static void defineOpcode(Mnemonic m, const char* n, int f);
 
     static void verify();
 
-public:
+  public:
     static void initialize();
 
-    static const char *forName(int mnemonic);
+    static const char* forName(int mnemonic);
 
     static int forFormat(int mnemonic);
 };
 
-#endif //NYX_OPCODE_H
+#endif // NYX_OPCODE_H

@@ -333,6 +333,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
                 } else {
                     frame->push(*(freeVar->endpoint->value.active));
                 }
+                FreeVar*t = freeVar;
                 bci++;
                 break;
             }

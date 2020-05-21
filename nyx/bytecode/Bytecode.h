@@ -10,6 +10,7 @@
 struct Bytecode;
 
 struct FreeVar {
+    std::string name;
     bool isEnclosing{};
     FreeVar* endpoint{};
     int varIndex{};

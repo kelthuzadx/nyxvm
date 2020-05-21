@@ -835,6 +835,17 @@ void BytecodeGenerator::genLoad(const std::string& name) {
         return;
     }
 
+    // find in current captured free variables
+    for(int i=0;i<bytecode->freeVars.size();i++){
+        auto* fv = bytecode->freeVars[i];
+        assert(!fv->isEnclosing);
+        if(fv->name==name){
+            bytecode->code[bci++] = Opcode::LOAD_FREE;
+            bytecode->code[bci++] = i;
+            return;
+        }
+    }
+
     // find in parent function scope
     Bytecode* parent = bytecode->parent;
     while (parent != nullptr) {
@@ -843,11 +854,13 @@ void BytecodeGenerator::genLoad(const std::string& name) {
             auto* refer = new FreeVar;
             auto* referent = new FreeVar;
 
+            refer->name = name;
             refer->isEnclosing = false;
             refer->endpoint = referent;
             refer->value.active = nullptr;
             refer->varIndex = parent->localMap[name];
 
+            referent->name = name;
             referent->isEnclosing = true;
             referent->endpoint = refer;
             referent->value.active = nullptr;

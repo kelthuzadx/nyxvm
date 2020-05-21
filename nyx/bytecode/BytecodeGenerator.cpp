@@ -828,7 +828,7 @@ void BytecodeGenerator::genArray(std::vector<Expr*> elems) {
 void BytecodeGenerator::genLoad(const std::string& name) {
     // find variable in current function scope
     if (auto iter = bytecode->localMap.find(name);
-            iter != bytecode->localMap.cend()) {
+        iter != bytecode->localMap.cend()) {
         int localIndex = bytecode->localMap[name];
         bytecode->code[bci++] = Opcode::LOAD;
         bytecode->code[bci++] = localIndex;
@@ -836,10 +836,10 @@ void BytecodeGenerator::genLoad(const std::string& name) {
     }
 
     // find in current captured free variables
-    for(int i=0;i<bytecode->freeVars.size();i++){
+    for (int i = 0; i < bytecode->freeVars.size(); i++) {
         auto* fv = bytecode->freeVars[i];
         assert(!fv->isEnclosing);
-        if(fv->name==name){
+        if (fv->name == name) {
             bytecode->code[bci++] = Opcode::LOAD_FREE;
             bytecode->code[bci++] = i;
             return;
@@ -850,7 +850,7 @@ void BytecodeGenerator::genLoad(const std::string& name) {
     Bytecode* parent = bytecode->parent;
     while (parent != nullptr) {
         if (auto iter = parent->localMap.find(name);
-                iter != parent->localMap.cend()) {
+            iter != parent->localMap.cend()) {
             auto* refer = new FreeVar;
             auto* referent = new FreeVar;
 

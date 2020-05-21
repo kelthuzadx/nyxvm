@@ -61,11 +61,21 @@ void Interpreter::destroyFrame(Bytecode* bytecode, bool hasReturnValue) {
     }
 
     if (!bytecode->freeVars.empty()) {
+        // If this is the enclosing frame, we must "move" free variable's value
+        // to its endpoint. After that we should set local slot to null in order
+        // to avoid deallocating free variable's value
+        // Note that we must separate "move" and set actions, since multi
+        // endpoints may refer to the same free variable's value, if we move
+        // value and immediately set to null, other endpoints will refer to null
+        // value.
         for (auto* freeVar : bytecode->freeVars) {
             if (freeVar->isEnclosing) {
-                // This is a trick, it "moves" free variable to endpoint,
-                // which will changes state to inactive
                 freeVar->endpoint->value.inactive = (*(freeVar->value.active));
+            }
+        }
+
+        for (auto* freeVar : bytecode->freeVars) {
+            if (freeVar->isEnclosing) {
                 temp->local()[freeVar->varIndex] = nullptr;
             }
         }
@@ -333,7 +343,6 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
                 } else {
                     frame->push(*(freeVar->endpoint->value.active));
                 }
-                FreeVar*t = freeVar;
                 bci++;
                 break;
             }

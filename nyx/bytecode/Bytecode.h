@@ -18,6 +18,8 @@ struct FreeVar {
         Object* inactive;
         Object** active;
     } value{};
+
+    ~FreeVar() = default;
 };
 
 struct Bytecode {

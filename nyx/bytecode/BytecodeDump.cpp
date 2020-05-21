@@ -14,6 +14,11 @@ BytecodeDump::~BytecodeDump() {
 
 void BytecodeDump::dump(Bytecode* bytecode) {
     ofs << "=====" << bytecode->funcName << "=====\n";
+    ofs << "{";
+    for (auto& iter : bytecode->localMap) {
+        ofs << iter.second << "=" << iter.first << ",";
+    }
+    ofs << "}\n";
     int bytecodeSize = bytecode->codeSize;
     auto* bytecodes = bytecode->code;
     for (int bci = 0; bci < bytecodeSize; bci++) {
@@ -45,7 +50,7 @@ void BytecodeDump::dump(Bytecode* bytecode) {
             int format = Opcode::forFormat(bytecodes[bci]);
             if (format != 0) {
                 for (int i = 0; i < format; i++) {
-                    ofs << " " << bytecodes[format];
+                    ofs << " " << bytecodes[bci + format];
                 }
                 bci += format;
             }

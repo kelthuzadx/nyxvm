@@ -1,4 +1,69 @@
 
+func p(a){
+    q = 12 + a
+    return func(t){
+        return q+t
+    }
+}
+
+t = p(13)
+assert(t(25)==50)
+
+func test(a){
+    b = 1
+    return func(t1){
+        c = 1
+        return func(t2){
+            return a+b+c+t1+t2
+        }
+    }
+}
+t = test(3)
+t = t(1)
+t = t(1)
+
+assert(t==7)
+
+func test1(){
+  t = 12
+  q = func(){
+    return t*2
+  }
+  s = q()
+  return s
+}
+assert(test1())
+
+func test3(a,b){
+    c = a+b
+    d = 1
+    return func(e){
+        return d+c+e
+    }
+}
+
+a = test3(3,4)
+assert(a(4)==12)
+
+func test4(){
+a=1
+return func(){
+a=2
+return a
+}
+}
+t=test4()
+assert(t()==2)
+
+func test5(){
+a=1
+return func(){
+return a
+}
+}t=test5()
+assert(t()==1)
+
+
 
 func test6(){
     arr = [3,5,56,55]
@@ -9,10 +74,29 @@ func test6(){
     arr[0] = p
     assert(arr[0]==60)
     return func() {
-        return arr[1]
+        return arr
     }
 }
 
 t = test6()
-t = t()
-println(t)
+q = t()
+assert(q[0]+q[1]==65)
+
+func test7(){
+    a = 12
+    closure1 = func(){
+        return a+12
+    }
+    closure2 = func(){
+        return a+3
+    }
+
+    return closure2()+closure1()
+}
+
+assert(test7()==39)
+
+for(i=0;i<10;i+=1){
+    t = func(){return i}
+    assert(t()==i)
+}

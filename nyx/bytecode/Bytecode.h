@@ -10,11 +10,13 @@
 struct Bytecode;
 
 struct FreeVar {
-    bool isEnclosing;
+    bool isEnclosing{};
     FreeVar *endpoint{};
     int varIndex{};
-    Object **value{};
-
+    union {
+        Object *inactive;
+        Object **active;
+    } value{};
 };
 
 struct Bytecode {

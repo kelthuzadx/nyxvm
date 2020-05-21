@@ -1,6 +1,7 @@
 #include "Interpreter.h"
 #include "../bytecode/Opcode.h"
 #include "../runtime/NyxVM.h"
+#include "../bytecode/Bytecode.h"
 
 
 //===----------------------------------------------------------------------===//
@@ -40,7 +41,7 @@ void Interpreter::createFrame(Bytecode *bytecode, int argc, Object **argv) {
     if (!bytecode->freeVars.empty()) {
         for (auto *freeVar: bytecode->freeVars) {
             if (freeVar->isEnclosing) {
-                freeVar->value = &frame->local()[freeVar->varIndex];
+                freeVar->value.active = &frame->local()[freeVar->varIndex];
             }
         }
     }
@@ -68,8 +69,9 @@ void Interpreter::destroyFrame(Bytecode *bytecode, bool hasReturnValue) {
     if (!bytecode->freeVars.empty()) {
         for (auto *freeVar: bytecode->freeVars) {
             if (freeVar->isEnclosing) {
-                // This is a trick, it "moves" free variable to endpoint
-                freeVar->endpoint->value = (Object **) (*(freeVar->value));
+                // This is a trick, it "moves" free variable to endpoint,
+                // which will changes state to inactive
+                freeVar->endpoint->value.inactive = (*(freeVar->value.active));
                 temp->local()[freeVar->varIndex] = nullptr;
             }
         }
@@ -331,10 +333,12 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                 case LOAD_FREE: {
                     int freeIndex = code[bci + 1];
                     FreeVar *freeVar = bytecode->freeVars[freeIndex];
-                    if (*(freeVar->value) != nullptr) {
-                        frame->push((Object *) (freeVar->value));
+                    if (freeVar->value.inactive != nullptr) {
+                        frame->push(freeVar->value.inactive);
+                        //frame->push((Object *) (freeVar->value));
                     } else {
-                        frame->push((Object *) (freeVar->endpoint->value));
+                        frame->push(*(freeVar->endpoint->value.active));
+                        //  frame->push(* (freeVar->endpoint->value));
                     }
                     bci++;
                     break;

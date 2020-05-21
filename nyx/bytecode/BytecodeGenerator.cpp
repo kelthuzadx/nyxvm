@@ -1,5 +1,6 @@
 #include "BytecodeGenerator.h"
 #include "Opcode.h"
+#include "Bytecode.h"
 
 class Label;
 
@@ -891,12 +892,12 @@ void BytecodeGenerator::genLoadFree(Bytecode *enclosing, const std::string &name
 
     refer->isEnclosing = false;
     refer->endpoint = referent;
-    refer->value = nullptr;
+    refer->value.active = nullptr;
     refer->varIndex = enclosing->localMap[name];
 
     referent->isEnclosing = true;
     referent->endpoint = refer;
-    referent->value = nullptr;
+    referent->value.active = nullptr;
     referent->varIndex = enclosing->localMap[name];
 
     enclosing->freeVars.push_back(referent);

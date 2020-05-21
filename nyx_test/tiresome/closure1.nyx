@@ -22,3 +22,42 @@ t = t(1)
 t = t(1)
 
 assert(t==7)
+
+func test1(){
+  t = 12
+  q = func(){
+    return t*2
+  }
+  s = q()
+  return s
+}
+assert(test1())
+
+func test3(a,b){
+    c = a+b
+    d = 1
+    return func(e){
+        return d+c+e
+    }
+}
+
+a = test3(3,4)
+assert(a(4)==12)
+
+func test4(){
+a=1
+return func(){
+a=2
+return a
+}
+}
+t=test4()
+assert(t()==2)
+
+func test5(){
+a=1
+return func(){
+return a
+}
+}t=test5()
+assert(t()==1)

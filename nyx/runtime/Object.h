@@ -54,6 +54,10 @@ struct NArray : public Object {
 struct NClosure : public Object {
     explicit NClosure(Bytecode *code);
 
+    ~NClosure() override;
+
+    std::string toString() override;
+
     Bytecode *code;
 };
 

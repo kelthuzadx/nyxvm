@@ -21,6 +21,14 @@ NClosure::NClosure(Bytecode *code) : code(code) {
 
 }
 
+NClosure::~NClosure() {
+    this->code = nullptr;
+}
+
+std::string NClosure::toString() {
+    return "Closure";
+}
+
 
 std::string Object::toString() {
     int addr = *((int *) (this));
@@ -33,7 +41,6 @@ std::string Object::toString() {
 std::string NInt::toString() {
     return std::to_string(value);
 }
-
 
 std::string NDouble::toString() {
     return std::to_string(value);

@@ -7,6 +7,8 @@
 class BytecodeDump {
 private:
     std::ofstream ofs;
+    PhaseTime timer;
+
 public:
     explicit BytecodeDump(const std::string &logPath);
 

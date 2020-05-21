@@ -335,10 +335,8 @@ void Interpreter::execute(Bytecode *bytecode, int argc, Object **argv) {
                     FreeVar *freeVar = bytecode->freeVars[freeIndex];
                     if (freeVar->value.inactive != nullptr) {
                         frame->push(freeVar->value.inactive);
-                        //frame->push((Object *) (freeVar->value));
                     } else {
                         frame->push(*(freeVar->endpoint->value.active));
-                        //  frame->push(* (freeVar->endpoint->value));
                     }
                     bci++;
                     break;

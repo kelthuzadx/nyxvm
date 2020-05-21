@@ -9,7 +9,9 @@
 #include <unordered_map>
 
 class Label;
-
+//===----------------------------------------------------------------------===//
+// Generate bytecode from Ast
+//===----------------------------------------------------------------------===//
 class BytecodeGenerator : public AstVisitor {
     friend class Label;
 
@@ -100,8 +102,6 @@ class BytecodeGenerator : public AstVisitor {
     void genLoadIndex(const std::string& array, Expr* index);
 
     void genStoreIndex(const std::string& array, Expr* value, Expr* index);
-
-    void genLoadFree(Bytecode* enclosing, const std::string& name);
 
     void genArray(std::vector<Expr*> node);
 

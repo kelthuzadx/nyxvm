@@ -115,25 +115,7 @@ void BytecodeGenerator::visitArrayExpr(ArrayExpr* node) {
 }
 
 void BytecodeGenerator::visitIdentExpr(IdentExpr* node) {
-    // find variable in current function scope
-    if (auto iter = bytecode->localMap.find(node->identName);
-        iter != bytecode->localMap.cend()) {
-        genLoad(node->identName);
-        return;
-    }
-
-    // find in parent function scope
-    Bytecode* parent = bytecode->parent;
-    while (parent != nullptr) {
-        if (auto iter = parent->localMap.find(node->identName);
-            iter != parent->localMap.cend()) {
-            genLoadFree(parent, node->identName);
-            return;
-        }
-        parent = parent->parent;
-    }
-
-    panic("variable undefined but using");
+    genLoad(node->identName);
 }
 
 void BytecodeGenerator::visitIndexExpr(IndexExpr* node) {
@@ -844,9 +826,44 @@ void BytecodeGenerator::genArray(std::vector<Expr*> elems) {
 }
 
 void BytecodeGenerator::genLoad(const std::string& name) {
-    int localIndex = bytecode->localMap[name];
-    bytecode->code[bci++] = Opcode::LOAD;
-    bytecode->code[bci++] = localIndex;
+    // find variable in current function scope
+    if (auto iter = bytecode->localMap.find(name);
+            iter != bytecode->localMap.cend()) {
+        int localIndex = bytecode->localMap[name];
+        bytecode->code[bci++] = Opcode::LOAD;
+        bytecode->code[bci++] = localIndex;
+        return;
+    }
+
+    // find in parent function scope
+    Bytecode* parent = bytecode->parent;
+    while (parent != nullptr) {
+        if (auto iter = parent->localMap.find(name);
+                iter != parent->localMap.cend()) {
+            auto* refer = new FreeVar;
+            auto* referent = new FreeVar;
+
+            refer->isEnclosing = false;
+            refer->endpoint = referent;
+            refer->value.active = nullptr;
+            refer->varIndex = parent->localMap[name];
+
+            referent->isEnclosing = true;
+            referent->endpoint = refer;
+            referent->value.active = nullptr;
+            referent->varIndex = parent->localMap[name];
+
+            parent->freeVars.push_back(referent);
+            bytecode->freeVars.push_back(refer);
+
+            bytecode->code[bci++] = Opcode::LOAD_FREE;
+            bytecode->code[bci++] = bytecode->freeVars.size() - 1;
+            return;
+        }
+        parent = parent->parent;
+    }
+
+    panic("variable undefined but using");
 }
 
 void BytecodeGenerator::genStore(const std::string& name) {
@@ -867,10 +884,6 @@ void BytecodeGenerator::genStore(const std::string& name) {
 }
 
 void BytecodeGenerator::genLoadIndex(const std::string& array, Expr* index) {
-    if (auto iter = bytecode->localMap.find(array);
-        iter == bytecode->localMap.cend()) {
-        panic("variable undefined but using");
-    }
     genLoad(array);
     index->visit(this);
     bytecode->code[bci++] = Opcode::LOAD_INDEX;
@@ -886,28 +899,6 @@ void BytecodeGenerator::genStoreIndex(const std::string& array, Expr* value,
     value->visit(this);
     index->visit(this);
     bytecode->code[bci++] = Opcode::STORE_INDEX;
-}
-
-void BytecodeGenerator::genLoadFree(Bytecode* enclosing,
-                                    const std::string& name) {
-    auto* refer = new FreeVar;
-    auto* referent = new FreeVar;
-
-    refer->isEnclosing = false;
-    refer->endpoint = referent;
-    refer->value.active = nullptr;
-    refer->varIndex = enclosing->localMap[name];
-
-    referent->isEnclosing = true;
-    referent->endpoint = refer;
-    referent->value.active = nullptr;
-    referent->varIndex = enclosing->localMap[name];
-
-    enclosing->freeVars.push_back(referent);
-    bytecode->freeVars.push_back(refer);
-
-    bytecode->code[bci++] = Opcode::LOAD_FREE;
-    bytecode->code[bci++] = bytecode->freeVars.size() - 1;
 }
 
 inline bool BytecodeGenerator::isShortCircuitOr(Expr* expr) {

@@ -96,7 +96,40 @@ func test7(){
 
 assert(test7()==39)
 
+x = 1
 for(i=0;i<10;i+=1){
-    t = func(){return i}
-    assert(t()==i)
+    t = func(){
+        i +=1
+        return i
+    }
+    assert(t()==x)
+    x+=2
 }
+
+
+func test8(){
+    a =11
+    plus9 = func(){
+        a += 9
+        return
+    }
+    plus9()
+    assert(a==20)
+    plus9()
+    assert(a==29)
+    minus9=func(){
+        a -= 9
+        return
+    }
+    minus9()
+    assert(a==20)
+    minus9()
+    assert(a==11)
+    for(i=0;i<10;i+=1){
+        plus9()
+        minus9()
+    }
+    assert(a==11)
+}
+
+test8()

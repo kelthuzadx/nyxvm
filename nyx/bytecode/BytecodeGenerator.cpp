@@ -242,7 +242,6 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr* node) {
     if (typeid(*node->lhs) == typeid(IndexExpr)) {
         auto* t = dynamic_cast<IndexExpr*>(node->lhs);
         if (node->opt == TK_ASSIGN) {
-            // TODO: store freeval
             genStoreIndex(t->identName, node->rhs, t->index);
         } else {
             // arr[index] += value
@@ -839,7 +838,7 @@ void BytecodeGenerator::genLoad(const std::string& name) {
     for (int i = 0; i < bytecode->freeVars.size(); i++) {
         auto* fv = bytecode->freeVars[i];
         assert(!fv->isEnclosing);
-        if (fv->name == name) {
+        if (!fv->isEnclosing && fv->name == name) {
             bytecode->code[bci++] = Opcode::LOAD_FREE;
             bytecode->code[bci++] = i;
             return;
@@ -876,24 +875,66 @@ void BytecodeGenerator::genLoad(const std::string& name) {
         parent = parent->parent;
     }
 
-    panic("variable undefined but using");
+    panic("use undefined variable %s", name.c_str());
 }
 
 void BytecodeGenerator::genStore(const std::string& name) {
+    // find and assign variable in current function scope
     if (auto iter = bytecode->localMap.find(name);
         iter != bytecode->localMap.cend()) {
-        // reassign existing variable a new value
+
         int localIndex = bytecode->localMap[name];
         bytecode->code[bci++] = Opcode::STORE;
         bytecode->code[bci++] = localIndex;
-    } else {
-        // create a new variable
-        int localIndex = bytecode->localMap.size();
-        bytecode->code[bci++] = Opcode::STORE;
-        bytecode->code[bci++] = localIndex;
-
-        bytecode->localMap.insert({name, localIndex});
+        return;
     }
+
+    // find and assign in current captured free variables
+    for (int i = 0; i < bytecode->freeVars.size(); i++) {
+        auto* fv = bytecode->freeVars[i];
+        if (!fv->isEnclosing && fv->name == name) {
+            bytecode->code[bci++] = Opcode::STORE_FREE;
+            bytecode->code[bci++] = i;
+            return;
+        }
+    }
+
+    // find and assign in parent function scope
+    Bytecode* parent = bytecode->parent;
+    while (parent != nullptr) {
+        if (auto iter = parent->localMap.find(name);
+            iter != parent->localMap.cend()) {
+            auto* refer = new FreeVar;
+            auto* referent = new FreeVar;
+
+            refer->name = name;
+            refer->isEnclosing = false;
+            refer->endpoint = referent;
+            refer->value.active = nullptr;
+            refer->varIndex = parent->localMap[name];
+
+            referent->name = name;
+            referent->isEnclosing = true;
+            referent->endpoint = refer;
+            referent->value.active = nullptr;
+            referent->varIndex = parent->localMap[name];
+
+            parent->freeVars.push_back(referent);
+            bytecode->freeVars.push_back(refer);
+
+            bytecode->code[bci++] = Opcode::STORE_FREE;
+            bytecode->code[bci++] = bytecode->freeVars.size() - 1;
+            return;
+        }
+        parent = parent->parent;
+    }
+
+    // no variable found, create a new variable
+    int localIndex = bytecode->localMap.size();
+    bytecode->code[bci++] = Opcode::STORE;
+    bytecode->code[bci++] = localIndex;
+
+    bytecode->localMap.insert({name, localIndex});
 }
 
 void BytecodeGenerator::genLoadIndex(const std::string& array, Expr* index) {
@@ -946,6 +987,8 @@ BytecodeGenerator::BytecodeGenerator() {
 }
 
 Bytecode* BytecodeGenerator::generateFuncDef(FuncDef* node) {
+    bytecode->funcName = node->funcName;
+
     // create name in local map, interpreter will assign arguments to these
     // parameters
     for (auto& param : node->params) {
@@ -954,12 +997,13 @@ Bytecode* BytecodeGenerator::generateFuncDef(FuncDef* node) {
 
     node->block->visit(this);
     bytecode->codeSize = bci;
-    bytecode->funcName = node->funcName;
     return bytecode;
 }
 
 Bytecode* BytecodeGenerator::generateClosureExpr(Bytecode* enclosing,
                                                  ClosureExpr* node) {
+    bytecode->funcName = "<closure>";
+
     // create name in local map, interpreter will assign arguments to these
     // parameters
     for (auto& param : node->params) {
@@ -969,16 +1013,15 @@ Bytecode* BytecodeGenerator::generateClosureExpr(Bytecode* enclosing,
     node->block->visit(this);
 
     bytecode->codeSize = bci;
-    bytecode->funcName = "<closure>";
     return bytecode;
 }
 
 Bytecode* BytecodeGenerator::generate(CompilationUnit* unit) {
+    bytecode->funcName = "<top-level>";
     {
         PhaseTime timer("generate bytecode from Ast");
         unit->visit(this);
     }
     bytecode->codeSize = bci;
-    bytecode->funcName = "<top-level>";
     return bytecode;
 }

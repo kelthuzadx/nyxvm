@@ -14,6 +14,10 @@ struct FreeVar {
     bool isEnclosing{};
     FreeVar* endpoint{};
     int varIndex{};
+    // Active state means free variable is still active in enclosing context, so
+    // current context can only borrows the value. In contrast, inactive means
+    // enclosing context is no longer live, current context owns the free
+    // variable
     union {
         Object* inactive;
         Object** active;

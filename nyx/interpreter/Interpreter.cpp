@@ -114,7 +114,6 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
             }
         }
     }
-
     // TODO release funcArgv
 }
 
@@ -339,9 +338,29 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
                 int freeIndex = code[bci + 1];
                 FreeVar* freeVar = bytecode->freeVars[freeIndex];
                 if (freeVar->value.inactive != nullptr) {
+                    // Enclosing context is inactive, current context owns the
+                    // free variable
                     frame->push(freeVar->value.inactive);
                 } else {
+                    // Enclosing context is still active, current context just
+                    // "borrows" free variable
                     frame->push(*(freeVar->endpoint->value.active));
+                }
+                bci++;
+                break;
+            }
+            case Opcode::STORE_FREE: {
+                auto* object = frame->pop();
+                int freeIndex = code[bci + 1];
+                FreeVar* freeVar = bytecode->freeVars[freeIndex];
+                if (freeVar->value.inactive != nullptr) {
+                    // Enclosing context is inactive, current context owns the
+                    // free variable
+                    freeVar->value.inactive = object;
+                } else {
+                    // Enclosing context is still active, current context just
+                    // "borrows" free variable
+                    *(freeVar->endpoint->value.active) = object;
                 }
                 bci++;
                 break;

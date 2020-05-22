@@ -83,6 +83,30 @@ void Interpreter::destroyFrame(Bytecode* bytecode, bool hasReturnValue) {
     delete temp;
 }
 
+void Interpreter::loadFreeVar(FreeVar* freeVar) {
+    if (freeVar->value.inactive != nullptr) {
+        // Enclosing context is inactive, current context owns the
+        // free variable
+        frame->push(freeVar->value.inactive);
+    } else {
+        // Enclosing context is still active, current context just
+        // "borrows" free variable
+        frame->push(*(freeVar->endpoint->value.active));
+    }
+}
+
+void Interpreter::storeFreeVar(FreeVar* freeVar, Object* object) {
+    if (freeVar->value.inactive != nullptr) {
+        // Enclosing context is inactive, current context owns the
+        // free variable
+        freeVar->value.inactive = object;
+    } else {
+        // Enclosing context is still active, current context just
+        // "borrows" free variable
+        *(freeVar->endpoint->value.active) = object;
+    }
+}
+
 void Interpreter::call(Bytecode* bytecode, int bci) {
     int funcArgc = bytecode->code[bci + 1];
 
@@ -337,15 +361,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
             case Opcode::LOAD_FREE: {
                 int freeIndex = code[bci + 1];
                 FreeVar* freeVar = bytecode->freeVars[freeIndex];
-                if (freeVar->value.inactive != nullptr) {
-                    // Enclosing context is inactive, current context owns the
-                    // free variable
-                    frame->push(freeVar->value.inactive);
-                } else {
-                    // Enclosing context is still active, current context just
-                    // "borrows" free variable
-                    frame->push(*(freeVar->endpoint->value.active));
-                }
+                loadFreeVar(freeVar);
                 bci++;
                 break;
             }
@@ -353,15 +369,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
                 auto* object = frame->pop();
                 int freeIndex = code[bci + 1];
                 FreeVar* freeVar = bytecode->freeVars[freeIndex];
-                if (freeVar->value.inactive != nullptr) {
-                    // Enclosing context is inactive, current context owns the
-                    // free variable
-                    freeVar->value.inactive = object;
-                } else {
-                    // Enclosing context is still active, current context just
-                    // "borrows" free variable
-                    *(freeVar->endpoint->value.active) = object;
-                }
+                storeFreeVar(freeVar, object);
                 bci++;
                 break;
             }

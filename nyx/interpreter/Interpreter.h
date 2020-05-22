@@ -30,6 +30,10 @@ class Interpreter {
 
     void call(Bytecode* bytecodes, int bci);
 
+    void loadFreeVar(FreeVar* freeVar);
+
+    void storeFreeVar(FreeVar* freeVar, Object* object);
+
     void execute(Bytecode* bytecode, int argc, Object** argv);
 
   public:

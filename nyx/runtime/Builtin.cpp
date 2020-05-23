@@ -3,7 +3,11 @@
 
 extern "C" Object* nyxffi_print(int argc, Object** argv) {
     for (int i = 0; i < argc; i++) {
-        std::cout << argv[i]->toString();
+        if(argv[i]!=nullptr){
+            std::cout << argv[i]->toString();
+        }else{
+            std::cout<<"null";
+        }
     }
     std::cout.flush();
     return nullptr;
@@ -22,6 +26,8 @@ extern "C" Object* nyxffi_typeof(int argc, Object** argv) {
         return new NString("null");
     } else if (typeid(*argv[0]) == typeid(NInt)) {
         return new NString("int");
+    } else if (typeid(*argv[0]) == typeid(NChar)) {
+        return new NString("char");
     } else if (typeid(*argv[0]) == typeid(NDouble)) {
         return new NString("double");
     } else if (typeid(*argv[0]) == typeid(NString)) {

@@ -2,22 +2,16 @@ a = [1,1,1,1]
 b  = []
 assert(a==[1,1,1,1])
 assert(b==[])
-print([1,23,4,5])
 c = [[1,2,3],[4,5,6],[7,8,9]]
-print(c)
 f = [3.24,678,"composite",["array",null,true],'c']
-println(f)
 assert(f[0]==3.24)
 assert(false==(f[0]==3.23))
 assert(f[4]=='c')
-println(f[3])
-println(typeof(f[3])=="array")
-println("the size of array f is "+length(f))
-println(a)
+assert(f[3]==["array",null,true])
+assert(typeof(f[3])=="array")
+assert(3==len(f[3]))
 a[2] = 2
-println(a)
 b = [1,2,3]
-println(b)
 b = [3,4,5]
-println(b)
-println(b+[3,4,6])
+assert(a==[1,1,2,1])
+assert(b==[3,4,5])

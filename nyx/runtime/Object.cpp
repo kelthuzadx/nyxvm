@@ -4,6 +4,8 @@ NInt::NInt(nyx::int32 value) : value(value) {}
 
 NDouble::NDouble(double value) : value(value) {}
 
+NChar::NChar(nyx::int8 value) : value(value) {}
+
 NString::NString(std::string value) : value(std::move(value)) {}
 
 NArray::~NArray() { delete[] array; }
@@ -28,6 +30,10 @@ std::string Object::toString() {
 }
 
 std::string NInt::toString() { return std::to_string(value); }
+
+std::string NChar::toString() {
+    return "'"+std::string(1,(char)value)+"'";
+}
 
 std::string NDouble::toString() { return std::to_string(value); }
 

@@ -32,6 +32,14 @@ struct NDouble : public Object {
     std::string toString() override;
 };
 
+struct NChar : public Object {
+    explicit NChar(nyx::int8 ch);
+
+    nyx::int8 value;
+
+    std::string toString() override;
+};
+
 struct NString : public Object {
     explicit NString(std::string value);
 

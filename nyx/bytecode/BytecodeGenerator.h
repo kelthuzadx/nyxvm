@@ -95,6 +95,8 @@ class BytecodeGenerator : public AstVisitor {
 
     void genConstD(double d);
 
+    void genConstC(char c);
+
     void genLoad(const std::string& name);
 
     void genStore(const std::string& name);

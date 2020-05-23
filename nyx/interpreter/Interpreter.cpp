@@ -25,6 +25,10 @@ void Interpreter::neg(Object* object) {
 }
 
 bool Interpreter::deepCompare(int cond, Object* o1, Object* o2) {
+    if(o1== nullptr||o2== nullptr){
+        return o1 == nullptr && o2 == nullptr;
+    }
+
     if (typeid(*o1) == typeid(NInt) && typeid(*o2) == typeid(NInt)) {
         auto* t1 = dynamic_cast<NInt*>(o1);
         auto* t2 = dynamic_cast<NInt*>(o2);
@@ -33,6 +37,11 @@ bool Interpreter::deepCompare(int cond, Object* o1, Object* o2) {
                typeid(*o2) == typeid(NDouble)) {
         auto* t1 = dynamic_cast<NDouble*>(o1);
         auto* t2 = dynamic_cast<NDouble*>(o2);
+        return genericCompare(cond, t1, t2);
+    }  else if (typeid(*o1) == typeid(NChar) &&
+                typeid(*o2) == typeid(NChar)) {
+        auto* t1 = dynamic_cast<NChar*>(o1);
+        auto* t2 = dynamic_cast<NChar*>(o2);
         return genericCompare(cond, t1, t2);
     } else if (typeid(*o1) == typeid(NString) &&
                typeid(*o2) == typeid(NString)) {
@@ -66,7 +75,8 @@ bool Interpreter::deepCompare(int cond, Object* o1, Object* o2) {
             return false;
         }
 
-    } else {
+    }
+    else {
         panic("should not reach here");
     }
 }
@@ -240,6 +250,13 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
                 auto* object = new NDouble(value);
                 frame->push(object);
                 bci += 8;
+                break;
+            }
+            case Opcode::CONST_C: {
+                nyx::int8 value = *(nyx::int8 *)(code + bci + 1);
+                auto* object = new NChar(value);
+                frame->push(object);
+                bci += 1;
                 break;
             }
             case Opcode::CONST_NULL: {

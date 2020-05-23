@@ -2,5 +2,4 @@ a = "hello world"
 b = 32.1234
 c =235423
 
-d = println("hello world",3.14,true,"another",a,b,c,null)
-println(d)
+println("hello world",3.14,true,"another",a,b,c,null)

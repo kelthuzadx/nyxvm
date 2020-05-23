@@ -13,6 +13,7 @@ void Opcode::initialize() {
     defineOpcode(CONST_I, "const_i", 4);
     defineOpcode(CONST_NULL, "const_null", 0);
     defineOpcode(CONST_D, "const_d", 8);
+    defineOpcode(CONST_C, "const_c", 1);
     defineOpcode(CONST_STR, "const_str", 1);
     defineOpcode(CONST_CLOSURE, "const_closure", 1);
     defineOpcode(NEG, "neg", 0);

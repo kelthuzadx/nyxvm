@@ -1,5 +1,0 @@
-export hello
-
-func hello(){
-    println("hello world from mod_a")
-}

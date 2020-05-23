@@ -11,6 +11,7 @@ struct Opcode {
         CONST_I,
         CONST_NULL,
         CONST_D,
+        CONST_C,
         CONST_STR,
         CONST_CLOSURE,
         NEG,

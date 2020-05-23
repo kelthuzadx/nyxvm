@@ -89,7 +89,7 @@ void BytecodeGenerator::visitBoolExpr(BoolExpr* node) {
 }
 
 void BytecodeGenerator::visitCharExpr(CharExpr* node) {
-    genConstI(node->literal);
+    genConstC(node->literal);
 }
 
 void BytecodeGenerator::visitNullExpr(NullExpr* node) { genConstNull(); }
@@ -813,6 +813,12 @@ void BytecodeGenerator::genConstD(double d) {
     bytecode->code[bci++] = Opcode::CONST_D;
     *(double*)(bytecode->code + bci) = d;
     bci += 8;
+}
+
+void BytecodeGenerator::genConstC(char c) {
+    bytecode->code[bci++] = Opcode::CONST_C;
+    *(nyx::int8*)(bytecode->code + bci) = c;
+    bci += 1;
 }
 
 void BytecodeGenerator::genConstNull() {

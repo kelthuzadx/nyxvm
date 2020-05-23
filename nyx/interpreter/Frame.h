@@ -1,30 +1,30 @@
 #ifndef NYX_FRAME_H
 #define NYX_FRAME_H
 
-#include "../runtime/Object.h"
+#include "../runtime/NObject.h"
 #include <vector>
 
 class Frame {
   private:
-    std::vector<Object*> slots;
-    Object** locals;
+    std::vector<NObject*> slots;
+    NObject** locals;
 
   public:
     explicit Frame(int localSize);
 
     ~Frame();
 
-    Object* pop();
+    NObject* pop();
 
-    void push(Object* obj);
+    void push(NObject* obj);
 
     void load(int index);
 
-    void store(int index, Object* value);
+    void store(int index, NObject* value);
 
     void dup();
 
-    Object** local() { return locals; }
+    NObject** local() { return locals; }
 };
 
 #endif // NYX_FRAME_H

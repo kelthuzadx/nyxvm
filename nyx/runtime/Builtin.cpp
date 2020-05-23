@@ -1,7 +1,7 @@
-#include "Object.h"
+#include "NObject.h"
 #include <iostream>
 
-extern "C" Object* nyxffi_print(int argc, Object** argv) {
+extern "C" NObject* nyxffi_print(int argc, NObject** argv) {
     for (int i = 0; i < argc; i++) {
         if (argv[i] != nullptr) {
             std::cout << argv[i]->toString();
@@ -13,14 +13,14 @@ extern "C" Object* nyxffi_print(int argc, Object** argv) {
     return nullptr;
 }
 
-extern "C" Object* nyxffi_println(int argc, Object** argv) {
+extern "C" NObject* nyxffi_println(int argc, NObject** argv) {
     nyxffi_print(argc, argv);
     std::cout << "\n";
     std::cout.flush();
     return nullptr;
 }
 
-extern "C" Object* nyxffi_typeof(int argc, Object** argv) {
+extern "C" NObject* nyxffi_typeof(int argc, NObject** argv) {
     assert(argc == 1);
     if (argv[0] == nullptr) {
         return new NString("null");
@@ -38,7 +38,7 @@ extern "C" Object* nyxffi_typeof(int argc, Object** argv) {
     return new NString("object");
 }
 
-extern "C" Object* nyxffi_len(int argc, Object** argv) {
+extern "C" NObject* nyxffi_len(int argc, NObject** argv) {
     assert(argc == 1 && (typeid(*argv[0]) == typeid(NArray) ||
                          typeid(*argv[0]) == typeid(NString)));
     if (typeid(*argv[0]) == typeid(NString)) {
@@ -49,13 +49,13 @@ extern "C" Object* nyxffi_len(int argc, Object** argv) {
     return nullptr;
 }
 
-extern "C" Object* nyxffi_exit(int argc, Object** argv) {
+extern "C" NObject* nyxffi_exit(int argc, NObject** argv) {
     assert(argc == 1 && typeid(*argv[0]) == typeid(NInt));
     exit(dynamic_cast<NInt*>(argv[0])->value);
     return nullptr;
 }
 
-extern "C" Object* nyxffi_assert(int argc, Object** argv) {
+extern "C" NObject* nyxffi_assert(int argc, NObject** argv) {
     assert((argc == 1 || argc == 2) && typeid(*argv[0]) == typeid(NInt));
     if (dynamic_cast<NInt*>(argv[0])->value == 0) {
         if (argc == 2 && typeid(*argv[1]) == typeid(NString)) {
@@ -66,4 +66,15 @@ extern "C" Object* nyxffi_assert(int argc, Object** argv) {
         exit(1);
     }
     return nullptr;
+}
+
+extern "C" NObject* nyxffi_range(int argc, NObject** argv) {
+    assert(argc == 2);
+    auto* start = dynamic_cast<NInt*>(argv[0]);
+    auto* end = dynamic_cast<NInt*>(argv[1]);
+    auto* arr = new NArray(std::abs(start->value - end->value));
+    for (int i = 0; i < std::abs(start->value - end->value); i++) {
+        arr->array[i] = new NInt(i);
+    }
+    return arr;
 }

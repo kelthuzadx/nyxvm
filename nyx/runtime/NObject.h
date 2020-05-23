@@ -1,5 +1,5 @@
-#ifndef NYX_OBJECT_H
-#define NYX_OBJECT_H
+#ifndef NYX_NOBJECT_H
+#define NYX_NOBJECT_H
 
 #include <utility>
 
@@ -7,16 +7,16 @@
 
 struct Bytecode;
 
-struct Object {
+struct NObject {
 
-    Object() = default;
+    NObject() = default;
 
-    virtual ~Object() = default;
+    virtual ~NObject() = default;
 
     virtual std::string toString();
 };
 
-struct NInt : public Object {
+struct NInt : public NObject {
     explicit NInt(nyx::int32 value);
 
     nyx::int32 value;
@@ -24,7 +24,7 @@ struct NInt : public Object {
     std::string toString() override;
 };
 
-struct NDouble : public Object {
+struct NDouble : public NObject {
     explicit NDouble(double value);
 
     double value;
@@ -32,7 +32,7 @@ struct NDouble : public Object {
     std::string toString() override;
 };
 
-struct NChar : public Object {
+struct NChar : public NObject {
     explicit NChar(nyx::int8 ch);
 
     nyx::int8 value;
@@ -40,7 +40,7 @@ struct NChar : public Object {
     std::string toString() override;
 };
 
-struct NString : public Object {
+struct NString : public NObject {
     explicit NString(std::string value);
 
     std::string value;
@@ -48,7 +48,7 @@ struct NString : public Object {
     std::string toString() override;
 };
 
-struct NArray : public Object {
+struct NArray : public NObject {
     explicit NArray(int length);
 
     ~NArray() override;
@@ -56,10 +56,10 @@ struct NArray : public Object {
     std::string toString() override;
 
     int length;
-    Object** array;
+    NObject** array;
 };
 
-struct NClosure : public Object {
+struct NClosure : public NObject {
     explicit NClosure(Bytecode* code);
 
     ~NClosure() override;
@@ -69,4 +69,4 @@ struct NClosure : public Object {
     Bytecode* code;
 };
 
-#endif // NYX_OBJECT_H
+#endif // NYX_NOBJECT_H

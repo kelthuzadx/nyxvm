@@ -1,4 +1,4 @@
-#include "Object.h"
+#include "NObject.h"
 
 NInt::NInt(nyx::int32 value) : value(value) {}
 
@@ -12,7 +12,7 @@ NArray::~NArray() { delete[] array; }
 
 NArray::NArray(int length) {
     this->length = length;
-    this->array = new Object*[length];
+    this->array = new NObject*[length];
 }
 
 NClosure::NClosure(Bytecode* code) : code(code) {}
@@ -21,7 +21,7 @@ NClosure::~NClosure() { this->code = nullptr; }
 
 std::string NClosure::toString() { return "Closure"; }
 
-std::string Object::toString() {
+std::string NObject::toString() {
     int addr = *((int*)(this));
     std::string str("Object[");
     str += std::to_string(addr);

@@ -1,4 +1,5 @@
 #include "BytecodeGenerator.h"
+#include "../runtime/NyxVM.h"
 #include "Bytecode.h"
 #include "Opcode.h"
 
@@ -76,6 +77,8 @@ void BytecodeGenerator::visitBlock(Block* node) {
 }
 
 void BytecodeGenerator::visitCompilationUnit(CompilationUnit* node) {
+    // First visit function definitions and then visit top statements
+    // The order of visiting is important
     for (auto* definition : node->definitions) {
         definition->visit(this);
     }

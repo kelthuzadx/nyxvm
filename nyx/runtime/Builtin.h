@@ -1,7 +1,7 @@
 #ifndef NYX_BUILTIN_H
 #define NYX_BUILTIN_H
 
-struct Object;
+struct NObject;
 
 //===----------------------------------------------------------------------===//
 // Print arbitrary arguments to standard output device
@@ -11,7 +11,7 @@ struct Object;
 // Return:
 //      none
 //===----------------------------------------------------------------------===//
-extern "C" Object* nyxffi_print(int argc, Object** argv);
+extern "C" NObject* nyxffi_print(int argc, NObject** argv);
 
 //===----------------------------------------------------------------------===//
 // Print arbitrary arguments to standard output device with a line break char
@@ -21,7 +21,7 @@ extern "C" Object* nyxffi_print(int argc, Object** argv);
 // Return:
 //      none
 //===----------------------------------------------------------------------===//
-extern "C" Object* nyxffi_println(int argc, Object** argv);
+extern "C" NObject* nyxffi_println(int argc, NObject** argv);
 
 //===----------------------------------------------------------------------===//
 // Internal string representation of given object's type
@@ -31,7 +31,7 @@ extern "C" Object* nyxffi_println(int argc, Object** argv);
 // Return:
 //      none
 //===----------------------------------------------------------------------===//
-extern "C" Object* nyxffi_typeof(int argc, Object** argv);
+extern "C" NObject* nyxffi_typeof(int argc, NObject** argv);
 
 //===----------------------------------------------------------------------===//
 // length of the array or string
@@ -41,7 +41,7 @@ extern "C" Object* nyxffi_typeof(int argc, Object** argv);
 // Return:
 //      none
 //===----------------------------------------------------------------------===//
-extern "C" Object* nyxffi_len(int argc, Object** argv);
+extern "C" NObject* nyxffi_len(int argc, NObject** argv);
 
 //===----------------------------------------------------------------------===//
 // exit the program
@@ -50,7 +50,7 @@ extern "C" Object* nyxffi_len(int argc, Object** argv);
 // Return:
 //      none
 //===----------------------------------------------------------------------===//
-extern "C" Object* nyxffi_exit(int argc, Object** argv);
+extern "C" NObject* nyxffi_exit(int argc, NObject** argv);
 
 //===----------------------------------------------------------------------===//
 // standard assertion
@@ -60,5 +60,16 @@ extern "C" Object* nyxffi_exit(int argc, Object** argv);
 // Return:
 //      none
 //===----------------------------------------------------------------------===//
-extern "C" Object* nyxffi_assert(int argc, Object** argv);
+extern "C" NObject* nyxffi_assert(int argc, NObject** argv);
+
+//===----------------------------------------------------------------------===//
+// produce [a,b) array
+//
+// Parameter:
+//      arg1 start range,inclusively
+//      arg2 end range,exclusively
+// Return:
+//      none
+//===----------------------------------------------------------------------===//
+extern "C" NObject* nyxffi_range(int argc, NObject** argv);
 #endif // NYX_BUILTIN_H

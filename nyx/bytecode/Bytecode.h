@@ -2,7 +2,7 @@
 #define NYX_BYTECODE_H
 
 #include "../runtime/Global.h"
-#include "../runtime/Object.h"
+#include "../runtime/NObject.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -21,8 +21,8 @@ struct FreeVar {
     // enclosing context is no longer live, current context owns the free
     // variable
     union {
-        Object* inactive;
-        Object** active;
+        NObject* inactive;
+        NObject** active;
     } value{};
 
     ~FreeVar() = default;
@@ -45,6 +45,8 @@ struct Bytecode {
     std::unordered_map<std::string, Bytecode*> functions;
     std::unordered_map<int, Bytecode*> closures;
     Bytecode* parent;
+
+    Bytecode* findLocalVar(const std::string& name);
 };
 
 #endif // NYX_BYTECODE_H

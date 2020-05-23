@@ -13,3 +13,16 @@ Bytecode::Bytecode() {
     this->funcName = "";
     this->parent = nullptr;
 }
+Bytecode* Bytecode::findLocalVar(const std::string& name) {
+    if (parent == nullptr) {
+        return nullptr;
+    }
+    Bytecode* temp = parent;
+    while (temp != nullptr) {
+        if (temp->localMap.find(name) != temp->localMap.end()) {
+            return temp;
+        }
+        temp = temp->parent;
+    }
+    return nullptr;
+}

@@ -2,9 +2,9 @@
 #define NYX_UTILS_H
 
 #include <any>
+#include <cassert>
 #include <chrono>
 #include <deque>
-#include <cassert>
 #include <string>
 
 template <typename _DesireType, typename... _ArgumentType>

@@ -12,7 +12,7 @@ Interpreter::~Interpreter() {
     }
 }
 
-void Interpreter::neg(Object* object) {
+void Interpreter::neg(NObject* object) {
     if (typeid(*object) == typeid(NInt)) {
         nyx::int32 val = -dynamic_cast<NInt*>(object)->value;
         frame->push(new NInt(val));
@@ -24,7 +24,7 @@ void Interpreter::neg(Object* object) {
     }
 }
 
-bool Interpreter::deepCompare(int cond, Object* o1, Object* o2) {
+bool Interpreter::deepCompare(int cond, NObject* o1, NObject* o2) {
     if (o1 == nullptr || o2 == nullptr) {
         return o1 == nullptr && o2 == nullptr;
     }
@@ -79,12 +79,12 @@ bool Interpreter::deepCompare(int cond, Object* o1, Object* o2) {
     }
 }
 
-void Interpreter::createFrame(Bytecode* bytecode, int argc, Object** argv) {
+void Interpreter::createFrame(Bytecode* bytecode, int argc, NObject** argv) {
     // Create execution frame
     this->frame = new Frame(bytecode->localMap.size());
-    for(int i=0;i<argc;i++){
-        auto * obj=argv[i];
-        frame->store(i,obj);
+    for (int i = 0; i < argc; i++) {
+        auto* obj = argv[i];
+        frame->store(i, obj);
     }
 
     if (!bytecode->freeVars.empty()) {
@@ -101,7 +101,7 @@ void Interpreter::createFrame(Bytecode* bytecode, int argc, Object** argv) {
 void Interpreter::destroyFrame(Bytecode* bytecode, bool hasReturnValue) {
     // Destroy current frame, current frame may points to next frame
     auto* temp = stack.back();
-    Object* returnVale = nullptr;
+    NObject* returnVale = nullptr;
     if (hasReturnValue) {
         returnVale = temp->pop();
     }
@@ -150,7 +150,7 @@ void Interpreter::loadFreeVar(FreeVar* freeVar) {
     }
 }
 
-void Interpreter::storeFreeVar(FreeVar* freeVar, Object* object) {
+void Interpreter::storeFreeVar(FreeVar* freeVar, NObject* object) {
     if (freeVar->value.inactive != nullptr) {
         // Enclosing context is inactive, current context owns the
         // free variable
@@ -165,12 +165,12 @@ void Interpreter::storeFreeVar(FreeVar* freeVar, Object* object) {
 void Interpreter::call(Bytecode* bytecode, int bci) {
     int funcArgc = bytecode->code[bci + 1];
 
-    auto** funcArgv = new Object*[funcArgc];
+    auto** funcArgv = new NObject*[funcArgc];
     for (int k = funcArgc - 1; k >= 0; k--) {
         funcArgv[k] = frame->pop();
     }
 
-    Object* callee = frame->pop();
+    NObject* callee = frame->pop();
     if (typeid(*callee) == typeid(NString)) {
         auto funcName = dynamic_cast<NString*>(callee)->value;
         const char* funcPtr = NyxVM::findBuiltin(funcName);
@@ -180,8 +180,8 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
         // println()
         //
         if (funcPtr != nullptr) {
-            Object* result =
-                ((Object * (*)(int, Object**)) funcPtr)(funcArgc, funcArgv);
+            NObject* result =
+                ((NObject * (*)(int, NObject**)) funcPtr)(funcArgc, funcArgv);
             frame->push(result);
             return;
         }
@@ -224,7 +224,7 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
     // TODO release funcArgv
 }
 
-void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
+void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
     createFrame(bytecode, argc, argv);
     auto* code = bytecode->code;
     // Execute bytecode
@@ -264,74 +264,74 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
             case Opcode::CONST_STR: {
                 int index = code[bci + 1];
                 auto& str = bytecode->strings[index];
-                Object* object = new NString(str);
+                NObject* object = new NString(str);
                 frame->push(object);
                 bci++;
                 break;
             }
             case Opcode::ADD: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 arithmetic<Opcode::ADD>(object1, object2);
                 break;
             }
             case Opcode::SUB: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 arithmetic<Opcode::SUB>(object1, object2);
                 break;
             }
             case Opcode::MUL: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 arithmetic<Opcode::MUL>(object1, object2);
                 break;
             }
             case Opcode::DIV: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 arithmetic<Opcode::DIV>(object1, object2);
                 break;
             }
             case Opcode::REM: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 arithmetic<Opcode::REM>(object1, object2);
                 break;
             }
             case Opcode::TEST_EQ: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 compare<Opcode::TEST_EQ>(object1, object2);
                 break;
             }
             case Opcode::TEST_NE: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 compare<Opcode::TEST_NE>(object1, object2);
                 break;
             }
             case Opcode::TEST_GE: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 compare<Opcode::TEST_GE>(object1, object2);
                 break;
             }
             case Opcode::TEST_GT: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 compare<Opcode::TEST_GT>(object1, object2);
                 break;
             }
             case Opcode::TEST_LE: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 compare<Opcode::TEST_LE>(object1, object2);
                 break;
             }
             case Opcode::TEST_LT: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 compare<Opcode::TEST_LT>(object1, object2);
                 break;
             }
@@ -367,24 +367,24 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
                 break;
             }
             case Opcode::AND: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 bitop<Opcode::AND>(object1, object2);
                 break;
             }
             case Opcode::OR: {
-                Object* object2 = frame->pop();
-                Object* object1 = frame->pop();
+                NObject* object2 = frame->pop();
+                NObject* object1 = frame->pop();
                 bitop<Opcode::OR>(object1, object2);
                 break;
             }
             case Opcode::NOT: {
-                Object* object1 = frame->pop();
+                NObject* object1 = frame->pop();
                 bitop<Opcode::NOT>(object1, nullptr);
                 break;
             }
             case Opcode::NEG: {
-                Object* object = frame->pop();
+                NObject* object = frame->pop();
                 neg(object);
                 break;
             }
@@ -395,7 +395,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, Object** argv) {
                 break;
             }
             case Opcode::STORE: {
-                Object* value = frame->pop();
+                NObject* value = frame->pop();
                 int index = code[bci + 1];
                 frame->store(index, value);
                 bci++;

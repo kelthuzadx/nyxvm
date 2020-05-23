@@ -82,9 +82,9 @@ bool Interpreter::deepCompare(int cond, Object* o1, Object* o2) {
 void Interpreter::createFrame(Bytecode* bytecode, int argc, Object** argv) {
     // Create execution frame
     this->frame = new Frame(bytecode->localMap.size());
-    for (int i = argc - 1, k = 0; i >= 0; i--, k++) {
-        auto* obj = argv[i];
-        frame->store(k, obj);
+    for(int i=0;i<argc;i++){
+        auto * obj=argv[i];
+        frame->store(i,obj);
     }
 
     if (!bytecode->freeVars.empty()) {

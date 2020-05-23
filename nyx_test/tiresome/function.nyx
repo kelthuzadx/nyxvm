@@ -94,3 +94,12 @@ func filter_odd(limit)
 }
 
 filter_odd(100)
+
+func pass_arg(a,b,c){
+    a+=1
+    b+=2
+    c+=3
+    println(a,b,c)
+}
+
+pass_arg(1,"value=",3.14)

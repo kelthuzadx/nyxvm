@@ -10,7 +10,7 @@ void Parser::dumpLex(const std::string& saveFileName,
         PhaseTime time("dump lexical analysis result");
         do {
             tk = p.next();
-            ofs << "[" << std::get<0>(tk) << "," << std::get<1>(tk) << "]\n";
+            ofs << "[" << std::get<0>(tk) << ",'" << std::get<1>(tk) << "']\n";
         } while (std::get<0>(tk) != TK_EOF);
     }
     ofs.flush();

@@ -1,8 +1,6 @@
 #include "Parser.h"
 #include <typeinfo>
 
-using namespace nyx;
-
 void Parser::dumpLex(const std::string& saveFileName,
                      const std::string& sourceFileName) {
     Parser p(sourceFileName);

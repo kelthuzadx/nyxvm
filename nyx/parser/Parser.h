@@ -12,10 +12,9 @@
 #include <tuple>
 #include <unordered_map>
 
-namespace nyx {
 //===----------------------------------------------------------------------===//
 // Parser accepts source code and produce an Ast structure CompilationUnit which
-// represent the whole source code
+// represents the whole source code
 //===----------------------------------------------------------------------===//
 class Parser {
   private:
@@ -89,6 +88,5 @@ class Parser {
         return std::get<std::string>(currentToken);
     }
 };
-} // namespace nyx
 
 #endif

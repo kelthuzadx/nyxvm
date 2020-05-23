@@ -17,8 +17,8 @@ const char*((NyxVM::builtin[])[2]) = {
     {"nyxffi_assert", (const char*)nyxffi_assert}};
 
 void NyxVM::ignition(const char* script) {
-    nyx::Parser::dumpLex("lex.log", script);
-    nyx::Parser parser(script);
+    Parser::dumpLex("lex.log", script);
+    Parser parser(script);
     CompilationUnit* unit = parser.parse();
     AstDump astDumper("ast.dot");
     astDumper.dump(unit);

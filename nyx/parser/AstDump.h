@@ -4,6 +4,9 @@
 #include "Ast.h"
 #include <fstream>
 
+//===----------------------------------------------------------------------===//
+// Dump Ast to *.dot file, this file can be further visualized by Graphviz
+//===----------------------------------------------------------------------===//
 class AstDump : protected AstVisitor {
   private:
     std::ofstream ofs;

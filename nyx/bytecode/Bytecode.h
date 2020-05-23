@@ -8,7 +8,9 @@
 #include <vector>
 
 struct Bytecode;
-
+//===----------------------------------------------------------------------===//
+// Representation of NyxVM bytecode
+//===----------------------------------------------------------------------===//
 struct FreeVar {
     std::string name;
     bool isEnclosing{};

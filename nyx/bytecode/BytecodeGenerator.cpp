@@ -228,12 +228,11 @@ void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr* node) {
         bytecode->code[bci++] = node->args.size();
     } else {
         node->closure->visit(this); // Closure visiting order is arbitrary
-        // TODO:push upvals
         for (auto* arg : node->args) {
             arg->visit(this);
         }
         bytecode->code[bci++] = Opcode::CALL;
-        bytecode->code[bci++] = node->args.size(); // TODO: +upval.size();
+        bytecode->code[bci++] = node->args.size();
     }
 }
 

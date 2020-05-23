@@ -157,11 +157,12 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
         }
     }
 
-    if(typeid(*callee) == typeid(NClosure)){
-        // Call closure function in place
+    if (typeid(*callee) == typeid(NClosure)) {
+        // Call closure function in place, be known as IIFE(Immediately Invoked
+        // Function Expression)
         //
         // func(){...}()
-        auto* closureObject =dynamic_cast<NClosure*>(callee);
+        auto* closureObject = dynamic_cast<NClosure*>(callee);
         this->execute(closureObject->code, funcArgc, funcArgv);
         return;
     }

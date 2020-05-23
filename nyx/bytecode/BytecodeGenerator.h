@@ -114,5 +114,4 @@ class BytecodeGenerator : public AstVisitor {
 
     Bytecode* generate(CompilationUnit* unit);
 };
-
 #endif // NYX_BYTECODEGENERATOR_H

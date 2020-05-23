@@ -32,7 +32,7 @@ std::string Object::toString() {
 std::string NInt::toString() { return std::to_string(value); }
 
 std::string NChar::toString() {
-    return "'"+std::string(1,(char)value)+"'";
+    return "'" + std::string(1, (char)value) + "'";
 }
 
 std::string NDouble::toString() { return std::to_string(value); }

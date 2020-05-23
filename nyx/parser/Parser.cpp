@@ -526,7 +526,7 @@ CompilationUnit* Parser::parse() {
 std::tuple<Token, std::string> Parser::next() {
     char c = getNextChar();
 
-    start:
+start:
     if (c == EOF) {
         return std::make_tuple(TK_EOF, "");
     }

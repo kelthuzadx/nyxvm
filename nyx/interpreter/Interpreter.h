@@ -97,27 +97,25 @@ template <int Operation> void Interpreter::arithmetic(Object* o1, Object* o2) {
                 auto* t2 = dynamic_cast<NString*>(o2);
                 auto* res = new NString(t1->value + t2->value);
                 frame->push(res);
-            }else if(typeid(*o2)== typeid(NChar)){
+            } else if (typeid(*o2) == typeid(NChar)) {
                 auto* t2 = dynamic_cast<NChar*>(o2);
                 std::string str(t1->value);
-                str+=t2->value;
+                str += t2->value;
                 auto* res = new NString(str);
                 frame->push(res);
-            }
-            else {
+            } else {
                 panic("should not reach here");
             }
-        }else if(typeid(*o1)==typeid(NChar)){
+        } else if (typeid(*o1) == typeid(NChar)) {
             auto* t1 = dynamic_cast<NChar*>(o1);
             if (typeid(*o2) == typeid(NString)) {
                 auto* t2 = dynamic_cast<NString*>(o2);
                 std::string str;
-                str+=t1->value;
-                str+=t2->value;
+                str += t1->value;
+                str += t2->value;
                 auto* res = new NString(str);
                 frame->push(res);
-            }
-            else {
+            } else {
                 panic("should not reach here");
             }
         } else {
@@ -166,16 +164,15 @@ template <int Operation> void Interpreter::arithmetic(Object* o1, Object* o2) {
                 auto* t2 = dynamic_cast<NDouble*>(o2);
                 auto* res = new NDouble(t1->value * t2->value);
                 frame->push(res);
-            }else if(typeid(*o2)== typeid(NString)){
+            } else if (typeid(*o2) == typeid(NString)) {
                 auto* t2 = dynamic_cast<NString*>(o2);
                 std::string str;
-                for(int i=0;i<t1->value;i++){
-                    str+=t2->value;
+                for (int i = 0; i < t1->value; i++) {
+                    str += t2->value;
                 }
                 auto* res = new NString(str);
                 frame->push(res);
-            }
-            else {
+            } else {
                 panic("should not reach here");
             }
         } else if (typeid(*o1) == typeid(NDouble)) {
@@ -191,21 +188,20 @@ template <int Operation> void Interpreter::arithmetic(Object* o1, Object* o2) {
             } else {
                 panic("should not reach here");
             }
-        }else if(typeid(*o1)== typeid(NString)){
+        } else if (typeid(*o1) == typeid(NString)) {
             auto* t1 = dynamic_cast<NString*>(o1);
             if (typeid(*o2) == typeid(NInt)) {
                 auto* t2 = dynamic_cast<NInt*>(o2);
                 std::string str;
-                for(int i=0;i<t2->value;i++){
-                    str+=t1->value;
+                for (int i = 0; i < t2->value; i++) {
+                    str += t1->value;
                 }
                 auto* res = new NString(str);
                 frame->push(res);
             } else {
                 panic("should not reach here");
             }
-        }
-        else {
+        } else {
             panic("should not reach here");
         }
         break;

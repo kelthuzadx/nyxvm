@@ -1,6 +1,7 @@
 #include "AstDump.h"
 
-AstDump::AstDump(const std::string& dotFilePath) {
+AstDump::AstDump(const std::string& dotFilePath)
+    : timer("dump Ast to *.dot file") {
     ofs.open(dotFilePath, std::ios::out);
 }
 
@@ -18,7 +19,6 @@ void AstDump::addEdge(AstNode* from, AstNode* to) {
 }
 
 void AstDump::dump(CompilationUnit* unit) {
-    PhaseTime timer("dump Ast to *.dot file");
     ofs << "digraph G{\n";
     ofs << "\tgraph [ dpi = 300 ]\n";
     unit->visit(this);

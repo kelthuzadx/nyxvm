@@ -3,10 +3,10 @@
 
 extern "C" Object* nyxffi_print(int argc, Object** argv) {
     for (int i = 0; i < argc; i++) {
-        if(argv[i]!=nullptr){
+        if (argv[i] != nullptr) {
             std::cout << argv[i]->toString();
-        }else{
-            std::cout<<"null";
+        } else {
+            std::cout << "null";
         }
     }
     std::cout.flush();

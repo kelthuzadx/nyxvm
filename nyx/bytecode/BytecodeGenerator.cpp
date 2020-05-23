@@ -641,8 +641,8 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt* node) {
     std::string var(node->identName);
     std::string prefix("__v");
     prefix += std::to_string(int(*(int*)node));
-    std::string idx(prefix+"idx");
-    std::string arr(prefix+"arr");
+    std::string idx(prefix + "idx");
+    std::string arr(prefix + "arr");
 
     // <init>
     genConstI(0);
@@ -661,9 +661,9 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt* node) {
 
     genLoad(idx);
     genLoad(arr);
-    bytecode->code[bci++]=Opcode::ARR_LEN;
-    bytecode->code[bci++]=Opcode::TEST_LT;
-    Jmp j1(this,&L_out,Opcode::JMP_NE);
+    bytecode->code[bci++] = Opcode::ARR_LEN;
+    bytecode->code[bci++] = Opcode::TEST_LT;
+    Jmp j1(this, &L_out, Opcode::JMP_NE);
 
     // <block>
     genLoad(arr);
@@ -676,12 +676,11 @@ void BytecodeGenerator::visitForEachStmt(ForEachStmt* node) {
     L_continue();
     genLoad(idx);
     genConstI(1);
-    bytecode->code[bci++]=Opcode::ADD;
+    bytecode->code[bci++] = Opcode::ADD;
     genStore(idx);
-    Jmp j2(this,&L_cond,Opcode::JMP);
+    Jmp j2(this, &L_cond, Opcode::JMP);
 
     L_out();
-
 }
 
 void BytecodeGenerator::visitMatchStmt(MatchStmt* node) {

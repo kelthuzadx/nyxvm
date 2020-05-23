@@ -20,12 +20,16 @@ void NyxVM::ignition(const char* script) {
     Parser::dumpLex("lex.log", script);
     Parser parser(script);
     CompilationUnit* unit = parser.parse();
-    AstDump astDumper("ast.dot");
-    astDumper.dump(unit);
+    {
+        AstDump astDumper("ast.dot");
+        astDumper.dump(unit);
+    }
     BytecodeGenerator gen;
     Bytecode* bytecode = gen.generate(unit);
-    BytecodeDump bcDumper("bytecode.log");
-    bcDumper.dump(bytecode);
+    {
+        BytecodeDump bcDumper("bytecode.log");
+        bcDumper.dump(bytecode);
+    }
     delete unit;
     Interpreter interpreter;
     interpreter.execute(bytecode);

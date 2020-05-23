@@ -10,6 +10,7 @@
 class AstDump : protected AstVisitor {
   private:
     std::ofstream ofs;
+    PhaseTime timer;
 
     void addEdge(AstNode* from, AstNode* to);
 

@@ -1,4 +1,5 @@
 
+
 func test9(a){
     b=10
     t = func(){
@@ -25,6 +26,15 @@ func test9(a){
                 return sum +tv
                 }
                 assert(fx(5)==30)
+                a =[1,2,3]
+                func(){
+                    b=[1,2,4]
+                    assert(a!=b)
+                    b[2]=3
+                    assert(a==b)
+                    b=[1,2]
+                    assert(a!=b)
+                }()
             }()
         }()
     }()

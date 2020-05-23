@@ -944,10 +944,6 @@ void BytecodeGenerator::genLoadIndex(const std::string& array, Expr* index) {
 
 void BytecodeGenerator::genStoreIndex(const std::string& array, Expr* value,
                                       Expr* index) {
-    if (auto iter = bytecode->localMap.find(array);
-        iter == bytecode->localMap.cend()) {
-        panic("variable undefined but using");
-    }
     genLoad(array);
     value->visit(this);
     index->visit(this);

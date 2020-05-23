@@ -24,6 +24,8 @@ class Interpreter {
 
     void neg(Object* object);
 
+    bool deepCompare(int cond, Object* o1, Object* o2);
+
     void createFrame(Bytecode* bytecode, int argc, Object** argv);
 
     void destroyFrame(Bytecode* bytecode, bool hasReturnValue);
@@ -239,25 +241,10 @@ bool genericCompare(int operation, T1* t1, T2* t2) {
 }
 
 template <int Operation> void Interpreter::compare(Object* o1, Object* o2) {
-    if (typeid(*o1) == typeid(NInt) && typeid(*o2) == typeid(NInt)) {
-        auto* t1 = dynamic_cast<NInt*>(o1);
-        auto* t2 = dynamic_cast<NInt*>(o2);
-        NInt* res = new NInt(genericCompare(Operation, t1, t2));
-        frame->push(res);
-    } else if (typeid(*o1) == typeid(NDouble) &&
-               typeid(*o2) == typeid(NDouble)) {
-        auto* t1 = dynamic_cast<NDouble*>(o1);
-        auto* t2 = dynamic_cast<NDouble*>(o2);
-        NInt* res = new NInt(genericCompare(Operation, t1, t2));
-        frame->push(res);
-    } else if (typeid(*o1) == typeid(NString) &&
-               typeid(*o2) == typeid(NString)) {
-        auto* t1 = dynamic_cast<NString*>(o1);
-        auto* t2 = dynamic_cast<NString*>(o2);
-        NInt* res = new NInt(genericCompare(Operation, t1, t2));
-        frame->push(res);
+    if (deepCompare(Operation, o1, o2)) {
+        frame->push(new NInt(1));
     } else {
-        panic("should not reach here");
+        frame->push(new NInt(0));
     }
 }
 

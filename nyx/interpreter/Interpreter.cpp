@@ -24,6 +24,53 @@ void Interpreter::neg(Object* object) {
     }
 }
 
+bool Interpreter::deepCompare(int cond, Object* o1, Object* o2) {
+    if (typeid(*o1) == typeid(NInt) && typeid(*o2) == typeid(NInt)) {
+        auto* t1 = dynamic_cast<NInt*>(o1);
+        auto* t2 = dynamic_cast<NInt*>(o2);
+        return genericCompare(cond, t1, t2);
+    } else if (typeid(*o1) == typeid(NDouble) &&
+               typeid(*o2) == typeid(NDouble)) {
+        auto* t1 = dynamic_cast<NDouble*>(o1);
+        auto* t2 = dynamic_cast<NDouble*>(o2);
+        return genericCompare(cond, t1, t2);
+    } else if (typeid(*o1) == typeid(NString) &&
+               typeid(*o2) == typeid(NString)) {
+        auto* t1 = dynamic_cast<NString*>(o1);
+        auto* t2 = dynamic_cast<NString*>(o2);
+        return genericCompare(cond, t1, t2);
+    } else if (typeid(*o1) == typeid(NArray) && typeid(*o2) == typeid(NArray)) {
+        assert(cond == Opcode::TEST_EQ || cond == Opcode::TEST_NE);
+        auto* t1 = dynamic_cast<NArray*>(o1);
+        auto* t2 = dynamic_cast<NArray*>(o2);
+        if (cond == Opcode::TEST_EQ) {
+            if (t1->length != t2->length) {
+                return false;
+            }
+            for (int i = 0; i < t1->length; i++) {
+                if (!deepCompare(Opcode::TEST_EQ, t1->array[i], t2->array[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        } else {
+            if (t1->length != t2->length) {
+                return true;
+            }
+            for (int i = 0; i < t1->length; i++) {
+                if (!deepCompare(Opcode::TEST_EQ, t1->array[i], t2->array[i])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    } else {
+        panic("should not reach here");
+    }
+}
+
 void Interpreter::createFrame(Bytecode* bytecode, int argc, Object** argv) {
     // Create execution frame
     this->frame = new Frame(bytecode->localMap.size());

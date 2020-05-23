@@ -433,6 +433,7 @@ void BytecodeGenerator::visitIfStmt(IfStmt* node) {
 void BytecodeGenerator::visitWhileStmt(WhileStmt* node) {
     if (isShortCircuitAnd(node->cond)) {
         /**
+         * continue:
          * cond:
          * <cond_lhs>
          * jmp_ne out
@@ -440,11 +441,14 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt* node) {
          * jmp_ne out
          * <block>
          * jmp cond
+         * break:
          * out:
          */
         auto* t = dynamic_cast<BinaryExpr*>(node->cond);
         Label L_cond(this);
         Label L_out(this);
+        this->continuePoint = &L_cond;
+        this->breakPoint = &L_out;
 
         t->lhs->visit(this);
         Jmp j1(this, &L_out, Opcode::JMP_NE);
@@ -457,6 +461,7 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt* node) {
     }
     if (isShortCircuitOr(node->cond)) {
         /**
+         * continue:
          * cond:
          * <cond_lhs>
          * jmp_eq then
@@ -466,12 +471,15 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt* node) {
          * then:
          * <block>
          * jmp cond
+         * break:
          * out:
          */
         auto* t = dynamic_cast<BinaryExpr*>(node->cond);
         Label L_cond(this);
         Label L_out(this);
         Label L_then(this);
+        this->continuePoint = &L_cond;
+        this->breakPoint = &L_out;
 
         t->lhs->visit(this);
         Jmp j1(this, &L_then, Opcode::JMP_EQ);
@@ -486,15 +494,19 @@ void BytecodeGenerator::visitWhileStmt(WhileStmt* node) {
     }
 
     /**
+     * continue:
      * cond:
      * <cond>
      * jmp_neq out
      * <block>
      * jmp cond
+     * break;
      * out:
      */
     Label L_cond(this);
     Label L_out(this);
+    this->continuePoint = &L_cond;
+    this->breakPoint = &L_out;
 
     node->cond->visit(this);
     Jmp j1(this, &L_out, Opcode::JMP_NE);

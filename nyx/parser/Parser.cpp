@@ -526,6 +526,7 @@ CompilationUnit* Parser::parse() {
 std::tuple<Token, std::string> Parser::next() {
     char c = getNextChar();
 
+    start:
     if (c == EOF) {
         return std::make_tuple(TK_EOF, "");
     }
@@ -556,9 +557,7 @@ std::tuple<Token, std::string> Parser::next() {
         if (c == '#') {
             goto another_comment;
         }
-        if (c == EOF) {
-            return std::make_tuple(TK_EOF, "");
-        }
+        goto start;
     }
 
     if (c >= '0' && c <= '9') {

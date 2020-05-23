@@ -9,7 +9,7 @@ func repeat(a,str){
 func repeat1(str){
     result = ""
     i = 0
-    a = length(str)
+    a = len(str)
     while(i<a){
         result = result+str
         i = i+1
@@ -20,7 +20,7 @@ func repeat1(str){
 func toStar(str){
     result = ""
     i =0
-    while(i<length(str)){
+    while(i<len(str)){
         result = result+"*"
         i = i+1
     }

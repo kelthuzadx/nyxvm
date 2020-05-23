@@ -8,11 +8,9 @@ strb = "world"
 strc = stra+strb+"!"+"\n"
 
 # print returns the number of passed arguments
-println(println(strc) + println("ditto"))
-println(println(println()))
 
-    println ( "weird " +
-    "printing "
-    +"test"
+              println ( "weird " +
+      "printing "
+    +      "test"
     )
  # end line comment

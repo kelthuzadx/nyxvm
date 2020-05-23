@@ -161,3 +161,13 @@ This documentation describes nyx bytecode
 + format: arr_len
 + stack:`(arr)->(length)`
 
+## load_free
++ description: get value of free variable and push to current frame
++ format: load_free,index
++ stack:`()->(freeval)`
+
+## store_free
++ description: pop top of current frame as value, and store value to free variable
++ format: store_free,index
++ stack:`(value)->()`
+

@@ -63,7 +63,7 @@ void Interpreter::destroyFrame(Bytecode* bytecode, bool hasReturnValue) {
     if (!bytecode->freeVars.empty()) {
         // If this is the enclosing frame, we must "move" free variable's value
         // to its endpoint. After that we should set local slot to null in order
-        // to avoid deallocating free variable's value
+        // to avoid releasing free variable's value
         // Note that we must separate "move" and set actions, since multi
         // endpoints may refer to the same free variable's value, if we move
         // value and immediately set to null, other endpoints will refer to null
@@ -119,24 +119,51 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
     if (typeid(*callee) == typeid(NString)) {
         auto funcName = dynamic_cast<NString*>(callee)->value;
         const char* funcPtr = NyxVM::findBuiltin(funcName);
+        //
+        // Call native functions
+        //
+        // println()
+        //
         if (funcPtr != nullptr) {
             Object* result =
                 ((Object * (*)(int, Object**)) funcPtr)(funcArgc, funcArgv);
             frame->push(result);
-        } else {
-            if (auto iter = bytecode->functions.find(funcName);
-                iter != bytecode->functions.cend()) {
-                Bytecode* userFunc = iter->second;
-                this->execute(userFunc, funcArgc, funcArgv);
-            } else {
-                int closureIndex = bytecode->localMap[funcName];
-                if (typeid(*frame->local()[closureIndex]) == typeid(NClosure)) {
-                    auto* closureObject =
-                        dynamic_cast<NClosure*>(frame->local()[closureIndex]);
-                    this->execute(closureObject->code, funcArgc, funcArgv);
-                }
+            return;
+        }
+
+        // Call user defined functions
+        //
+        // func foo(){...}
+        // foo()
+        if (auto iter = bytecode->functions.find(funcName);
+            iter != bytecode->functions.cend()) {
+            Bytecode* userFunc = iter->second;
+            this->execute(userFunc, funcArgc, funcArgv);
+            return;
+        }
+
+        // Call variable as closure functions
+        //
+        // t = func(){...}
+        // t()
+        {
+            int closureIndex = bytecode->localMap[funcName];
+            if (typeid(*frame->local()[closureIndex]) == typeid(NClosure)) {
+                auto* closureObject =
+                    dynamic_cast<NClosure*>(frame->local()[closureIndex]);
+                this->execute(closureObject->code, funcArgc, funcArgv);
+                return;
             }
         }
+    }
+
+    if(typeid(*callee) == typeid(NClosure)){
+        // Call closure function in place
+        //
+        // func(){...}()
+        auto* closureObject =dynamic_cast<NClosure*>(callee);
+        this->execute(closureObject->code, funcArgc, funcArgv);
+        return;
     }
     // TODO release funcArgv
 }

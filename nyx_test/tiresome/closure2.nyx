@@ -1,0 +1,33 @@
+
+func test9(a){
+    b=10
+    t = func(){
+       return b
+    }()
+    assert(t==10)
+    if(
+        (
+            func(){
+                return func(){ return a+b}()
+            }()
+    )!=15
+    ){
+    assert(true,"should not reach here")}
+
+    func(){
+        func(){
+            func(){
+                t = 5
+                sum = a+b+t
+                assert(sum==20)
+                fx = func(tv){
+                    tv=t+5
+                return sum +tv
+                }
+                assert(fx(5)==30)
+            }()
+        }()
+    }()
+}
+
+test9(5)

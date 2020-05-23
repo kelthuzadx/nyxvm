@@ -227,7 +227,7 @@ void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr* node) {
         bytecode->code[bci++] = Opcode::CALL;
         bytecode->code[bci++] = node->args.size();
     } else {
-        bytecode->code[bci++] = Opcode::CONST_CLOSURE;
+        node->closure->visit(this); // Closure visiting order is arbitrary
         // TODO:push upvals
         for (auto* arg : node->args) {
             arg->visit(this);
@@ -977,6 +977,8 @@ void BytecodeGenerator::visitClosureExpr(ClosureExpr* node) {
     BytecodeGenerator gen;
     auto* closureBytecode = gen.generateClosureExpr(this->bytecode, node);
     bytecode->closures.insert({node->id, closureBytecode});
+
+    // This is an expression, we should generate bytecode for it
     bytecode->code[bci++] = Opcode::CONST_CLOSURE;
     bytecode->code[bci++] = node->id;
 }
@@ -989,13 +991,15 @@ BytecodeGenerator::BytecodeGenerator() {
 Bytecode* BytecodeGenerator::generateFuncDef(FuncDef* node) {
     bytecode->funcName = node->funcName;
 
-    // create name in local map, interpreter will assign arguments to these
-    // parameters
-    for (auto& param : node->params) {
-        bytecode->localMap.insert({param, bytecode->localMap.size()});
-    }
+    {
+        // create name in local map, interpreter will assign arguments to these
+        // parameters
+        for (auto& param : node->params) {
+            bytecode->localMap.insert({param, bytecode->localMap.size()});
+        }
 
-    node->block->visit(this);
+        node->block->visit(this);
+    }
     bytecode->codeSize = bci;
     return bytecode;
 }
@@ -1004,13 +1008,16 @@ Bytecode* BytecodeGenerator::generateClosureExpr(Bytecode* enclosing,
                                                  ClosureExpr* node) {
     bytecode->funcName = "<closure>";
 
-    // create name in local map, interpreter will assign arguments to these
-    // parameters
-    for (auto& param : node->params) {
-        bytecode->localMap.insert({param, bytecode->localMap.size()});
+    {
+        // create name in local map, interpreter will assign arguments to these
+        // parameters
+        for (auto& param : node->params) {
+            bytecode->localMap.insert({param, bytecode->localMap.size()});
+        }
+        this->bytecode->parent = enclosing;
+        node->block->visit(this);
+        this->bytecode->parent = nullptr;
     }
-    this->bytecode->parent = enclosing;
-    node->block->visit(this);
 
     bytecode->codeSize = bci;
     return bytecode;

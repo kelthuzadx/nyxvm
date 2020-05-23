@@ -616,53 +616,60 @@ void BytecodeGenerator::visitForStmt(ForStmt* node) {
 }
 
 void BytecodeGenerator::visitForEachStmt(ForEachStmt* node) {
+    // Before:
+    //      for(i:arr){ ... }
+    // After:
+    //      __v235arr = arr
+    //      for(__v235idx=0;__v235arr.length<__v235idx;__v235idx+=1){
+    //          i = __v235arr[__v235idx]
+    //          ...
+    //      }
+    // which __v235idx is constructed by <prefix>+<node-addr>+<suffix>
+
+    std::string var(node->identName);
     std::string prefix("__v");
     prefix += std::to_string(int(*(int*)node));
+    std::string idx(prefix+"idx");
+    std::string arr(prefix+"arr");
 
-    // create iterator variable as iter
-    std::string iter = node->identName;
-    bytecode->code[bci++] = Opcode::CONST_NULL;
-    genStore(iter);
-    // create index variable as i
-    std::string index = prefix += "i";
-    bytecode->code[bci++] = Opcode::CONST_NULL;
-    genStore(index);
-    // i = 0
+    // <init>
     genConstI(0);
-    genStore(index);
-
-    // <new array>
+    genStore(idx);
+    genConstNull();
+    genStore(var);
     node->list->visit(this);
+    genStore(arr);
 
-    // cond:
+    // <cond>
     Label L_cond(this);
     Label L_out(this);
-    this->continuePoint = &L_cond;
+    Label L_continue(this);
+    this->continuePoint = &L_continue;
     this->breakPoint = &L_out;
 
-    // get array length
-    bytecode->code[bci++] = Opcode::DUP;
-    bytecode->code[bci++] = Opcode::ARR_LEN;
-    // compare index and array length
-    genLoad(index);
-    bytecode->code[bci++] = Opcode::TEST_EQ;
-    // if not equal, go outside
-    Jmp j1(this, &L_out, Opcode::JMP_NE);
-    // load array[index], and assign to iter
-    bytecode->code[bci++] = Opcode::DUP;
-    genLoad(index);
+    genLoad(idx);
+    genLoad(arr);
+    bytecode->code[bci++]=Opcode::ARR_LEN;
+    bytecode->code[bci++]=Opcode::TEST_LT;
+    Jmp j1(this,&L_out,Opcode::JMP_NE);
+
+    // <block>
+    genLoad(arr);
+    genLoad(idx);
     bytecode->code[bci++] = Opcode::LOAD_INDEX;
-    genStore(iter);
+    genStore(var);
     node->block->visit(this);
 
-    genLoad(index);
-    genLoad(index);
+    // <post>
+    L_continue();
+    genLoad(idx);
     genConstI(1);
-    bytecode->code[bci++] = Opcode::ADD;
-    genStore(index);
-    // conditional checking
-    Jmp j2(this, &L_cond, Opcode::JMP);
+    bytecode->code[bci++]=Opcode::ADD;
+    genStore(idx);
+    Jmp j2(this,&L_cond,Opcode::JMP);
+
     L_out();
+
 }
 
 void BytecodeGenerator::visitMatchStmt(MatchStmt* node) {

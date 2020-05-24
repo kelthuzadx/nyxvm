@@ -83,7 +83,7 @@ class BytecodeGenerator : public AstVisitor {
     void visitExportStmt(ExportStmt* node) override;
 
   private:
-    Bytecode* generateFuncDef(FuncDef* node);
+    Bytecode* generateFuncDef(Bytecode* enclosing, FuncDef* node);
 
     Bytecode* generateClosureExpr(Bytecode* enclosing, ClosureExpr* node);
 

@@ -3,6 +3,9 @@
 #include "Bytecode.h"
 #include "Opcode.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+
 class Label;
 
 class Jmp {
@@ -221,22 +224,39 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr* node) {
 }
 
 void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr* node) {
-    if (!node->funcName.empty()) {
-        // normal function calling
+    if (node->funcName.empty()) {
+        node->closure->visit(this);
+    } else if (bytecode->functions.find(node->funcName) !=
+               bytecode->functions.end()) {
         genConstStr(node->funcName);
-        for (auto* arg : node->args) {
-            arg->visit(this);
+    } else if (bytecode->localVars.find(node->funcName) !=
+               bytecode->localVars.end()) {
+        genLoad(node->funcName);
+    } else if (NyxVM::findBuiltin(node->funcName) != nullptr) {
+        genConstStr(node->funcName);
+    } else if (bytecode->parent != nullptr) {
+        Bytecode* temp = bytecode->parent;
+        while (temp != nullptr) {
+            if (temp->localVars.find(node->funcName) != temp->localVars.end()) {
+                genLoad(node->funcName);
+                break;
+            } else if (temp->functions.find(node->funcName) !=
+                       temp->functions.end()) {
+                genConstStr(node->funcName);
+                break;
+            }
+            temp = temp->parent;
         }
-        bytecode->code[bci++] = Opcode::CALL;
-        bytecode->code[bci++] = node->args.size();
+        genConstStr(node->funcName);
     } else {
-        node->closure->visit(this); // Closure visiting order is arbitrary
-        for (auto* arg : node->args) {
-            arg->visit(this);
-        }
-        bytecode->code[bci++] = Opcode::CALL;
-        bytecode->code[bci++] = node->args.size();
+        genConstStr(node->funcName);
     }
+
+    for (auto* arg : node->args) {
+        arg->visit(this);
+    }
+    bytecode->code[bci++] = Opcode::CALL;
+    bytecode->code[bci++] = node->args.size();
 }
 
 void BytecodeGenerator::visitAssignExpr(AssignExpr* node) {
@@ -852,9 +872,9 @@ void BytecodeGenerator::genArray(std::vector<Expr*> elems) {
 
 void BytecodeGenerator::genLoad(const std::string& name) {
     // find variable in current function scope
-    if (auto iter = bytecode->localMap.find(name);
-        iter != bytecode->localMap.cend()) {
-        int localIndex = bytecode->localMap[name];
+    if (auto iter = bytecode->localVars.find(name);
+        iter != bytecode->localVars.cend()) {
+        int localIndex = bytecode->localVars[name];
         bytecode->code[bci++] = Opcode::LOAD;
         bytecode->code[bci++] = localIndex;
         return;
@@ -874,8 +894,8 @@ void BytecodeGenerator::genLoad(const std::string& name) {
     // find in parent function scope
     Bytecode* parent = bytecode->parent;
     while (parent != nullptr) {
-        if (auto iter = parent->localMap.find(name);
-            iter != parent->localMap.cend()) {
+        if (auto iter = parent->localVars.find(name);
+            iter != parent->localVars.cend()) {
             auto* refer = new FreeVar;
             auto* referent = new FreeVar;
 
@@ -883,13 +903,13 @@ void BytecodeGenerator::genLoad(const std::string& name) {
             refer->isEnclosing = false;
             refer->endpoint = referent;
             refer->value.active = nullptr;
-            refer->varIndex = parent->localMap[name];
+            refer->varIndex = parent->localVars[name];
 
             referent->name = name;
             referent->isEnclosing = true;
             referent->endpoint = refer;
             referent->value.active = nullptr;
-            referent->varIndex = parent->localMap[name];
+            referent->varIndex = parent->localVars[name];
 
             parent->freeVars.push_back(referent);
             bytecode->freeVars.push_back(refer);
@@ -906,10 +926,10 @@ void BytecodeGenerator::genLoad(const std::string& name) {
 
 void BytecodeGenerator::genStore(const std::string& name) {
     // find and assign variable in current function scope
-    if (auto iter = bytecode->localMap.find(name);
-        iter != bytecode->localMap.cend()) {
+    if (auto iter = bytecode->localVars.find(name);
+        iter != bytecode->localVars.cend()) {
 
-        int localIndex = bytecode->localMap[name];
+        int localIndex = bytecode->localVars[name];
         bytecode->code[bci++] = Opcode::STORE;
         bytecode->code[bci++] = localIndex;
         return;
@@ -928,8 +948,8 @@ void BytecodeGenerator::genStore(const std::string& name) {
     // find and assign in parent function scope
     Bytecode* parent = bytecode->parent;
     while (parent != nullptr) {
-        if (auto iter = parent->localMap.find(name);
-            iter != parent->localMap.cend()) {
+        if (auto iter = parent->localVars.find(name);
+            iter != parent->localVars.cend()) {
             auto* refer = new FreeVar;
             auto* referent = new FreeVar;
 
@@ -937,13 +957,13 @@ void BytecodeGenerator::genStore(const std::string& name) {
             refer->isEnclosing = false;
             refer->endpoint = referent;
             refer->value.active = nullptr;
-            refer->varIndex = parent->localMap[name];
+            refer->varIndex = parent->localVars[name];
 
             referent->name = name;
             referent->isEnclosing = true;
             referent->endpoint = refer;
             referent->value.active = nullptr;
-            referent->varIndex = parent->localMap[name];
+            referent->varIndex = parent->localVars[name];
 
             parent->freeVars.push_back(referent);
             bytecode->freeVars.push_back(refer);
@@ -956,11 +976,11 @@ void BytecodeGenerator::genStore(const std::string& name) {
     }
 
     // no variable found, create a new variable
-    int localIndex = bytecode->localMap.size();
+    int localIndex = bytecode->localVars.size();
     bytecode->code[bci++] = Opcode::STORE;
     bytecode->code[bci++] = localIndex;
 
-    bytecode->localMap.insert({name, localIndex});
+    bytecode->localVars.insert({name, localIndex});
 }
 
 void BytecodeGenerator::genLoadIndex(const std::string& array, Expr* index) {
@@ -990,7 +1010,7 @@ inline bool BytecodeGenerator::isShortCircuitAnd(Expr* expr) {
 void BytecodeGenerator::visitFuncDef(FuncDef* node) {
     // Create new BytecodeGenerator and produce bytecodes
     BytecodeGenerator gen;
-    auto* funcBytecode = gen.generateFuncDef(node);
+    auto* funcBytecode = gen.generateFuncDef(bytecode, node);
     bytecode->functions.insert({node->funcName, funcBytecode});
 }
 
@@ -1010,16 +1030,17 @@ BytecodeGenerator::BytecodeGenerator() {
     this->bci = 0;
 }
 
-Bytecode* BytecodeGenerator::generateFuncDef(FuncDef* node) {
+Bytecode* BytecodeGenerator::generateFuncDef(Bytecode* enclosing,
+                                             FuncDef* node) {
     bytecode->funcName = node->funcName;
 
     {
         // create name in local map, interpreter will assign arguments to these
         // parameters
         for (auto& param : node->params) {
-            bytecode->localMap.insert({param, bytecode->localMap.size()});
+            bytecode->localVars.insert({param, bytecode->localVars.size()});
         }
-
+        this->bytecode->parent = enclosing;
         node->block->visit(this);
     }
     bytecode->codeSize = bci;
@@ -1034,11 +1055,10 @@ Bytecode* BytecodeGenerator::generateClosureExpr(Bytecode* enclosing,
         // create name in local map, interpreter will assign arguments to these
         // parameters
         for (auto& param : node->params) {
-            bytecode->localMap.insert({param, bytecode->localMap.size()});
+            bytecode->localVars.insert({param, bytecode->localVars.size()});
         }
         this->bytecode->parent = enclosing;
         node->block->visit(this);
-        this->bytecode->parent = nullptr;
     }
 
     bytecode->codeSize = bci;
@@ -1054,3 +1074,5 @@ Bytecode* BytecodeGenerator::generate(CompilationUnit* unit) {
     bytecode->codeSize = bci;
     return bytecode;
 }
+
+#pragma clang diagnostic pop

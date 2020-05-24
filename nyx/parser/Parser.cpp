@@ -5,7 +5,7 @@ void Parser::dumpLex(const std::string& saveFileName,
                      const std::string& sourceFileName) {
     Parser p(sourceFileName);
     std::tuple<Token, std::string> tk;
-    std::ofstream ofs(saveFileName, std::ios::app);
+    std::ofstream ofs(saveFileName, std::ios::out);
     {
         PhaseTime time("dump lexical analysis result");
         do {

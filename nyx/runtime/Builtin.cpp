@@ -73,7 +73,7 @@ extern "C" NObject* nyxffi_range(int argc, NObject** argv) {
     auto* start = dynamic_cast<NInt*>(argv[0]);
     auto* end = dynamic_cast<NInt*>(argv[1]);
     auto* arr = new NArray(std::abs(start->value - end->value));
-    for (int i = 0; i < std::abs(start->value - end->value); i++) {
+    for (int i = 0; std::abs(start->value - end->value) > i; i++) {
         arr->array[i] = new NInt(i);
     }
     return arr;

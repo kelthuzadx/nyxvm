@@ -81,7 +81,7 @@ bool Interpreter::deepCompare(int cond, NObject* o1, NObject* o2) {
 
 void Interpreter::createFrame(Bytecode* bytecode, int argc, NObject** argv) {
     // Create execution frame
-    this->frame = new Frame(bytecode->localMap.size());
+    this->frame = new Frame(bytecode->localVars.size());
     for (int i = 0; i < argc; i++) {
         auto* obj = argv[i];
         frame->store(i, obj);
@@ -173,28 +173,37 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
     NObject* callee = frame->pop();
     if (typeid(*callee) == typeid(NString)) {
         auto funcName = dynamic_cast<NString*>(callee)->value;
-        const char* funcPtr = NyxVM::findBuiltin(funcName);
         //
         // Call native functions
         //
         // println()
         //
-        if (funcPtr != nullptr) {
-            NObject* result =
-                ((NObject * (*)(int, NObject**)) funcPtr)(funcArgc, funcArgv);
-            frame->push(result);
-            return;
+        {
+            const char* funcPtr = NyxVM::findBuiltin(funcName);
+
+            if (funcPtr != nullptr) {
+                NObject* result = ((NObject * (*)(int, NObject**))
+                                       funcPtr)(funcArgc, funcArgv);
+                frame->push(result);
+                return;
+            }
         }
 
         // Call user defined functions
         //
         // func foo(){...}
         // foo()
-        if (auto iter = bytecode->functions.find(funcName);
-            iter != bytecode->functions.cend()) {
-            Bytecode* userFunc = iter->second;
-            this->execute(userFunc, funcArgc, funcArgv);
-            return;
+        {
+            Bytecode* temp = bytecode;
+            while (nullptr != temp) {
+                if (auto iter = temp->functions.find(funcName);
+                    iter != temp->functions.cend()) {
+                    Bytecode* userFunc = iter->second;
+                    this->execute(userFunc, funcArgc, funcArgv);
+                    return;
+                }
+                temp = temp->parent;
+            }
         }
 
         // Call variable as closure functions
@@ -202,7 +211,7 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
         // t = func(){...}
         // t()
         {
-            int closureIndex = bytecode->localMap[funcName];
+            int closureIndex = bytecode->localVars[funcName];
             if (typeid(*frame->local()[closureIndex]) == typeid(NClosure)) {
                 auto* closureObject =
                     dynamic_cast<NClosure*>(frame->local()[closureIndex]);

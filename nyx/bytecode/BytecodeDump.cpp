@@ -15,7 +15,7 @@ BytecodeDump::~BytecodeDump() {
 void BytecodeDump::dump(Bytecode* bytecode) {
     ofs << ";; " << bytecode->funcName << "\n";
     ofs << ";; {";
-    for (auto& iter : bytecode->localMap) {
+    for (auto& iter : bytecode->localVars) {
         ofs << iter.second << "=" << iter.first << ",";
     }
     ofs << "}\n";

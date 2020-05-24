@@ -31,7 +31,7 @@ struct FreeVar {
 struct Bytecode {
     std::string funcName;
     std::vector<std::string> strings;
-    std::unordered_map<std::string, int> localMap;
+    std::unordered_map<std::string, int> localVars;
 
     std::vector<FreeVar*> freeVars;
 
@@ -45,8 +45,6 @@ struct Bytecode {
     std::unordered_map<std::string, Bytecode*> functions;
     std::unordered_map<int, Bytecode*> closures;
     Bytecode* parent;
-
-    Bytecode* findLocalVar(const std::string& name);
 };
 
 #endif // NYX_BYTECODE_H

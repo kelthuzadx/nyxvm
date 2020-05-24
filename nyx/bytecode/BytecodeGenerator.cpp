@@ -131,17 +131,17 @@ void BytecodeGenerator::visitIndexExpr(IndexExpr* node) {
 void BytecodeGenerator::visitBinaryExpr(BinaryExpr* node) {
     if (node->rhs == nullptr) {
         // unary expression
-        node->lhs->visit(this);
         switch (node->opt) {
         case TK_MINUS:
-            bytecode->code[bci++] = Opcode::NEG;
+            genUnary(node->lhs, Opcode::NEG);
             break;
         case TK_LOGNOT:
+            node->lhs->visit(this);
             genConstI(1);
             bytecode->code[bci++] = Opcode::TEST_NE;
             break;
         case TK_BITNOT:
-            bytecode->code[bci++] = Opcode::NOT;
+            genUnary(node->lhs, Opcode::NOT);
             break;
         default:
             panic("should not reach here");
@@ -150,72 +150,46 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr* node) {
         // binary expression
         switch (node->opt) {
         case TK_BITOR:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::OR;
+            genBinary(node->lhs, node->rhs, Opcode::OR);
             break;
         case TK_BITAND:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::AND;
+            genBinary(node->lhs, node->rhs, Opcode::AND);
             break;
         case TK_LOGOR:
         case TK_LOGAND:
             panic("should be specially handled in control flow statements");
         case TK_EQ:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::TEST_EQ;
+            genBinary(node->lhs, node->rhs, Opcode::TEST_EQ);
             break;
         case TK_NE:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::TEST_NE;
+            genBinary(node->lhs, node->rhs, Opcode::TEST_NE);
             break;
         case TK_GT:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::TEST_GT;
+            genBinary(node->lhs, node->rhs, Opcode::TEST_GT);
             break;
         case TK_GE:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::TEST_GE;
+            genBinary(node->lhs, node->rhs, Opcode::TEST_GE);
             break;
         case TK_LT:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::TEST_LT;
+            genBinary(node->lhs, node->rhs, Opcode::TEST_LT);
             break;
         case TK_LE:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::TEST_LE;
+            genBinary(node->lhs, node->rhs, Opcode::TEST_LE);
             break;
         case TK_PLUS:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::ADD;
+            genBinary(node->lhs, node->rhs, Opcode::ADD);
             break;
         case TK_MINUS:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::SUB;
+            genBinary(node->lhs, node->rhs, Opcode::SUB);
             break;
         case TK_MOD:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::REM;
+            genBinary(node->lhs, node->rhs, Opcode::REM);
             break;
         case TK_TIMES:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::MUL;
+            genBinary(node->lhs, node->rhs, Opcode::MUL);
             break;
         case TK_DIV:
-            node->lhs->visit(this);
-            node->rhs->visit(this);
-            bytecode->code[bci++] = Opcode::DIV;
+            genBinary(node->lhs, node->rhs, Opcode::DIV);
             break;
         default:
             panic("should not reach here");
@@ -298,7 +272,6 @@ void BytecodeGenerator::visitAssignExpr(AssignExpr* node) {
     else if (typeid(*node->lhs) == typeid(IdentExpr)) {
         auto* t = dynamic_cast<IdentExpr*>(node->lhs);
         if (node->opt == TK_ASSIGN) {
-            // TODO: store freeval
             node->rhs->visit(this);
             genStore(t->identName);
         } else {
@@ -995,6 +968,18 @@ void BytecodeGenerator::genStoreIndex(const std::string& array, Expr* value,
     value->visit(this);
     index->visit(this);
     bytecode->code[bci++] = Opcode::STORE_INDEX;
+}
+
+void BytecodeGenerator::genUnary(Expr* expr, Opcode::Mnemonic opcode) {
+    expr->visit(this);
+    bytecode->code[bci++] = opcode;
+}
+
+void BytecodeGenerator::genBinary(Expr* expr1, Expr* expr2,
+                                  Opcode::Mnemonic opcode) {
+    expr1->visit(this);
+    expr2->visit(this);
+    bytecode->code[bci++] = opcode;
 }
 
 inline bool BytecodeGenerator::isShortCircuitOr(Expr* expr) {

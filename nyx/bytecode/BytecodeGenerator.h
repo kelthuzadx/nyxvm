@@ -105,6 +105,10 @@ class BytecodeGenerator : public AstVisitor {
 
     void genStoreIndex(const std::string& array, Expr* value, Expr* index);
 
+    void genUnary(Expr* expr, Opcode::Mnemonic opcode);
+
+    void genBinary(Expr* expr1, Expr* expr2, Opcode::Mnemonic opcode);
+
     void genArray(std::vector<Expr*> node);
 
     static bool isShortCircuitAnd(Expr* expr);

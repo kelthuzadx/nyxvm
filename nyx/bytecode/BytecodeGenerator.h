@@ -57,16 +57,14 @@ class BytecodeGenerator : public AstVisitor {
 
       public:
         explicit Label(BytecodeGenerator* gen);
+        explicit Label();
+        ~Label();
 
         void operator()();
 
         void addJump(Jmp jmp) { allJump.push_back(jmp); }
 
         void setGenerator(BytecodeGenerator* gen);
-
-        ~Label();
-
-        Label();
     };
 
   private:

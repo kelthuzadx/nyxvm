@@ -139,9 +139,44 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr* node) {
         case TK_BITAND:
             genBinary(node->lhs, node->rhs, Opcode::AND);
             break;
-        case TK_LOGOR:
-        case TK_LOGAND:
-            panic("should be specially handled in control flow statements");
+        case TK_LOGOR: {
+            {
+                Label L_true(this);
+                Label L_false(this);
+                Label L_out(this);
+
+                node->lhs->visit(this);
+                Jmp j1(this, &L_true, Opcode::JMP_EQ);
+                node->rhs->visit(this);
+                Jmp j2(this, &L_true, Opcode::JMP_EQ);
+                L_false();
+                genConstI(0);
+                Jmp j4(this, &L_out, Opcode::JMP);
+                L_true();
+                genConstI(1);
+                L_out();
+            }
+            break;
+        }
+        case TK_LOGAND: {
+            {
+                Label L_true(this);
+                Label L_false(this);
+                Label L_out(this);
+
+                node->lhs->visit(this);
+                Jmp j1(this, &L_false, Opcode::JMP_NE);
+                node->rhs->visit(this);
+                Jmp j2(this, &L_false, Opcode::JMP_NE);
+                L_true();
+                genConstI(1);
+                Jmp j3(this, &L_out, Opcode::JMP);
+                L_false();
+                genConstI(0);
+                L_out();
+            }
+            break;
+        }
         case TK_EQ:
             genBinary(node->lhs, node->rhs, Opcode::TEST_EQ);
             break;

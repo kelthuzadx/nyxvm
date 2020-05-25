@@ -27,7 +27,7 @@ void Interpreter::neg(NObject* object) {
 
 bool Interpreter::deepCompare(int cond, NObject* o1, NObject* o2) {
     if (o1 == nullptr || o2 == nullptr) {
-        return o1 == nullptr && o2 == nullptr;
+        return cond == Opcode::TEST_EQ == (o1 == nullptr && o2 == nullptr);
     }
 
     if (typeid(*o1) == typeid(NInt) && typeid(*o2) == typeid(NInt)) {

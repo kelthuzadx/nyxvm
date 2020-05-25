@@ -8,14 +8,11 @@
 #include <cstdint>
 #include <unordered_map>
 
-class Label;
 //===----------------------------------------------------------------------===//
 // Generate bytecode from Ast
 //===----------------------------------------------------------------------===//
 class BytecodeGenerator : public AstVisitor {
-    friend class Label;
-
-    friend class Jmp;
+    class Label;
 
   private:
     std::unordered_map<int, Bytecode*> globalCallable;
@@ -23,6 +20,54 @@ class BytecodeGenerator : public AstVisitor {
     Label* continuePoint;
     Label* breakPoint;
     int bci;
+
+  private:
+    class StateMark {
+      private:
+        BytecodeGenerator* gen;
+        Bytecode* bytecode;
+        Label* continuePoint;
+        Label* breakPoint;
+        int bci;
+
+      public:
+        explicit StateMark(BytecodeGenerator* gen);
+        ~StateMark() = default;
+
+        void save();
+        void restore();
+    };
+
+    class Jmp {
+      private:
+        int patching;
+
+      public:
+        explicit Jmp(BytecodeGenerator* gen, Label* label,
+                     Opcode::Mnemonic opcode);
+
+        [[nodiscard]] int getPatching() const { return patching; }
+    };
+
+    class Label {
+      private:
+        BytecodeGenerator* gen;
+        int destination;
+        std::vector<Jmp> allJump;
+
+      public:
+        explicit Label(BytecodeGenerator* gen);
+
+        void operator()();
+
+        void addJump(Jmp jmp) { allJump.push_back(jmp); }
+
+        void setGenerator(BytecodeGenerator* gen);
+
+        ~Label();
+
+        Label();
+    };
 
   private:
     void visitBlock(Block* node) override;
@@ -84,10 +129,6 @@ class BytecodeGenerator : public AstVisitor {
     void visitExportStmt(ExportStmt* node) override;
 
   private:
-    Bytecode* generateFuncDef(Bytecode* enclosing, FuncDef* node);
-
-    Bytecode* generateClosureExpr(Bytecode* enclosing, ClosureExpr* node);
-
     void genConstI(nyx::int32 integer);
 
     void genConstStr(const std::string& str);

@@ -6,71 +6,57 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
 
-class Label;
-
-class Jmp {
-  private:
-    int patching;
-
-  public:
-    explicit Jmp(BytecodeGenerator* gen, Label* label, Opcode::Mnemonic opcode);
-
-    [[nodiscard]] int getPatching() const { return patching; }
-};
-
-class Label {
-  private:
-    int destination;
-    BytecodeGenerator* gen;
-    std::vector<Jmp> allJump;
-
-  public:
-    explicit Label(BytecodeGenerator* gen);
-
-    void operator()();
-
-    void addJump(Jmp jmp) { allJump.push_back(jmp); }
-
-    void setGenerator(BytecodeGenerator* gen);
-
-    ~Label();
-
-    Label();
-};
-
-Label::~Label() {
+BytecodeGenerator::Label::~Label() {
     for (auto& i : allJump) {
         gen->bytecode->code[i.getPatching()] = destination;
     }
 }
 
-Label::Label(BytecodeGenerator* gen) {
+BytecodeGenerator::Label::Label(BytecodeGenerator* gen) {
     this->gen = gen;
     this->destination = gen->bci;
 }
 
-void Label::operator()() {
+void BytecodeGenerator::Label::operator()() {
     // reset destination
     this->destination = gen->bci;
 }
 
-Label::Label() {
+BytecodeGenerator::Label::Label() {
     this->gen = nullptr;
     this->destination = -1;
 }
 
-void Label::setGenerator(BytecodeGenerator* gen) {
+void BytecodeGenerator::Label::setGenerator(BytecodeGenerator* gen) {
     this->gen = gen;
     this->destination = gen->bci;
 }
 
-Jmp::Jmp(BytecodeGenerator* gen, Label* label, Opcode::Mnemonic opcode) {
+BytecodeGenerator::Jmp::Jmp(BytecodeGenerator* gen,
+                            BytecodeGenerator::Label* label,
+                            Opcode::Mnemonic opcode) {
     // Generate JMP* bytecode
     gen->bytecode->code[gen->bci++] = opcode;
     // Record JMP* target as patching address and temporarily set to -1
     this->patching = gen->bci;
     gen->bytecode->code[gen->bci++] = -1;
     label->addJump(*this);
+}
+
+BytecodeGenerator::StateMark::StateMark(BytecodeGenerator* gen) {
+    this->gen = gen;
+}
+void BytecodeGenerator::StateMark::save() {
+    this->bytecode = gen->bytecode;
+    this->continuePoint = gen->continuePoint;
+    this->breakPoint = gen->breakPoint;
+    this->bci = gen->bci;
+}
+void BytecodeGenerator::StateMark::restore() {
+    gen->bytecode = this->bytecode;
+    gen->continuePoint = this->continuePoint;
+    gen->breakPoint = this->breakPoint;
+    gen->bci = this->bci;
 }
 
 void BytecodeGenerator::visitBlock(Block* node) {
@@ -985,14 +971,11 @@ inline bool BytecodeGenerator::isShortCircuitAnd(Expr* expr) {
 }
 
 void BytecodeGenerator::visitFuncDef(FuncDef* node) {
-    int oldBci = bci;
-    Bytecode* oldBytecode = this->bytecode;
-    Label* oldContinuePoint = this->continuePoint;
-    Label* oldBreakPoint = this->breakPoint;
-
+    StateMark mark{this};
+    mark.save();
     {
         Bytecode* newBytecode = this->bytecode->callables[node->id];
-        newBytecode->parent = oldBytecode;
+        newBytecode->parent = this->bytecode;
         this->bytecode = newBytecode;
         this->bci = 0;
         // create name in local map, interpreter will assign arguments to these
@@ -1003,18 +986,14 @@ void BytecodeGenerator::visitFuncDef(FuncDef* node) {
         node->block->visit(this);
         this->bytecode->codeSize = bci;
     }
-    this->bci = oldBci;
-    this->bytecode = oldBytecode;
-    this->continuePoint = oldContinuePoint;
-    this->breakPoint = oldBreakPoint;
+    mark.restore();
 }
 
 void BytecodeGenerator::visitClosureExpr(ClosureExpr* node) {
-    int oldBci = bci;
-    Bytecode* oldBytecode = this->bytecode;
-    Label* oldContinuePoint = this->continuePoint;
-    Label* oldBreakPoint = this->breakPoint;
+    StateMark mark{this};
+    mark.save();
     {
+        Bytecode* oldBytecode = this->bytecode;
         Bytecode* newBytecode = new Bytecode(node->id, "<closure>");
         newBytecode->parent = oldBytecode;
         oldBytecode->callables.insert({node->id, newBytecode});
@@ -1029,10 +1008,7 @@ void BytecodeGenerator::visitClosureExpr(ClosureExpr* node) {
         node->block->visit(this);
         this->bytecode->codeSize = bci;
     }
-    this->bci = oldBci;
-    this->bytecode = oldBytecode;
-    this->continuePoint = oldContinuePoint;
-    this->breakPoint = oldBreakPoint;
+    mark.restore();
 
     // This is an expression, we should generate bytecode for it
     bytecode->code[bci++] = Opcode::CONST_CALLABLE;

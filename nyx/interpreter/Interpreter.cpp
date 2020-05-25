@@ -421,8 +421,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
                     }
                 } else {
                     frame->push(new NCallable(
-                        bytecode->builtin[-callableIndex - 1][1],
-                        true));
+                        bytecode->builtin[-callableIndex - 1][1], true));
                 }
                 bci++;
                 break;

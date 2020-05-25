@@ -789,12 +789,12 @@ void BytecodeGenerator::genConstC(char c) {
     bci += 1;
 }
 
-void BytecodeGenerator::genConstCallable(int id,bool isNative) {
-    assert(id>=0);
+void BytecodeGenerator::genConstCallable(int id, bool isNative) {
+    assert(id >= 0);
     bytecode->code[bci++] = Opcode::CONST_CALLABLE;
-    if(!isNative){
+    if (!isNative) {
         bytecode->code[bci++] = id;
-    }else{
+    } else {
         bytecode->code[bci++] = -1 - id;
     }
 }
@@ -839,7 +839,7 @@ void BytecodeGenerator::genLoad(const std::string& name) {
     // find as nyxffi function
     if (int builtinIndex = Bytecode::findBuiltinIndex(name);
         builtinIndex >= 0) {
-        genConstCallable(builtinIndex,true);
+        genConstCallable(builtinIndex, true);
         return;
     }
 

@@ -49,20 +49,11 @@ for(i:arr){
     println(i*34+34-34/35%2&1|123)
 }
 
-func test(){
-    arr = []
-    for(i=100;i>=-100;i-=1){
-        arr+=i
-    }
-    return arr
-}
-
-for(t: test()){
-    println(t)
-}
 for(i:range(10)){
     println(i)
 }
 for(i:range(-1)){
     println(i)
 }
+
+func(){}

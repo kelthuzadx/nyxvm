@@ -193,6 +193,7 @@ Expr* Parser::parseUnaryExpr() {
 
 Expr* Parser::parseExpression(short oldPrecedence) {
     auto* p = parseUnaryExpr();
+    // f()()
 
     if (getCurrentToken() == TK_LPAREN) {
         auto* call = new FuncCallExpr(line, column);
@@ -476,8 +477,7 @@ std::vector<std::string> Parser::parseParameterList() {
 }
 
 FuncDef* Parser::parseFuncDef() {
-    assert(getCurrentToken() == KW_FUNC);
-    currentToken = next();
+    assert(getCurrentToken() == TK_IDENT);
 
     auto* node = new FuncDef(line, column);
     node->funcName = getCurrentLexeme();
@@ -499,14 +499,35 @@ CompilationUnit* Parser::parse() {
         }
         do {
             if (getCurrentToken() == KW_FUNC) {
-                auto* def = parseFuncDef();
-                for (auto* existing : unit->definitions) {
-                    if (existing->funcName == def->funcName) {
-                        panic("multiple function definitions of %s",
-                              def->funcName.c_str());
+                currentToken = next();
+                if (getCurrentToken() == TK_LPAREN) {
+                    auto* stmt = new SimpleStmt(line, column);
+                    auto* ret = new ClosureExpr(line, column);
+                    ret->params = parseParameterList();
+                    if (getCurrentToken() == TK_LBRACE) {
+                        ret->block = parseBlock();
+                    } else if (getCurrentToken() == TK_MATCH) {
+                        currentToken = next();
+                        ret->block = new Block(line, column);
+                        ret->block->stmts.push_back(parseStatement());
+                    } else {
+                        panic("SyntaxError: expects => or { after closure "
+                              "declaration");
                     }
+                    stmt->expr = ret;
+                    unit->topStmts.push_back(stmt);
+                } else if (getCurrentToken() == TK_IDENT) {
+                    auto* def = parseFuncDef();
+                    for (auto* existing : unit->definitions) {
+                        if (existing->funcName == def->funcName) {
+                            panic("multiple function definitions of %s",
+                                  def->funcName.c_str());
+                        }
+                    }
+                    unit->definitions.push_back(def);
+                } else {
+                    panic("should not reach here");
                 }
-                unit->definitions.push_back(def);
             } else if (getCurrentToken() == KW_IMPORT) {
                 auto* stmt = parseImportStmt();
                 unit->imports.push_back(stmt);
@@ -514,7 +535,9 @@ CompilationUnit* Parser::parse() {
                 auto* stmt = parseExportStmt();
                 unit->exports.push_back(stmt);
             } else {
-                unit->topStmts.push_back(parseStatement());
+                auto* stmt = parseStatement();
+                assert(stmt != nullptr);
+                unit->topStmts.push_back(stmt);
             }
         } while (getCurrentToken() != TK_EOF);
     }

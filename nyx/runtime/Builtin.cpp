@@ -71,9 +71,22 @@ extern "C" NObject* nyxffi_assert(int argc, NObject** argv) {
 }
 
 extern "C" NObject* nyxffi_range(int argc, NObject** argv) {
-    assert(argc == 2);
-    auto* start = dynamic_cast<NInt*>(argv[0]);
-    auto* end = dynamic_cast<NInt*>(argv[1]);
+    assert(argc == 2 || argc == 1);
+    NInt* start = nullptr;
+    NInt* end = nullptr;
+    if (argc == 2) {
+        start = dynamic_cast<NInt*>(argv[0]);
+        end = dynamic_cast<NInt*>(argv[1]);
+    } else {
+        auto* t = dynamic_cast<NInt*>(argv[0]);
+        if (t->value >= 0) {
+            start = new NInt(0);
+            end = t;
+        } else {
+            start = t;
+            end = new NInt(0);
+        }
+    }
     auto* arr = new NArray(std::abs(start->value - end->value));
     for (int i = 0; std::abs(start->value - end->value) > i; i++) {
         arr->array[i] = new NInt(i);

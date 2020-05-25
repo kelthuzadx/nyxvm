@@ -104,6 +104,12 @@ void Interpreter::arithmetic(NObject* o1, NObject* o2) {
                 str += t2->value;
                 auto* res = new NString(str);
                 frame->push(res);
+            } else if (typeid(*o2) == typeid(NArray)) {
+                auto* t2 = dynamic_cast<NArray*>(o2);
+                std::string str(t1->value);
+                str += t2->toString();
+                auto* res = new NString(str);
+                frame->push(res);
             } else {
                 panic("should not reach here");
             }
@@ -113,6 +119,18 @@ void Interpreter::arithmetic(NObject* o1, NObject* o2) {
                 auto* t2 = dynamic_cast<NString*>(o2);
                 std::string str;
                 str += t1->value;
+                str += t2->value;
+                auto* res = new NString(str);
+                frame->push(res);
+            } else {
+                panic("should not reach here");
+            }
+        } else if (typeid(*o1) == typeid(NArray)) {
+            auto* t1 = dynamic_cast<NArray*>(o1);
+            if (typeid(*o2) == typeid(NString)) {
+                auto* t2 = dynamic_cast<NString*>(o2);
+                std::string str;
+                str += t1->toString();
                 str += t2->value;
                 auto* res = new NString(str);
                 frame->push(res);

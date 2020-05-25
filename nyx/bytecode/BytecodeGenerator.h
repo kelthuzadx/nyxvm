@@ -139,7 +139,7 @@ class BytecodeGenerator : public AstVisitor {
 
     void genConstC(char c);
 
-    void genConstCallable(int id,bool isNative);
+    void genConstCallable(int id, bool isNative);
 
     void genLoad(const std::string& name);
 

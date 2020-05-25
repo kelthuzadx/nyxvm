@@ -38,6 +38,8 @@ func test9(a){
             }()
         }()
     }()
+
+    func(){println("hel")}()
 }
 
 test9(5)

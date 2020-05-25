@@ -59,7 +59,8 @@ Expr* Parser::parsePrimaryExpr() {
                 currentToken = next();
             }
             currentToken = next();
-            val->funcName = ident;
+            val->funcName = new IdentExpr(line, column);
+            val->funcName->identName = ident;
             while (getCurrentToken() != TK_RPAREN) {
                 val->args.push_back(parseExpression());
                 if (getCurrentToken() == TK_COMMA) {
@@ -195,7 +196,7 @@ Expr* Parser::parseExpression(short oldPrecedence) {
 
     if (getCurrentToken() == TK_LPAREN) {
         auto* call = new FuncCallExpr(line, column);
-        call->funcName = "";
+        call->funcName = new IdentExpr(line, column);
         call->closure = dynamic_cast<ClosureExpr*>(p);
         currentToken = next();
         while (getCurrentToken() != TK_RPAREN) {

@@ -236,7 +236,7 @@ AST_EXPR_END
 AST_EXPR(FuncCallExpr)
 
 std::string moduleName;
-std::string funcName;
+IdentExpr* funcName;
 ClosureExpr* closure{};
 std::vector<Expr*> args;
 AST_EXPR_END

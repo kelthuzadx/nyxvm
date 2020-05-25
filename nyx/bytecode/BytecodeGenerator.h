@@ -18,9 +18,10 @@ class BytecodeGenerator : public AstVisitor {
     friend class Jmp;
 
   private:
-    Bytecode* bytecode{};
-    Label* continuePoint{};
-    Label* breakPoint{};
+    std::unordered_map<int, Bytecode*> globalCallable;
+    Bytecode* bytecode;
+    Label* continuePoint;
+    Label* breakPoint;
     int bci;
 
   private:

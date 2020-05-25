@@ -1,6 +1,7 @@
 #include "Interpreter.h"
 #include "../bytecode/Bytecode.h"
 #include "../bytecode/Opcode.h"
+#include "../runtime/NObject.h"
 #include "../runtime/NyxVM.h"
 
 Interpreter::Interpreter() { this->frame = nullptr; }
@@ -171,63 +172,17 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
     }
 
     NObject* callee = frame->pop();
-    if (typeid(*callee) == typeid(NString)) {
-        auto funcName = dynamic_cast<NString*>(callee)->value;
-        //
-        // Call native functions
-        //
-        // println()
-        //
-        {
-            const char* funcPtr = NyxVM::findBuiltin(funcName);
-
-            if (funcPtr != nullptr) {
-                NObject* result = ((NObject * (*)(int, NObject**))
-                                       funcPtr)(funcArgc, funcArgv);
-                frame->push(result);
-                return;
-            }
-        }
-
-        // Call user defined functions
-        //
-        // func foo(){...}
-        // foo()
-        {
-            Bytecode* temp = bytecode;
-            while (nullptr != temp) {
-                if (auto iter = temp->functions.find(funcName);
-                    iter != temp->functions.cend()) {
-                    Bytecode* userFunc = iter->second;
-                    this->execute(userFunc, funcArgc, funcArgv);
-                    return;
-                }
-                temp = temp->parent;
-            }
-        }
-
-        // Call variable as closure functions
-        //
-        // t = func(){...}
-        // t()
-        {
-            int closureIndex = bytecode->localVars[funcName];
-            if (typeid(*frame->local()[closureIndex]) == typeid(NClosure)) {
-                auto* closureObject =
-                    dynamic_cast<NClosure*>(frame->local()[closureIndex]);
-                this->execute(closureObject->code, funcArgc, funcArgv);
-                return;
-            }
-        }
+    if (typeid(*callee) != typeid(NCallable)) {
+        panic("callee '%s' is not callable");
     }
-
-    if (typeid(*callee) == typeid(NClosure)) {
-        // Call closure function in place, be known as IIFE(Immediately Invoked
-        // Function Expression)
-        //
-        // func(){...}()
-        auto* closureObject = dynamic_cast<NClosure*>(callee);
-        this->execute(closureObject->code, funcArgc, funcArgv);
+    auto* callable = dynamic_cast<NCallable*>(callee);
+    if (callable->isNative) {
+        NObject* result = ((NObject * (*)(int, NObject**))(
+            (const char*)callable->code.native))(funcArgc, funcArgv);
+        frame->push(result);
+        return;
+    } else {
+        this->execute(callable->code.bytecode, funcArgc, funcArgv);
         return;
     }
     // TODO release funcArgv
@@ -451,9 +406,24 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
                 frame->push(new NInt(length));
                 break;
             }
-            case Opcode::CONST_CLOSURE: {
-                int closureIndex = code[bci + 1];
-                frame->push(new NClosure(bytecode->closures[closureIndex]));
+            case Opcode::CONST_CALLABLE: {
+                int callableIndex = code[bci + 1];
+                if (callableIndex >= 0) {
+                    Bytecode* temp = bytecode;
+                    while (temp != nullptr) {
+                        if (temp->callables.find(callableIndex) !=
+                            temp->callables.end()) {
+                            frame->push(new NCallable(
+                                temp->callables[callableIndex], false));
+                            break;
+                        }
+                        temp = temp->parent;
+                    }
+                } else {
+                    frame->push(new NCallable(
+                        bytecode->builtin[-callableIndex - 1][1],
+                        true));
+                }
                 bci++;
                 break;
             }

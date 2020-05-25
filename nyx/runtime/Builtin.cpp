@@ -34,6 +34,8 @@ extern "C" NObject* nyxffi_typeof(int argc, NObject** argv) {
         return new NString("string");
     } else if (typeid(*argv[0]) == typeid(NArray)) {
         return new NString("array");
+    } else if (typeid(*argv[0]) == typeid(NCallable)) {
+        return new NString("callable");
     }
     return new NString("object");
 }

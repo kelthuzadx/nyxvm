@@ -15,11 +15,17 @@ NArray::NArray(int length) {
     this->array = new NObject*[length];
 }
 
-NClosure::NClosure(Bytecode* code) : code(code) {}
+NCallable::NCallable(Bytecode* code, bool isNative) : isNative(isNative) {
+    this->code.bytecode = code;
+}
 
-NClosure::~NClosure() { this->code = nullptr; }
+NCallable::NCallable(const char* code, bool isNative) : isNative(isNative) {
+    this->code.native = code;
+}
 
-std::string NClosure::toString() { return "Closure"; }
+NCallable::~NCallable() { this->code.native = nullptr; }
+
+std::string NCallable::toString() { return "Callable"; }
 
 std::string NObject::toString() {
     int addr = *((int*)(this));

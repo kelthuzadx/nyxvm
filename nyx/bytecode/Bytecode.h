@@ -29,22 +29,31 @@ struct FreeVar {
 };
 
 struct Bytecode {
+    int id;
+
     std::string funcName;
+
     std::vector<std::string> strings;
+
     std::unordered_map<std::string, int> localVars;
 
     std::vector<FreeVar*> freeVars;
 
+    std::unordered_map<int, Bytecode*> callables;
+
+    Bytecode* parent;
+
     int codeSize;
+
     nyx::int32* code;
 
-    explicit Bytecode();
+    static const char*((builtin[])[2]);
+
+    static int findBuiltinIndex(const std::string& name);
+
+    explicit Bytecode(int id, const std::string& name);
 
     ~Bytecode();
-
-    std::unordered_map<std::string, Bytecode*> functions;
-    std::unordered_map<int, Bytecode*> closures;
-    Bytecode* parent;
 };
 
 #endif // NYX_BYTECODE_H

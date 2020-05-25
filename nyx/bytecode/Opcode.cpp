@@ -15,7 +15,7 @@ void Opcode::initialize() {
     defineOpcode(CONST_D, "const_d", 8);
     defineOpcode(CONST_C, "const_c", 1);
     defineOpcode(CONST_STR, "const_str", 1);
-    defineOpcode(CONST_CLOSURE, "const_closure", 1);
+    defineOpcode(CONST_CALLABLE, "const_callable", 1);
     defineOpcode(NEG, "neg", 0);
     defineOpcode(TEST_EQ, "test_eq", 0);
     defineOpcode(TEST_NE, "test_ne", 0);

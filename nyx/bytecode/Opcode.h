@@ -13,7 +13,7 @@ struct Opcode {
         CONST_D,
         CONST_C,
         CONST_STR,
-        CONST_CLOSURE,
+        CONST_CALLABLE,
         NEG,
         TEST_EQ,
         TEST_NE,

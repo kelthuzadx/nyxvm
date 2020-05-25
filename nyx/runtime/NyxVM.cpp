@@ -8,15 +8,6 @@
 #include "../parser/Parser.h"
 #include "Builtin.h"
 
-const char*((NyxVM::builtin[])[2]) = {
-    {"nyxffi_println", (const char*)nyxffi_println},
-    {"nyxffi_print", (const char*)nyxffi_print},
-    {"nyxffi_typeof", (const char*)nyxffi_typeof},
-    {"nyxffi_len", (const char*)nyxffi_len},
-    {"nyxffi_exit", (const char*)nyxffi_exit},
-    {"nyxffi_assert", (const char*)nyxffi_assert},
-    {"nyxffi_range", (const char*)nyxffi_range}};
-
 void NyxVM::ignition(const char* script) {
     Parser::dumpLex("lex.log", script);
     Parser parser(script);
@@ -35,17 +26,6 @@ void NyxVM::ignition(const char* script) {
     Interpreter interpreter;
     interpreter.execute(bytecode);
     delete bytecode;
-}
-
-const char* NyxVM::findBuiltin(const std::string& name) {
-    std::string target = "nyxffi_" + name;
-    for (auto& func : builtin) {
-        const char* builtinFuncName = func[0];
-        if (target == builtinFuncName) {
-            return func[1];
-        }
-    }
-    return nullptr;
 }
 
 void NyxVM::setup() {

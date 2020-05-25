@@ -59,14 +59,21 @@ struct NArray : public NObject {
     NObject** array;
 };
 
-struct NClosure : public NObject {
-    explicit NClosure(Bytecode* code);
+struct NCallable : public NObject {
+    explicit NCallable(Bytecode* code, bool isNative);
 
-    ~NClosure() override;
+    explicit NCallable(const char* code, bool isNative);
+
+    ~NCallable() override;
 
     std::string toString() override;
 
-    Bytecode* code;
+    bool isNative;
+
+    union {
+        Bytecode* bytecode;
+        const char* native;
+    } code{};
 };
 
 #endif // NYX_NOBJECT_H

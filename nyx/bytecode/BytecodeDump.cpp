@@ -59,12 +59,10 @@ void BytecodeDump::dump(Bytecode* bytecode) {
         }
     }
 
-    for (auto& func : bytecode->functions) {
-        dump(func.second);
-    }
-
-    for (auto& func : bytecode->closures) {
-        dump(func.second);
+    for (auto& func : bytecode->callables) {
+        if (func.second != nullptr) {
+            dump(func.second);
+        }
     }
     ofs.flush();
 }

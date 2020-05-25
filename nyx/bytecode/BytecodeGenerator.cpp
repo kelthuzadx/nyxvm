@@ -80,8 +80,6 @@ void BytecodeGenerator::visitBlock(Block* node) {
 }
 
 void BytecodeGenerator::visitCompilationUnit(CompilationUnit* node) {
-    // First visit function definitions and then visit top statements
-    // The order of visiting is important
     for (auto* definition : node->definitions) {
         definition->visit(this);
     }
@@ -198,34 +196,11 @@ void BytecodeGenerator::visitBinaryExpr(BinaryExpr* node) {
 }
 
 void BytecodeGenerator::visitFuncCallExpr(FuncCallExpr* node) {
-    if (node->funcName.empty()) {
-        node->closure->visit(this);
-    } else if (bytecode->functions.find(node->funcName) !=
-               bytecode->functions.end()) {
-        genConstStr(node->funcName);
-    } else if (bytecode->localVars.find(node->funcName) !=
-               bytecode->localVars.end()) {
-        genLoad(node->funcName);
-    } else if (NyxVM::findBuiltin(node->funcName) != nullptr) {
-        genConstStr(node->funcName);
-    } else if (bytecode->parent != nullptr) {
-        Bytecode* temp = bytecode->parent;
-        while (temp != nullptr) {
-            if (temp->localVars.find(node->funcName) != temp->localVars.end()) {
-                genLoad(node->funcName);
-                break;
-            } else if (temp->functions.find(node->funcName) !=
-                       temp->functions.end()) {
-                genConstStr(node->funcName);
-                break;
-            }
-            temp = temp->parent;
-        }
-        genConstStr(node->funcName);
+    if (!node->funcName->identName.empty()) {
+        node->funcName->visit(this);
     } else {
-        genConstStr(node->funcName);
+        node->closure->visit(this);
     }
-
     for (auto* arg : node->args) {
         arg->visit(this);
     }
@@ -844,7 +819,7 @@ void BytecodeGenerator::genArray(std::vector<Expr*> elems) {
 }
 
 void BytecodeGenerator::genLoad(const std::string& name) {
-    // find variable in current function scope
+    // find as local variable in current function scope
     if (auto iter = bytecode->localVars.find(name);
         iter != bytecode->localVars.cend()) {
         int localIndex = bytecode->localVars[name];
@@ -853,19 +828,28 @@ void BytecodeGenerator::genLoad(const std::string& name) {
         return;
     }
 
-    // find in current captured free variables
+    // find as already captured free variable in current function scope
     for (int i = 0; i < bytecode->freeVars.size(); i++) {
         auto* fv = bytecode->freeVars[i];
-        assert(!fv->isEnclosing);
-        if (!fv->isEnclosing && fv->name == name) {
-            bytecode->code[bci++] = Opcode::LOAD_FREE;
-            bytecode->code[bci++] = i;
-            return;
+        if (!fv->isEnclosing) {
+            if (!fv->isEnclosing && fv->name == name) {
+                bytecode->code[bci++] = Opcode::LOAD_FREE;
+                bytecode->code[bci++] = i;
+                return;
+            }
         }
     }
 
-    // find in parent function scope
-    Bytecode* parent = bytecode->parent;
+    // find as nyxffi function
+    if (int builtinIndex = Bytecode::findBuiltinIndex(name);
+        builtinIndex >= 0) {
+        bytecode->code[bci++] = Opcode::CONST_CALLABLE;
+        bytecode->code[bci++] = -1 - builtinIndex;
+        return;
+    }
+
+    // find in lexical scope chain
+    Bytecode* parent = bytecode;
     while (parent != nullptr) {
         if (auto iter = parent->localVars.find(name);
             iter != parent->localVars.cend()) {
@@ -890,6 +874,14 @@ void BytecodeGenerator::genLoad(const std::string& name) {
             bytecode->code[bci++] = Opcode::LOAD_FREE;
             bytecode->code[bci++] = bytecode->freeVars.size() - 1;
             return;
+        } else {
+            for (auto& [funcId, funcBytecode] : parent->callables) {
+                if (funcBytecode->funcName == name) {
+                    bytecode->code[bci++] = Opcode::CONST_CALLABLE;
+                    bytecode->code[bci++] = funcId;
+                    return;
+                }
+            }
         }
         parent = parent->parent;
     }
@@ -993,65 +985,78 @@ inline bool BytecodeGenerator::isShortCircuitAnd(Expr* expr) {
 }
 
 void BytecodeGenerator::visitFuncDef(FuncDef* node) {
-    // Create new BytecodeGenerator and produce bytecodes
-    BytecodeGenerator gen;
-    auto* funcBytecode = gen.generateFuncDef(bytecode, node);
-    bytecode->functions.insert({node->funcName, funcBytecode});
+    int oldBci = bci;
+    Bytecode* oldBytecode = this->bytecode;
+    Label* oldContinuePoint = this->continuePoint;
+    Label* oldBreakPoint = this->breakPoint;
+
+    {
+        Bytecode* newBytecode = this->bytecode->callables[node->id];
+        newBytecode->parent = oldBytecode;
+        this->bytecode = newBytecode;
+        this->bci = 0;
+        // create name in local map, interpreter will assign arguments to these
+        // parameters
+        for (auto& param : node->params) {
+            bytecode->localVars.insert({param, bytecode->localVars.size()});
+        }
+        node->block->visit(this);
+        this->bytecode->codeSize = bci;
+    }
+    this->bci = oldBci;
+    this->bytecode = oldBytecode;
+    this->continuePoint = oldContinuePoint;
+    this->breakPoint = oldBreakPoint;
 }
 
 void BytecodeGenerator::visitClosureExpr(ClosureExpr* node) {
-    // Create new BytecodeGenerator and produce bytecodes
-    BytecodeGenerator gen;
-    auto* closureBytecode = gen.generateClosureExpr(this->bytecode, node);
-    bytecode->closures.insert({node->id, closureBytecode});
+    int oldBci = bci;
+    Bytecode* oldBytecode = this->bytecode;
+    Label* oldContinuePoint = this->continuePoint;
+    Label* oldBreakPoint = this->breakPoint;
+    {
+        Bytecode* newBytecode = new Bytecode(node->id, "<closure>");
+        newBytecode->parent = oldBytecode;
+        oldBytecode->callables.insert({node->id, newBytecode});
+        globalCallable.insert({node->id, newBytecode});
+
+        this->bytecode = newBytecode;
+        this->bci = 0;
+
+        for (auto& param : node->params) {
+            bytecode->localVars.insert({param, bytecode->localVars.size()});
+        }
+        node->block->visit(this);
+        this->bytecode->codeSize = bci;
+    }
+    this->bci = oldBci;
+    this->bytecode = oldBytecode;
+    this->continuePoint = oldContinuePoint;
+    this->breakPoint = oldBreakPoint;
 
     // This is an expression, we should generate bytecode for it
-    bytecode->code[bci++] = Opcode::CONST_CLOSURE;
+    bytecode->code[bci++] = Opcode::CONST_CALLABLE;
     bytecode->code[bci++] = node->id;
 }
 
 BytecodeGenerator::BytecodeGenerator() {
-    this->bytecode = new Bytecode;
+    this->bytecode = nullptr;
+    this->continuePoint = nullptr;
+    this->breakPoint = nullptr;
     this->bci = 0;
 }
 
-Bytecode* BytecodeGenerator::generateFuncDef(Bytecode* enclosing,
-                                             FuncDef* node) {
-    bytecode->funcName = node->funcName;
-
-    {
-        // create name in local map, interpreter will assign arguments to these
-        // parameters
-        for (auto& param : node->params) {
-            bytecode->localVars.insert({param, bytecode->localVars.size()});
-        }
-        this->bytecode->parent = enclosing;
-        node->block->visit(this);
-    }
-    bytecode->codeSize = bci;
-    return bytecode;
-}
-
-Bytecode* BytecodeGenerator::generateClosureExpr(Bytecode* enclosing,
-                                                 ClosureExpr* node) {
-    bytecode->funcName = "<closure>";
-
-    {
-        // create name in local map, interpreter will assign arguments to these
-        // parameters
-        for (auto& param : node->params) {
-            bytecode->localVars.insert({param, bytecode->localVars.size()});
-        }
-        this->bytecode->parent = enclosing;
-        node->block->visit(this);
-    }
-
-    bytecode->codeSize = bci;
-    return bytecode;
-}
-
 Bytecode* BytecodeGenerator::generate(CompilationUnit* unit) {
-    bytecode->funcName = "<top-level>";
+    auto* topLevelBc = new Bytecode(unit->id, "<top-level>");
+    globalCallable.insert({unit->id, topLevelBc});
+
+    for (auto& definition : unit->definitions) {
+        auto* bc = new Bytecode(definition->id, definition->funcName);
+        globalCallable.insert({definition->id, bc});
+        topLevelBc->callables.insert({definition->id, bc});
+    }
+
+    this->bytecode = topLevelBc;
     {
         PhaseTime timer("generate bytecode from Ast");
         unit->visit(this);
@@ -1059,5 +1064,4 @@ Bytecode* BytecodeGenerator::generate(CompilationUnit* unit) {
     bytecode->codeSize = bci;
     return bytecode;
 }
-
 #pragma clang diagnostic pop

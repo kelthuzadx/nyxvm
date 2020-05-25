@@ -5,12 +5,6 @@
 #include <unordered_map>
 
 class NyxVM {
-  private:
-    static const char*((builtin[])[2]);
-
-  public:
-    static const char* findBuiltin(const std::string& name);
-
   public:
     NyxVM() = default;
 

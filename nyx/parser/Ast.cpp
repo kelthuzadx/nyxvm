@@ -1,6 +1,6 @@
 #include "Ast.h"
 
-static int IntegerIncrementer = 0;
+thread_local static int IntegerIncrementer = 0;
 
 AstNode::AstNode(int line, int column) : line(line), column(column) {
     id = IntegerIncrementer++;
@@ -101,7 +101,7 @@ std::string FuncCallExpr::to_string() const {
     if (moduleName.length() != 0) {
         str += moduleName + ".";
     }
-    str += funcName;
+    str += funcName->identName;
     str += "}";
     return std::move(str);
 }

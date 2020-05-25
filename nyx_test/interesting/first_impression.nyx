@@ -1,0 +1,6 @@
+func hello(){
+    return func(){ return "world" }
+}
+
+w = hello()
+w()

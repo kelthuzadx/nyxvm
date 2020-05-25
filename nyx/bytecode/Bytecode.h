@@ -7,10 +7,11 @@
 #include <unordered_map>
 #include <vector>
 
-struct Bytecode;
 //===----------------------------------------------------------------------===//
 // Representation of NyxVM bytecode
 //===----------------------------------------------------------------------===//
+struct Bytecode;
+
 struct FreeVar {
     std::string name;
     bool isEnclosing{};

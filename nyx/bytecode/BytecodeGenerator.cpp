@@ -789,6 +789,16 @@ void BytecodeGenerator::genConstC(char c) {
     bci += 1;
 }
 
+void BytecodeGenerator::genConstCallable(int id,bool isNative) {
+    assert(id>=0);
+    bytecode->code[bci++] = Opcode::CONST_CALLABLE;
+    if(!isNative){
+        bytecode->code[bci++] = id;
+    }else{
+        bytecode->code[bci++] = -1 - id;
+    }
+}
+
 void BytecodeGenerator::genConstNull() {
     bytecode->code[bci++] = Opcode::CONST_NULL;
 }
@@ -829,8 +839,7 @@ void BytecodeGenerator::genLoad(const std::string& name) {
     // find as nyxffi function
     if (int builtinIndex = Bytecode::findBuiltinIndex(name);
         builtinIndex >= 0) {
-        bytecode->code[bci++] = Opcode::CONST_CALLABLE;
-        bytecode->code[bci++] = -1 - builtinIndex;
+        genConstCallable(builtinIndex,true);
         return;
     }
 
@@ -863,8 +872,7 @@ void BytecodeGenerator::genLoad(const std::string& name) {
         } else {
             for (auto& [funcId, funcBytecode] : parent->callables) {
                 if (funcBytecode->funcName == name) {
-                    bytecode->code[bci++] = Opcode::CONST_CALLABLE;
-                    bytecode->code[bci++] = funcId;
+                    genConstCallable(funcId, false);
                     return;
                 }
             }
@@ -971,7 +979,7 @@ inline bool BytecodeGenerator::isShortCircuitAnd(Expr* expr) {
 }
 
 void BytecodeGenerator::visitFuncDef(FuncDef* node) {
-    StateMark mark{this};
+    StateMark mark(this);
     mark.save();
     {
         Bytecode* newBytecode = this->bytecode->callables[node->id];
@@ -990,7 +998,7 @@ void BytecodeGenerator::visitFuncDef(FuncDef* node) {
 }
 
 void BytecodeGenerator::visitClosureExpr(ClosureExpr* node) {
-    StateMark mark{this};
+    StateMark mark(this);
     mark.save();
     {
         Bytecode* oldBytecode = this->bytecode;
@@ -1010,9 +1018,8 @@ void BytecodeGenerator::visitClosureExpr(ClosureExpr* node) {
     }
     mark.restore();
 
-    // This is an expression, we should generate bytecode for it
-    bytecode->code[bci++] = Opcode::CONST_CALLABLE;
-    bytecode->code[bci++] = node->id;
+    // This is an expression, we should generate corresponding bytecode for it
+    genConstCallable(node->id, false);
 }
 
 BytecodeGenerator::BytecodeGenerator() {

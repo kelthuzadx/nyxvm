@@ -25,7 +25,7 @@ NCallable::NCallable(const char* code, bool isNative) : isNative(isNative) {
 
 NCallable::~NCallable() { this->code.native = nullptr; }
 
-std::string NCallable::toString() { return "Callable"; }
+std::string NCallable::toString() { return "callable"; }
 
 std::string NObject::toString() {
     int addr = *((int*)(this));

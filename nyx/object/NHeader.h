@@ -2,7 +2,7 @@
 #define NYX_NHEADER_H
 
 #include "../runtime/Global.h"
-#include "NObject.h"
+#include "NValue.h"
 #include <cstdlib>
 
 //===----------------------------------------------------------------------===//
@@ -10,7 +10,7 @@
 //===----------------------------------------------------------------------===//
 class NHeader :public NonInstantiable{
   private:
-    pointer * word;
+    pointer * header;
 
   public:
     enum HeaderType{
@@ -22,11 +22,11 @@ class NHeader :public NonInstantiable{
 
 
     void setType(HeaderType type){
-        (*word) = ((*word)&type);
+        (*header) = ((*header)&(type));
     }
 
     bool isType(HeaderType type){
-        return ((*word)&type)
+        return ((*header)&(type));
     }
 };
 

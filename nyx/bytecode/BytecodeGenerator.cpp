@@ -797,9 +797,9 @@ void BytecodeGenerator::visitExportStmt(ExportStmt* node) {
     // Pass
 }
 
-void BytecodeGenerator::genConstI(nyx::int32 integer) {
+void BytecodeGenerator::genConstI(int32 integer) {
     bytecode->code[bci++] = Opcode::CONST_I;
-    *(nyx::int32*)(bytecode->code + bci) = integer;
+    *(int32*)(bytecode->code + bci) = integer;
     bci += 4;
 }
 
@@ -817,7 +817,7 @@ void BytecodeGenerator::genConstD(double d) {
 
 void BytecodeGenerator::genConstC(char c) {
     bytecode->code[bci++] = Opcode::CONST_C;
-    *(nyx::int8*)(bytecode->code + bci) = c;
+    *(int8*)(bytecode->code + bci) = c;
     bci += 1;
 }
 

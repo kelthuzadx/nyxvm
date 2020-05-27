@@ -1,10 +1,10 @@
-#include "NObject.h"
+#include "NValue.h"
 
-NInt::NInt(nyx::int32 value) : value(value) {}
+NInt::NInt(int32 value) : value(value) {}
 
 NDouble::NDouble(double value) : value(value) {}
 
-NChar::NChar(nyx::int8 value) : value(value) {}
+NChar::NChar(int8 value) : value(value) {}
 
 NString::NString(std::string value) : value(std::move(value)) {}
 
@@ -12,7 +12,7 @@ NArray::~NArray() { delete[] array; }
 
 NArray::NArray(int length) {
     this->length = length;
-    this->array = new NObject*[length];
+    this->array = new NValue*[length];
 }
 
 NCallable::NCallable(Bytecode* code, bool isNative) : isNative(isNative) {
@@ -27,7 +27,7 @@ NCallable::~NCallable() { this->code.native = nullptr; }
 
 std::string NCallable::toString() { return "callable"; }
 
-std::string NObject::toString() {
+std::string NValue::toString() {
     int addr = *((int*)(this));
     std::string str("Object[");
     str += std::to_string(addr);

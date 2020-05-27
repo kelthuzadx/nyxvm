@@ -16,7 +16,7 @@ Space::~Space() {
 }
 pointer Space::allocate(uint32 needed) {
     if(top+needed>base+size){
-        return nullptr;
+        panic("temporary panic");
     }
     pointer m = top;
     top += needed;

@@ -189,7 +189,7 @@ AST_EXPR_END
 
 AST_EXPR(CharExpr)
 
-nyx::int8 literal;
+int8 literal;
 AST_EXPR_END
 
 AST_EXPR(NullExpr)
@@ -197,7 +197,7 @@ AST_EXPR_END
 
 AST_EXPR(IntExpr)
 
-nyx::int32 literal;
+int32 literal;
 AST_EXPR_END
 
 AST_EXPR(DoubleExpr)

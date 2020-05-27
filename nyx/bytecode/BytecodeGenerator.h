@@ -127,7 +127,7 @@ class BytecodeGenerator : public AstVisitor {
     void visitExportStmt(ExportStmt* node) override;
 
   private:
-    void genConstI(nyx::int32 integer);
+    void genConstI(int32 integer);
 
     void genConstStr(const std::string& str);
 

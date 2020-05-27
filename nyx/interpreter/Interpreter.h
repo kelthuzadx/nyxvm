@@ -3,7 +3,7 @@
 
 #include "../bytecode/Bytecode.h"
 #include "../bytecode/Opcode.h"
-#include "../object/NObject.h"
+#include "../object/NValue.h"
 #include "../runtime/Global.h"
 #include "Frame.h"
 
@@ -16,17 +16,17 @@ class Interpreter {
     Frame* frame{};
 
   private:
-    template <int Operation> void arithmetic(NObject* o1, NObject* o2);
+    template <int Operation> void arithmetic(NValue* o1, NValue* o2);
 
-    template <int Operation> void compare(NObject* o1, NObject* o2);
+    template <int Operation> void compare(NValue* o1, NValue* o2);
 
-    template <int Operation> void bitop(NObject* o1, NObject* o2);
+    template <int Operation> void bitop(NValue* o1, NValue* o2);
 
-    void neg(NObject* object);
+    void neg(NValue* object);
 
-    bool deepCompare(int cond, NObject* o1, NObject* o2);
+    bool deepCompare(int cond, NValue* o1, NValue* o2);
 
-    void createFrame(Bytecode* bytecode, int argc, NObject** argv);
+    void createFrame(Bytecode* bytecode, int argc, NValue** argv);
 
     void destroyFrame(Bytecode* bytecode, bool hasReturnValue);
 
@@ -34,9 +34,9 @@ class Interpreter {
 
     void loadFreeVar(FreeVar* freeVar);
 
-    void storeFreeVar(FreeVar* freeVar, NObject* object);
+    void storeFreeVar(FreeVar* freeVar, NValue* object);
 
-    void execute(Bytecode* bytecode, int argc, NObject** argv);
+    void execute(Bytecode* bytecode, int argc, NValue** argv);
 
   public:
     explicit Interpreter();
@@ -47,7 +47,7 @@ class Interpreter {
 };
 
 template <int Operation>
-void Interpreter::arithmetic(NObject* o1, NObject* o2) {
+void Interpreter::arithmetic(NValue* o1, NValue* o2) {
     switch (Operation) {
     case Opcode::ADD:
         if (typeid(*o1) == typeid(NInt)) {
@@ -298,7 +298,7 @@ bool genericCompare(int operation, T1* t1, T2* t2) {
     return cond;
 }
 
-template <int Operation> void Interpreter::compare(NObject* o1, NObject* o2) {
+template <int Operation> void Interpreter::compare(NValue* o1, NValue* o2) {
     if (deepCompare(Operation, o1, o2)) {
         frame->push(new NInt(1));
     } else {
@@ -306,7 +306,7 @@ template <int Operation> void Interpreter::compare(NObject* o1, NObject* o2) {
     }
 }
 
-template <int Operation> void Interpreter::bitop(NObject* o1, NObject* o2) {
+template <int Operation> void Interpreter::bitop(NValue* o1, NValue* o2) {
     if (o2 == nullptr) {
         // NOT
         auto* t1 = dynamic_cast<NInt*>(o1);
@@ -321,10 +321,10 @@ template <int Operation> void Interpreter::bitop(NObject* o1, NObject* o2) {
     auto* t1 = dynamic_cast<NInt*>(o1);
     auto* t2 = dynamic_cast<NInt*>(o2);
     if (Operation == Opcode::AND) {
-        auto* res = new NInt((nyx::int32)(t1->value & t2->value));
+        auto* res = new NInt((int32)(t1->value & t2->value));
         frame->push(res);
     } else if (Operation == Opcode::OR) {
-        auto* res = new NInt((nyx::int32)(t1->value | t2->value));
+        auto* res = new NInt((int32)(t1->value | t2->value));
         frame->push(res);
     } else {
         panic("should not reach here");

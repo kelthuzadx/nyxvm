@@ -24,13 +24,10 @@ void GenHeap::initialize() {
 NInt* GenHeap::allocateNInt(int32 value) {
     int32 size = NInt::size();
     pointer addr = youngSpace->allocate(size);
-    if(addr== nullptr){
-        panic("temporary panic");
-    }
     as<NInt>(addr)->getHeader()->setType(NHeader::TypeInt);
     as<NInt>(addr)->setValue(value);
     return as<NInt>(addr);
 }
 NInt* GenHeap::allocateNDouble(double value) { return nullptr; }
 NInt* GenHeap::allocateNChar(int8 value) { return nullptr; }
-NObject* GenHeap::allocateNObject(NType* type) { return nullptr; }
+NValue* GenHeap::allocateNObject(NType* type) { return nullptr; }

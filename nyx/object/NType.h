@@ -2,7 +2,7 @@
 #define NYX_NTYPE_H
 
 #include "../runtime/Global.h"
-#include "NObject.h"
+#include "NValue.h"
 #include <cstdint>
 #include <vector>
 
@@ -12,11 +12,9 @@ class NType {
     bool isCallable;
     bool isString;
     int32 size;
-    std::vector<NObject*> fields;
+    std::vector<NValue*> fields;
 
   public:
-
-
 };
 
 #endif // NYX_NTYPE_H

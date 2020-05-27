@@ -1,7 +1,7 @@
 #include "Interpreter.h"
 #include "../bytecode/Bytecode.h"
 #include "../bytecode/Opcode.h"
-#include "../object/NObject.h"
+#include "../object/NValue.h"
 #include "../runtime/NyxVM.h"
 
 Interpreter::Interpreter() { this->frame = nullptr; }
@@ -13,9 +13,9 @@ Interpreter::~Interpreter() {
     }
 }
 
-void Interpreter::neg(NObject* object) {
+void Interpreter::neg(NValue* object) {
     if (typeid(*object) == typeid(NInt)) {
-        nyx::int32 val = -dynamic_cast<NInt*>(object)->value;
+        int32 val = -dynamic_cast<NInt*>(object)->value;
         frame->push(new NInt(val));
     } else if (typeid(*object) == typeid(NDouble)) {
         double val = -dynamic_cast<NDouble*>(object)->value;
@@ -25,7 +25,7 @@ void Interpreter::neg(NObject* object) {
     }
 }
 
-bool Interpreter::deepCompare(int cond, NObject* o1, NObject* o2) {
+bool Interpreter::deepCompare(int cond, NValue* o1, NValue* o2) {
     if (o1 == nullptr || o2 == nullptr) {
         return cond == Opcode::TEST_EQ == (o1 == nullptr && o2 == nullptr);
     }
@@ -80,7 +80,7 @@ bool Interpreter::deepCompare(int cond, NObject* o1, NObject* o2) {
     }
 }
 
-void Interpreter::createFrame(Bytecode* bytecode, int argc, NObject** argv) {
+void Interpreter::createFrame(Bytecode* bytecode, int argc, NValue** argv) {
     // Create execution frame
     this->frame = new Frame(bytecode->localVars.size());
     for (int i = 0; i < argc; i++) {
@@ -102,7 +102,7 @@ void Interpreter::createFrame(Bytecode* bytecode, int argc, NObject** argv) {
 void Interpreter::destroyFrame(Bytecode* bytecode, bool hasReturnValue) {
     // Destroy current frame, current frame may points to next frame
     auto* temp = stack.back();
-    NObject* returnVale = nullptr;
+    NValue* returnVale = nullptr;
     if (hasReturnValue) {
         returnVale = temp->pop();
     }
@@ -151,7 +151,7 @@ void Interpreter::loadFreeVar(FreeVar* freeVar) {
     }
 }
 
-void Interpreter::storeFreeVar(FreeVar* freeVar, NObject* object) {
+void Interpreter::storeFreeVar(FreeVar* freeVar, NValue* object) {
     if (freeVar->value.inactive != nullptr) {
         // Enclosing context is inactive, current context owns the
         // free variable
@@ -166,18 +166,18 @@ void Interpreter::storeFreeVar(FreeVar* freeVar, NObject* object) {
 void Interpreter::call(Bytecode* bytecode, int bci) {
     int funcArgc = bytecode->code[bci + 1];
 
-    auto** funcArgv = new NObject*[funcArgc];
+    auto** funcArgv = new NValue*[funcArgc];
     for (int k = funcArgc - 1; k >= 0; k--) {
         funcArgv[k] = frame->pop();
     }
 
-    NObject* callee = frame->pop();
+    NValue* callee = frame->pop();
     if (typeid(*callee) != typeid(NCallable)) {
         panic("callee '%s' is not callable");
     }
     auto* callable = dynamic_cast<NCallable*>(callee);
     if (callable->isNative) {
-        NObject* result = ((NObject * (*)(int, NObject**))(
+        NValue* result = ((NValue * (*)(int, NValue**))(
             (const char*)callable->code.native))(funcArgc, funcArgv);
         frame->push(result);
         return;
@@ -188,7 +188,7 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
     // TODO release funcArgv
 }
 
-void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
+void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
     createFrame(bytecode, argc, argv);
     auto* code = bytecode->code;
     // Execute bytecode
@@ -201,7 +201,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
                 break;
             }
             case Opcode::CONST_I: {
-                nyx::int32 value = *(nyx::int32*)(code + bci + 1);
+                int32 value = *(int32*)(code + bci + 1);
                 auto* object = new NInt(value);
                 frame->push(object);
                 bci += 4;
@@ -215,7 +215,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
                 break;
             }
             case Opcode::CONST_C: {
-                nyx::int8 value = *(nyx::int8*)(code + bci + 1);
+                int8 value = *(int8*)(code + bci + 1);
                 auto* object = new NChar(value);
                 frame->push(object);
                 bci += 1;
@@ -228,74 +228,74 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
             case Opcode::CONST_STR: {
                 int index = code[bci + 1];
                 auto& str = bytecode->strings[index];
-                NObject* object = new NString(str);
+                NValue* object = new NString(str);
                 frame->push(object);
                 bci++;
                 break;
             }
             case Opcode::ADD: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 arithmetic<Opcode::ADD>(object1, object2);
                 break;
             }
             case Opcode::SUB: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 arithmetic<Opcode::SUB>(object1, object2);
                 break;
             }
             case Opcode::MUL: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 arithmetic<Opcode::MUL>(object1, object2);
                 break;
             }
             case Opcode::DIV: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 arithmetic<Opcode::DIV>(object1, object2);
                 break;
             }
             case Opcode::REM: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 arithmetic<Opcode::REM>(object1, object2);
                 break;
             }
             case Opcode::TEST_EQ: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 compare<Opcode::TEST_EQ>(object1, object2);
                 break;
             }
             case Opcode::TEST_NE: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 compare<Opcode::TEST_NE>(object1, object2);
                 break;
             }
             case Opcode::TEST_GE: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 compare<Opcode::TEST_GE>(object1, object2);
                 break;
             }
             case Opcode::TEST_GT: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 compare<Opcode::TEST_GT>(object1, object2);
                 break;
             }
             case Opcode::TEST_LE: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 compare<Opcode::TEST_LE>(object1, object2);
                 break;
             }
             case Opcode::TEST_LT: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 compare<Opcode::TEST_LT>(object1, object2);
                 break;
             }
@@ -331,24 +331,24 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
                 break;
             }
             case Opcode::AND: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 bitop<Opcode::AND>(object1, object2);
                 break;
             }
             case Opcode::OR: {
-                NObject* object2 = frame->pop();
-                NObject* object1 = frame->pop();
+                NValue* object2 = frame->pop();
+                NValue* object1 = frame->pop();
                 bitop<Opcode::OR>(object1, object2);
                 break;
             }
             case Opcode::NOT: {
-                NObject* object1 = frame->pop();
+                NValue* object1 = frame->pop();
                 bitop<Opcode::NOT>(object1, nullptr);
                 break;
             }
             case Opcode::NEG: {
-                NObject* object = frame->pop();
+                NValue* object = frame->pop();
                 neg(object);
                 break;
             }
@@ -359,7 +359,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NObject** argv) {
                 break;
             }
             case Opcode::STORE: {
-                NObject* value = frame->pop();
+                NValue* value = frame->pop();
                 int index = code[bci + 1];
                 frame->store(index, value);
                 bci++;

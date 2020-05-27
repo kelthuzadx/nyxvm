@@ -19,7 +19,7 @@ Bytecode::~Bytecode() {
 
 Bytecode::Bytecode(int id, const std::string& name) {
     this->id = id;
-    code = new nyx::int32[65535];
+    code = new int32[65535];
     this->codeSize = -1;
     this->funcName = name;
     this->parent = nullptr;

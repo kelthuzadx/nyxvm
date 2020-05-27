@@ -1,7 +1,7 @@
 #ifndef NYX_GENHEAP_H
 #define NYX_GENHEAP_H
 
-#include "../object/NObject.h"
+#include "../object/NValue.h"
 #include "Space.h"
 class GenHeap {
   private:
@@ -22,8 +22,7 @@ class GenHeap {
     NInt* allocateNInt(int32 value);
     NInt* allocateNDouble(double value);
     NInt* allocateNChar(int8 value);
-    NObject* allocateNObject(NType* type);
-
+    NValue* allocateNObject(NType* type);
 };
 
 #endif // NYX_GENHEAP_H

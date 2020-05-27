@@ -24,7 +24,7 @@ void BytecodeDump::dump(Bytecode* bytecode) {
     for (int bci = 0; bci < bytecodeSize; bci++) {
         switch (bytecodes[bci]) {
         case Opcode::CONST_I: {
-            nyx::int32 value = *(nyx::int32*)(bytecodes + bci + 1);
+            int32 value = *(int32*)(bytecodes + bci + 1);
             ofs << bci << ":"
                 << "const_i " << value << "\n";
             bci += 4;

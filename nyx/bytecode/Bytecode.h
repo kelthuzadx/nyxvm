@@ -1,7 +1,7 @@
 #ifndef NYX_BYTECODE_H
 #define NYX_BYTECODE_H
 
-#include "../object/NObject.h"
+#include "../object/NValue.h"
 #include "../runtime/Global.h"
 #include <string>
 #include <unordered_map>
@@ -22,8 +22,8 @@ struct FreeVar {
     // enclosing context is no longer live, current context owns the free
     // variable
     union {
-        NObject* inactive;
-        NObject** active;
+        NValue* inactive;
+        NValue** active;
     } value{};
 
     ~FreeVar() = default;
@@ -46,7 +46,7 @@ struct Bytecode {
 
     int codeSize;
 
-    nyx::int32* code;
+    int32* code;
 
     static const char*((builtin[])[2]);
 

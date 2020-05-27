@@ -1,7 +1,7 @@
-#include "../object/NObject.h"
+#include "../object/NValue.h"
 #include <iostream>
 
-extern "C" NObject* nyxffi_print(int argc, NObject** argv) {
+extern "C" NValue* nyxffi_print(int argc, NValue** argv) {
     for (int i = 0; i < argc; i++) {
         if (argv[i] != nullptr) {
             std::cout << argv[i]->toString();
@@ -13,14 +13,14 @@ extern "C" NObject* nyxffi_print(int argc, NObject** argv) {
     return nullptr;
 }
 
-extern "C" NObject* nyxffi_println(int argc, NObject** argv) {
+extern "C" NValue* nyxffi_println(int argc, NValue** argv) {
     nyxffi_print(argc, argv);
     std::cout << "\n";
     std::cout.flush();
     return nullptr;
 }
 
-extern "C" NObject* nyxffi_typeof(int argc, NObject** argv) {
+extern "C" NValue* nyxffi_typeof(int argc, NValue** argv) {
     assert(argc == 1);
     if (argv[0] == nullptr) {
         return new NString("null");
@@ -40,7 +40,7 @@ extern "C" NObject* nyxffi_typeof(int argc, NObject** argv) {
     return new NString("object");
 }
 
-extern "C" NObject* nyxffi_len(int argc, NObject** argv) {
+extern "C" NValue* nyxffi_len(int argc, NValue** argv) {
     assert(argc == 1 && (typeid(*argv[0]) == typeid(NArray) ||
                          typeid(*argv[0]) == typeid(NString)));
     if (typeid(*argv[0]) == typeid(NString)) {
@@ -51,13 +51,13 @@ extern "C" NObject* nyxffi_len(int argc, NObject** argv) {
     return nullptr;
 }
 
-extern "C" NObject* nyxffi_exit(int argc, NObject** argv) {
+extern "C" NValue* nyxffi_exit(int argc, NValue** argv) {
     assert(argc == 1 && typeid(*argv[0]) == typeid(NInt));
     exit(dynamic_cast<NInt*>(argv[0])->value);
     return nullptr;
 }
 
-extern "C" NObject* nyxffi_assert(int argc, NObject** argv) {
+extern "C" NValue* nyxffi_assert(int argc, NValue** argv) {
     assert((argc == 1 || argc == 2) && typeid(*argv[0]) == typeid(NInt));
     if (dynamic_cast<NInt*>(argv[0])->value == 0) {
         if (argc == 2 && typeid(*argv[1]) == typeid(NString)) {
@@ -70,7 +70,7 @@ extern "C" NObject* nyxffi_assert(int argc, NObject** argv) {
     return nullptr;
 }
 
-extern "C" NObject* nyxffi_range(int argc, NObject** argv) {
+extern "C" NValue* nyxffi_range(int argc, NValue** argv) {
     assert(argc == 2 || argc == 1);
     NInt* start = nullptr;
     NInt* end = nullptr;

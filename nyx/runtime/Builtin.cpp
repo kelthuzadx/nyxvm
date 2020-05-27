@@ -1,4 +1,4 @@
-#include "NObject.h"
+#include "../object/NObject.h"
 #include <iostream>
 
 extern "C" NObject* nyxffi_print(int argc, NObject** argv) {

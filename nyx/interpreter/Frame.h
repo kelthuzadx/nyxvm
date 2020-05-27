@@ -1,7 +1,7 @@
 #ifndef NYX_FRAME_H
 #define NYX_FRAME_H
 
-#include "../runtime/NObject.h"
+#include "../object/NObject.h"
 #include <vector>
 
 class Frame {

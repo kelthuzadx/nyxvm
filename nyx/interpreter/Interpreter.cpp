@@ -1,7 +1,7 @@
 #include "Interpreter.h"
 #include "../bytecode/Bytecode.h"
 #include "../bytecode/Opcode.h"
-#include "../runtime/NObject.h"
+#include "../object/NObject.h"
 #include "../runtime/NyxVM.h"
 
 Interpreter::Interpreter() { this->frame = nullptr; }

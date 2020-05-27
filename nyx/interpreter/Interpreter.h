@@ -3,8 +3,8 @@
 
 #include "../bytecode/Bytecode.h"
 #include "../bytecode/Opcode.h"
+#include "../object/NObject.h"
 #include "../runtime/Global.h"
-#include "../runtime/NObject.h"
 #include "Frame.h"
 
 //===----------------------------------------------------------------------===//

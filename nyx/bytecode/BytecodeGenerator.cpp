@@ -3,9 +3,6 @@
 #include "Bytecode.h"
 #include "Opcode.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-
 BytecodeGenerator::Label::~Label() {
     for (auto& i : allJump) {
         gen->bytecode->code[i.getPatching()] = destination;
@@ -1082,4 +1079,3 @@ Bytecode* BytecodeGenerator::generate(CompilationUnit* unit) {
     bytecode->codeSize = bci;
     return bytecode;
 }
-#pragma clang diagnostic pop

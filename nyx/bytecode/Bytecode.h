@@ -1,8 +1,8 @@
 #ifndef NYX_BYTECODE_H
 #define NYX_BYTECODE_H
 
+#include "../object/NObject.h"
 #include "../runtime/Global.h"
-#include "../runtime/NObject.h"
 #include <string>
 #include <unordered_map>
 #include <vector>

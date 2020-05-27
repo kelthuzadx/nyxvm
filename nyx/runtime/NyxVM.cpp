@@ -2,6 +2,7 @@
 #include "../bytecode/Bytecode.h"
 #include "../bytecode/BytecodeDump.h"
 #include "../bytecode/BytecodeGenerator.h"
+#include "../gc/GenHeap.h"
 #include "../interpreter/Interpreter.h"
 #include "../parser/Ast.h"
 #include "../parser/AstDump.h"
@@ -31,4 +32,5 @@ void NyxVM::ignition(const char* script) {
 void NyxVM::setup() {
     PhaseTime timer("set up everything about VM");
     Opcode::initialize();
+    GenHeap::initialize();
 }

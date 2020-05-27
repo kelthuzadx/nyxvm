@@ -37,6 +37,7 @@ Output:
 ```
 
 # Documentation
++ [Languge reference](doc/reference.md)
 + [Bytecode reference](doc/bytecode.md)
 + [Builtin functions](doc/builtin.md)
 

@@ -2,16 +2,32 @@
 #define NYX_NHEADER_H
 
 #include "../runtime/Global.h"
+#include "NObject.h"
 #include <cstdlib>
-class NHeader {
+
+//===----------------------------------------------------------------------===//
+// [_][_][_][_][_][_][_][_][_][_]
+//===----------------------------------------------------------------------===//
+class NHeader :public NonInstantiable{
   private:
-    pointer * header;
+    pointer * word;
 
   public:
-    void* operator new(size_t size)= delete;
-    void operator delete(void* ptr)= delete;
-    explicit NHeader()= delete;
-    ~NHeader()= delete;
+    enum HeaderType{
+        TypeInt,
+        TypeDouble,
+        TypeChar,
+        TypeObject,
+    };
+
+
+    void setType(HeaderType type){
+        (*word) = ((word)&type);
+    }
+
+    bool isType(HeaderType type){
+        return (*word)
+    }
 };
 
 #endif // NYX_NHEADER_H

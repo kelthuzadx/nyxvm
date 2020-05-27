@@ -20,6 +20,9 @@ class GenHeap {
     static GenHeap instance() { return heap; }
 
     NInt* allocateNInt(int32 value);
+    NInt* allocateNDouble(double value);
+    NInt* allocateNChar(int8 value);
+    NObject* allocateNObject(NType* type);
 
 };
 

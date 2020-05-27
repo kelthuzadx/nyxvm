@@ -5,12 +5,14 @@
 class Space {
   private:
     pointer base;
-    int32 size;
+    uint32 size;
     pointer top;
 
   public:
-    Space(int32 size);
+    explicit Space(uint32 size);
     ~Space();
+
+    pointer allocate(uint32 needed);
 };
 
 #endif // NYX_SPACE_H

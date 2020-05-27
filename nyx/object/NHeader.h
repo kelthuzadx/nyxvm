@@ -22,11 +22,11 @@ class NHeader :public NonInstantiable{
 
 
     void setType(HeaderType type){
-        (*word) = ((word)&type);
+        (*word) = ((*word)&type);
     }
 
     bool isType(HeaderType type){
-        return (*word)
+        return ((*word)&type)
     }
 };
 

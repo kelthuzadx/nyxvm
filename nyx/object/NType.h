@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <vector>
 
+class NValue;
+
 class NType {
   private:
     bool isArray;

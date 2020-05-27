@@ -4,9 +4,6 @@ Frame::Frame(int localSize) { locals = new NValue*[localSize]; }
 
 Frame::~Frame() {
     delete[] locals;
-    for (auto& slot : slots) {
-        delete slot;
-    }
 }
 
 NValue* Frame::pop() {

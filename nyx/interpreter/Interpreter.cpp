@@ -1,6 +1,7 @@
 #include "Interpreter.h"
 #include "../bytecode/Bytecode.h"
 #include "../bytecode/Opcode.h"
+#include "../gc/GenHeap.h"
 #include "../object/NValue.h"
 #include "../runtime/NyxVM.h"
 
@@ -202,21 +203,21 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
             }
             case Opcode::CONST_I: {
                 int32 value = *(int32*)(code + bci + 1);
-                auto* object = new NInt(value);
+                auto* object = GenHeap::instance().allocateNInt(value);
                 frame->push(object);
                 bci += 4;
                 break;
             }
             case Opcode::CONST_D: {
                 double value = *(double*)(code + bci + 1);
-                auto* object = new NDouble(value);
+                auto* object = GenHeap::instance().allocateNDouble(value);
                 frame->push(object);
                 bci += 8;
                 break;
             }
             case Opcode::CONST_C: {
                 int8 value = *(int8*)(code + bci + 1);
-                auto* object = new NChar(value);
+                auto* object = GenHeap::instance().allocateNChar(value);
                 frame->push(object);
                 bci += 1;
                 break;

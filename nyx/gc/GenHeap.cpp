@@ -28,6 +28,18 @@ NInt* GenHeap::allocateNInt(int32 value) {
     as<NInt>(addr)->setValue(value);
     return as<NInt>(addr);
 }
-NInt* GenHeap::allocateNDouble(double value) { return nullptr; }
-NInt* GenHeap::allocateNChar(int8 value) { return nullptr; }
+NDouble* GenHeap::allocateNDouble(double value) {
+    int32 size = NDouble::size();
+    pointer addr = youngSpace->allocate(size);
+    as<NDouble>(addr)->getHeader()->setType(NHeader::TypeDouble);
+    as<NDouble>(addr)->setValue(value);
+    return as<NDouble>(addr);
+}
+NChar* GenHeap::allocateNChar(int8 value) {
+    int32 size = NChar::size();
+    pointer addr = youngSpace->allocate(size);
+    as<NChar>(addr)->getHeader()->setType(NHeader::TypeChar);
+    as<NChar>(addr)->setValue(value);
+    return as<NChar>(addr);
+}
 NValue* GenHeap::allocateNObject(NType* type) { return nullptr; }

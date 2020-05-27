@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "../runtime/Global.h"
+#include "NonInstantiable.h"
 #include "NHeader.h"
 #include "NType.h"
 
@@ -18,13 +19,10 @@ struct Bytecode;
 template<typename AsType>
 inline AsType* as(void *addr){ return static_cast<AsType*>(addr);}
 
-class NonInstantiable{
-  public:
-    void* operator new(size_t size)= delete;
-    void operator delete(void* ptr)= delete;
-    explicit NonInstantiable()= delete;
-    ~NonInstantiable()= delete;
-};
+template<typename IsType>
+inline bool is(void * addr){
+    return as<IsType*>(addr)->getHeader()->isType<IsType*>();
+}
 
 class NValue :public NonInstantiable {
   private:
@@ -48,7 +46,8 @@ class NDouble:public NValue {
   private:
     int64 val;
 
-  private:
+  public:
+    static int32 size(){ return sizeof(NDouble); }
     void setValue(double val){ this->val = (int64)(val);}
 };
 
@@ -56,14 +55,16 @@ class NChar:public NValue {
   private:
     int8 val;
 
-  private:
+  public:
+    static int32 size(){ return sizeof(NChar); }
+
     void setValue(int8 val){ this->val = val;}
 };
 
-class NValue :public NValue {
+class NObject :public NValue {
   private:
     NType* type;
   public:
-
+    static int32 size(){ return -1; }
 };
 #endif // NYX_NVALUE_H

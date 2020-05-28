@@ -21,7 +21,7 @@ inline AsType* as(void *addr){ return static_cast<AsType*>(addr);}
 
 template<typename IsType>
 inline bool is(void * addr){
-    return as<IsType*>(addr)->getHeader()->isType<IsType*>();
+    return as<IsType*>(addr)->getHeader()->template isType<IsType*>();
 }
 
 class NValue :public NonInstantiable {
@@ -67,4 +67,5 @@ class NObject :public NValue {
   public:
     static int32 size(){ return -1; }
 };
+
 #endif // NYX_NVALUE_H

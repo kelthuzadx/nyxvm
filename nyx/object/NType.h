@@ -10,13 +10,15 @@ class NValue;
 
 class NType {
   private:
-    bool isArray;
-    bool isCallable;
-    bool isString;
-    int32 size;
-    std::vector<NValue*> fields;
+    std::string name;
+    std::map<int,std::string> fields;
 
   public:
+    explicit NType(constd std::string& name);
+
+    uint32 getInstanceSize(){
+        return fields.size()* sizeof(pointer);
+    }
 };
 
 #endif // NYX_NTYPE_H

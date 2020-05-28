@@ -41,9 +41,7 @@ class NHeader :public NonInstantiable{
             value() = value()&2;
         }else if constexpr (std::is_same_v<Type,NObject*>){
             value() = value()&3;
-        }else{
-            static_assert(false);
-        }1001
+        }
     }
 
     template <typename Type>
@@ -54,10 +52,8 @@ class NHeader :public NonInstantiable{
             return (value()&0xF) & 1;
         }else if constexpr (std::is_same_v<Type,NChar*>){
             return (value()&0xF) & 2;
-        }else if constexpr (std::is_same_v<Type,NObject*>){
-            return (value()&0xF) & 3;
-        }else{
-            static_assert(false);
+        }else if constexpr (std::is_same_v<Type,NObject*>) {
+            return (value() & 0xF) & 3;
         }
     }
 };

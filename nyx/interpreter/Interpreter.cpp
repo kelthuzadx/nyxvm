@@ -227,7 +227,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
             case Opcode::CONST_STR: {
                 int index = code[bci + 1];
                 auto& str = bytecode->strings[index];
-                NValue* object = new NString(str);
+                NValue* object = GenHeap::instance().allocateNString(str);
                 frame->push(object);
                 bci++;
                 break;

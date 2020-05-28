@@ -12,7 +12,7 @@
 // Description of object. The only way to create an NValue is to call heap
 // allocator and cast type.
 //
-// ***NEVER ADD VIRTUAL TO OBJECT MODEL***
+// ***NEVER ADD VIRTUAL TO OBJECT MODEL, USE TEMPLATE WHEN POSSIBLE***
 //===----------------------------------------------------------------------===//
 struct Bytecode;
 
@@ -20,10 +20,14 @@ template <typename AsType> inline AsType* as(void* addr) {
     return static_cast<AsType*>(addr);
 }
 
-template <typename IsType> inline bool is(void* ...addr) {
-    return (as<IsType*>(addr)->getHeader()->template isType<IsType*>()&&...);
+template <typename IsType> inline bool is(void* addr) {
+    return as<IsType*>(addr)->getHeader()->template isType<IsType*>();
 }
 
+//===----------------------------------------------------------------------===//
+// NValue:
+//      [header] object header
+//===----------------------------------------------------------------------===//
 class NValue : public NonInstantiable {
   private:
     NHeader* header;
@@ -67,6 +71,14 @@ class NChar : public NValue {
     inline int8 getValue() const { return val; }
 };
 
+//===----------------------------------------------------------------------===//
+// NObject:
+//      [header] object header
+//      [ type ] type pointer,contains field information
+//      [field1] field 1
+//      [field2] field 2
+//      [ ...  ] ...
+//===----------------------------------------------------------------------===//
 class NObject : public NValue {
   private:
     NType* type;
@@ -75,6 +87,14 @@ class NObject : public NValue {
     inline void setType(NType* type) { this->type = type; }
 };
 
+//===----------------------------------------------------------------------===//
+// NArray:
+//      [header] object header
+//      [length] length of array
+//      [ elem1] element 1
+//      [ elem2] element 2
+//      [ ...  ] ...
+//===----------------------------------------------------------------------===//
 class NArray: public NValue{
   private:
     uint32 length;
@@ -91,7 +111,26 @@ class NArray: public NValue{
         as<NValue>(addr) = value;
     }
 
-    inline void setLength(uint32 length){ this->length = length;}
+    void initialize(uint32 length);
+
+    inline uint32 getLength() const{return this->length;}
+};
+
+//===----------------------------------------------------------------------===//
+// NString:
+//      [header] object header
+//      [length] length of string
+//      [ char1] char 1
+//      [ char2] char 2
+//      [ ...  ] ...
+//===----------------------------------------------------------------------===//
+class NString: public NValue{
+  private:
+    uint32 length;
+  public:
+    static int32 size(uint32 len) { return sizeof(NString)+len; }
+
+    void initialize(uint32 length, int8* data);
 
     inline uint32 getLength() const{return this->length;}
 };

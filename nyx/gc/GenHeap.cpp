@@ -65,3 +65,9 @@ NArray* GenHeap::allocateNArray(uint32 length) {
     }
     return as<NArray>(addr);
 }
+NString* GenHeap::allocateNString(const std::string& str) {
+    uint32 size = NString::size(str.size());
+    pointer addr = youngSpace->allocate(size);
+    as<NString>(addr)->initialize(size, (int8*)str.c_str());
+    return as<NString>(addr);
+}

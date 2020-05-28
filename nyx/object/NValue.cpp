@@ -13,3 +13,7 @@ void NArray::initialize(uint32 length) {
         setElement(i,(NValue*)0xdeadbeef);
     }
 }
+void NCallalbe::initialize(bool isNative, pointer code) {
+    this->isNative=isNative;
+    this->code = code;
+}

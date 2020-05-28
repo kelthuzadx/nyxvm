@@ -396,15 +396,16 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
                     while (temp != nullptr) {
                         if (temp->callables.find(callableIndex) !=
                             temp->callables.end()) {
-                            frame->push(new NCallable(
-                                temp->callables[callableIndex], false));
+                            frame->push(GenHeap::instance().allocateNCallable(false, reinterpret_cast<pointer>(
+                                           temp->callables[callableIndex])));
                             break;
                         }
                         temp = temp->parent;
                     }
                 } else {
-                    frame->push(new NCallable(
-                        bytecode->builtin[-callableIndex - 1][1], true));
+                    frame->push(                 GenHeap::instance().allocateNCallable(true, const_cast<pointer>(
+                                  bytecode->builtin[-callableIndex - 1][1]))
+                    );
                 }
                 bci++;
                 break;

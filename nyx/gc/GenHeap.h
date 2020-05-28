@@ -27,6 +27,7 @@ class GenHeap {
     NObject* allocateNObject(NType* type);
     NArray* allocateNArray(uint32 length);
     NString* allocateNString(const std::string& str);
+    NCallalbe* allocateNCallable(bool isNative, pointer ptr);
 };
 
 #endif // NYX_GENHEAP_H

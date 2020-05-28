@@ -13,6 +13,9 @@ GenHeap::~GenHeap() {
     delete oldSpace;
     delete fromSpace;
     delete toSpace;
+    for(auto&type:types){
+        delete type;
+    }
 }
 
 void GenHeap::initialize() {
@@ -20,13 +23,8 @@ void GenHeap::initialize() {
     heap.oldSpace = new Space(50 * MB);
     heap.fromSpace = new Space(10 * MB);
     heap.toSpace = new Space(10 * MB);
-
-    NType* tString = new NType("string");
-    tString->addField("length");
-    tString->addField("data");
-
-    heap.types.push_back(tString);
 }
+
 NInt* GenHeap::allocateNInt(int32 value) {
     int32 size = NInt::size();
     pointer addr = youngSpace->allocate(size);
@@ -34,6 +32,7 @@ NInt* GenHeap::allocateNInt(int32 value) {
     as<NInt>(addr)->setValue(value);
     return as<NInt>(addr);
 }
+
 NDouble* GenHeap::allocateNDouble(double value) {
     int32 size = NDouble::size();
     pointer addr = youngSpace->allocate(size);
@@ -66,4 +65,10 @@ NString* GenHeap::allocateNString(const std::string& str) {
     pointer addr = youngSpace->allocate(size);
     as<NString>(addr)->initialize(size, (int8*)str.c_str());
     return as<NString>(addr);
+}
+NCallalbe* GenHeap::allocateNCallable(bool isNative, pointer ptr){
+    uint32 size = NCallalbe::size();
+    pointer addr = youngSpace->allocate(size);
+    as<NCallalbe>(addr)->initialize(isNative,ptr);
+    return as<NCallalbe>(addr);
 }

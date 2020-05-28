@@ -135,4 +135,24 @@ class NString: public NValue{
     inline uint32 getLength() const{return this->length;}
 };
 
+//===----------------------------------------------------------------------===//
+// NCallable:
+//      [header] object header
+//      [is_ntv] is native function
+//      [ ptr  ] points to function
+//===----------------------------------------------------------------------===//
+class NCallalbe: public NValue{
+  private:
+    bool isNative;
+    pointer code;
+
+  public:
+    static int32 size() { return sizeof(NCallalbe); }
+
+    void initialize(bool isNative, pointer code);
+
+    inline Bytecode* getBytecodePtr(){return code;}
+    
+    inline const char* getNativePtr(){return code;}
+};
 #endif // NYX_NVALUE_H

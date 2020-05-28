@@ -31,28 +31,26 @@ bool Interpreter::deepCompare(int cond, NValue* o1, NValue* o2) {
         return cond == Opcode::TEST_EQ == (o1 == nullptr && o2 == nullptr);
     }
 
-    if (typeid(*o1) == typeid(NInt) && typeid(*o2) == typeid(NInt)) {
-        auto* t1 = dynamic_cast<NInt*>(o1);
-        auto* t2 = dynamic_cast<NInt*>(o2);
+    if (is<NInt>(o1) && is<NInt>(o2)) {
+        auto* t1 = as<NInt>(o1);
+        auto* t2 = as<NInt>(o2);
         return genericCompare(cond, t1, t2);
-    } else if (typeid(*o1) == typeid(NDouble) &&
-               typeid(*o2) == typeid(NDouble)) {
-        auto* t1 = dynamic_cast<NDouble*>(o1);
-        auto* t2 = dynamic_cast<NDouble*>(o2);
+    } else if (is<NDouble>(o1) && is<NDouble>(o2)) {
+        auto* t1 = as<NDouble>(o1);
+        auto* t2 = as<NDouble>(o2);
         return genericCompare(cond, t1, t2);
-    } else if (typeid(*o1) == typeid(NChar) && typeid(*o2) == typeid(NChar)) {
-        auto* t1 = dynamic_cast<NChar*>(o1);
-        auto* t2 = dynamic_cast<NChar*>(o2);
+    } else if (is<NChar>(o1) && is<NChar>(o2)) {
+        auto* t1 = as<NChar>(o1);
+        auto* t2 = as<NChar>(o2);
         return genericCompare(cond, t1, t2);
-    } else if (typeid(*o1) == typeid(NString) &&
-               typeid(*o2) == typeid(NString)) {
-        auto* t1 = dynamic_cast<NString*>(o1);
-        auto* t2 = dynamic_cast<NString*>(o2);
+    } else if (is<NString>(o1) && is<NString>(o2)) {
+        auto* t1 = as<NString>(o1);
+        auto* t2 = as<NString>(o2);
         return genericCompare(cond, t1, t2);
-    } else if (typeid(*o1) == typeid(NArray) && typeid(*o2) == typeid(NArray)) {
+    } else if (is<NArray>(o1) && is<NArray>(o2)) {
         assert(cond == Opcode::TEST_EQ || cond == Opcode::TEST_NE);
-        auto* t1 = dynamic_cast<NArray*>(o1);
-        auto* t2 = dynamic_cast<NArray*>(o2);
+        auto* t1 = as<NArray>(o1);
+        auto* t2 = as<NArray>(o2);
         if (cond == Opcode::TEST_EQ) {
             if (t1->length != t2->length) {
                 return false;
@@ -176,7 +174,7 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
     if (typeid(*callee) != typeid(NCallable)) {
         panic("callee '%s' is not callable");
     }
-    auto* callable = dynamic_cast<NCallable*>(callee);
+    auto* callable = as<NCallable>(callee);
     if (callable->isNative) {
         NValue* result = ((NValue * (*)(int, NValue**))(
             (const char*)callable->code.native))(funcArgc, funcArgv);
@@ -377,12 +375,12 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
                 auto* index = as<NInt>(frame->pop());
                 auto* object = frame->pop();
                 auto* array = as<NArray>(frame->pop());
-                array->array[index->value] = object;
+                array->setElement(index->getValue(),object);
                 break;
             }
             case Opcode::NEW_ARR: {
                 int length = code[bci + 1];
-                frame->push(new NArray(length));
+                frame->push(GenHeap::instance().allocateNArray(length));
                 bci++;
                 break;
             }
@@ -400,11 +398,8 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
             }
             case Opcode::ARR_LEN: {
                 auto* array = frame->pop();
-                if (typeid(*array) != typeid(NArray)) {
-                    panic("array length is only operated on Array type");
-                }
-                int length = dynamic_cast<NArray*>(array)->length;
-                frame->push(new NInt(length));
+                uint32 length = as<NArray>(array)->getLength();
+                frame->push(GenHeap::instance().allocateNInt(length));
                 break;
             }
             case Opcode::CONST_CALLABLE: {

@@ -25,6 +25,7 @@ class GenHeap {
     NDouble* allocateNDouble(double value);
     NChar* allocateNChar(int8 value);
     NObject* allocateNObject(NType* type);
+    NArray* allocateNArray(uint32 length);
 };
 
 #endif // NYX_GENHEAP_H

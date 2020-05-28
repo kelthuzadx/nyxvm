@@ -12,7 +12,7 @@
 // Description of object. The only way to create an NValue is to call heap
 // allocator and cast type.
 //
-// NEVER ADD VIRTUAL TO OBJECT MODEL
+// ***NEVER ADD VIRTUAL TO OBJECT MODEL***
 //===----------------------------------------------------------------------===//
 struct Bytecode;
 
@@ -20,8 +20,8 @@ template <typename AsType> inline AsType* as(void* addr) {
     return static_cast<AsType*>(addr);
 }
 
-template <typename IsType> inline bool is(void* addr) {
-    return as<IsType*>(addr)->getHeader()->template isType<IsType*>();
+template <typename IsType> inline bool is(void* ...addr) {
+    return (as<IsType*>(addr)->getHeader()->template isType<IsType*>()&&...);
 }
 
 class NValue : public NonInstantiable {
@@ -29,7 +29,7 @@ class NValue : public NonInstantiable {
     NHeader* header;
 
   public:
-    NHeader* getHeader() { return header; }
+    inline NHeader* getHeader() { return header; }
 };
 
 class NInt : public NValue {
@@ -50,7 +50,7 @@ class NDouble : public NValue {
 
   public:
     static int32 size() { return sizeof(NDouble); }
-    void setValue(double val) { this->val = (int64)(val); }
+    inline void setValue(double val) { this->val = (int64)(val); }
 
     inline double getValue() const { return (double)val; }
 };
@@ -62,7 +62,7 @@ class NChar : public NValue {
   public:
     static int32 size() { return sizeof(NChar); }
 
-    void setValue(int8 val) { this->val = val; }
+    inline void setValue(int8 val) { this->val = val; }
 
     inline int8 getValue() const { return val; }
 };
@@ -72,19 +72,28 @@ class NObject : public NValue {
     NType* type;
 
   public:
-    void setType(NType* type) { this->type = type; }
+    inline void setType(NType* type) { this->type = type; }
 };
 
-class NArray: public NObject{
+class NArray: public NValue{
   private:
     uint32 length;
   public:
     static int32 size(uint32 len) { return sizeof(NArray)+sizeof(pointer)*len; }
 
-    NValue* getElement(uint32 index){
+    inline NValue* getElement(uint32 index){
         pointer addr = (pointer)this + sizeof(NArray)+ sizeof(pointer)*index;
         return as<NValue>(addr);
     }
+
+    inline void setElement(uint32 index, NValue* value){
+        pointer addr = (pointer)this + sizeof(NArray)+ sizeof(pointer)*index;
+        as<NValue>(addr) = value;
+    }
+
+    inline void setLength(uint32 length){ this->length = length;}
+
+    inline uint32 getLength() const{return this->length;}
 };
 
 #endif // NYX_NVALUE_H

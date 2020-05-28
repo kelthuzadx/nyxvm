@@ -55,3 +55,13 @@ NObject* GenHeap::allocateNObject(NType* type) {
     as<NObject>(addr)->setType(type);
     return as<NObject>(addr);
 }
+NArray* GenHeap::allocateNArray(uint32 length) {
+    uint32 size = NArray::size(length);
+    pointer addr = youngSpace->allocate(size);
+    as<NArray>(addr)->setLength(length);
+    // Just for debugging below
+    for(int i=0;i<length;i++){
+        as<NArray>(addr)->setElement(i,(NValue*)(0xdeadbeef));
+    }
+    return as<NArray>(addr);
+}

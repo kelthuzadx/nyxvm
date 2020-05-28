@@ -58,11 +58,7 @@ NObject* GenHeap::allocateNObject(NType* type) {
 NArray* GenHeap::allocateNArray(uint32 length) {
     uint32 size = NArray::size(length);
     pointer addr = youngSpace->allocate(size);
-    as<NArray>(addr)->setLength(length);
-    // Just for debugging below
-    for(int i=0;i<length;i++){
-        as<NArray>(addr)->setElement(i,(NValue*)(0xdeadbeef));
-    }
+    as<NArray>(addr)->initialize(length);
     return as<NArray>(addr);
 }
 NString* GenHeap::allocateNString(const std::string& str) {

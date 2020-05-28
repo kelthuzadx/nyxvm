@@ -51,29 +51,16 @@ bool Interpreter::deepCompare(int cond, NValue* o1, NValue* o2) {
         assert(cond == Opcode::TEST_EQ || cond == Opcode::TEST_NE);
         auto* t1 = as<NArray>(o1);
         auto* t2 = as<NArray>(o2);
-        if (cond == Opcode::TEST_EQ) {
-            if (t1->length != t2->length) {
-                return false;
+        if (t1->getLength() != t2->getLength()) {
+            return Opcode::TEST_EQ!=cond;
+        }
+        for (int i = 0; i < t1->getLength(); i++) {
+            if (!deepCompare(Opcode::TEST_EQ, t1->getElement(i), t2->getElement(i))) {
+                return Opcode::TEST_EQ!=cond;
             }
-            for (int i = 0; i < t1->length; i++) {
-                if (!deepCompare(Opcode::TEST_EQ, t1->array[i], t2->array[i])) {
-                    return false;
-                }
-            }
-
-            return true;
-        } else {
-            if (t1->length != t2->length) {
-                return true;
-            }
-            for (int i = 0; i < t1->length; i++) {
-                if (!deepCompare(Opcode::TEST_EQ, t1->array[i], t2->array[i])) {
-                    return true;
-                }
-            }
-            return false;
         }
 
+        return Opcode::TEST_EQ==cond;
     } else {
         panic("should not reach here");
     }

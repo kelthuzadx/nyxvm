@@ -10,6 +10,6 @@ void NString::initialize(uint32 length, int8* data) {
 void NArray::initialize(uint32 length) {
     this->length = length;
     for(int i=0;i<length;i++){
-        setElement(i,(NValue()0xdeadbeef));
+        setElement(i,(NValue*)0xdeadbeef);
     }
 }

@@ -3,6 +3,7 @@
 
 #include "../bytecode/Bytecode.h"
 #include "../bytecode/Opcode.h"
+#include "../gc/GenHeap.h"
 #include "../object/NValue.h"
 #include "../runtime/Global.h"
 #include "Frame.h"
@@ -54,15 +55,16 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
                 NInt* t1 = as<NInt>(o1);
                 if (is<NInt>(o2)) {
                     NInt* t2 = as<NInt>(o2);
-                    NInt* res = new NInt(t1->value + t2->value);
+                    NInt* res = GenHeap::instance().allocateNInt(t1->getValue()+t2->getValue());
                     frame->push(res);
                 } else if (is<NDouble>(o2)) {
                     auto* t2 = as<NDouble>(o2);
-                    auto* res = new NDouble(t1->value + t2->value);
+                    auto* res =  GenHeap::instance().allocateNDouble(t1->getValue()+t2->getValue());
                     frame->push(res);
                 } else if (is<NString>(o2)) {
                     auto* t2 = as<NString>(o2);
-                    auto* res = new NString(std::to_string(t1->value) + t2->value);
+                    std::string result = std::to_string(t1->) + t2->value;
+                    auto* res = new NString(s);
                     frame->push(res);
                 } else {
                     panic("should not reach here");
@@ -299,18 +301,15 @@ bool genericCompare(int operation, T1* t1, T2* t2) {
 }
 
 template <int Operation> void Interpreter::compare(NValue* o1, NValue* o2) {
-    if (deepCompare(Operation, o1, o2)) {
-        frame->push(new NInt(1));
-    } else {
-        frame->push(new NInt(0));
-    }
+    frame->push(GenHeap::instance().allocateNInt(
+        deepCompare(Operation, o1, o2) ? 1 : 0));
 }
 
 template <int Operation> void Interpreter::bitop(NValue* o1, NValue* o2) {
     if (o2 == nullptr) {
         // NOT
         auto* t1 = as<NInt>(o1);
-        auto* res = new NInt(~t1->value);
+        auto* res = GenHeap::instance().allocateNInt(~t1->getValue());
         frame->push(res);
         return;
     }
@@ -321,10 +320,10 @@ template <int Operation> void Interpreter::bitop(NValue* o1, NValue* o2) {
     auto* t1 = as<NInt>(o1);
     auto* t2 = as<NInt>(o2);
     if (Operation == Opcode::AND) {
-        auto* res = new NInt((int32)(t1->value & t2->value));
+        auto* res = GenHeap::instance().allocateNInt(t1->getValue() & t2->getValue());
         frame->push(res);
     } else if (Operation == Opcode::OR) {
-        auto* res = new NInt((int32)(t1->value | t2->value));
+        auto* res = GenHeap::instance().allocateNInt(t1->getValue() | t2->getValue());
         frame->push(res);
     } else {
         panic("should not reach here");

@@ -16,10 +16,10 @@ Interpreter::~Interpreter() {
 
 void Interpreter::neg(NValue* object) {
     if (typeid(*object) == typeid(NInt)) {
-        int32 val = - as<NInt>(object)->getValue();
+        int32 val = -as<NInt>(object)->getValue();
         frame->push(GenHeap::instance().allocateNInt(val));
     } else if (typeid(*object) == typeid(NDouble)) {
-        double val = - as<NDouble>(object)->getValue();
+        double val = -as<NDouble>(object)->getValue();
         frame->push(GenHeap::instance().allocateNDouble(val));
     } else {
         panic("should not reach here");
@@ -368,15 +368,15 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
             }
             case Opcode::LOAD_INDEX: {
                 auto* index = as<NInt>(frame->pop());
-                auto* array = as<NArray*>(frame->pop());
-                auto* elem = array->array[index->value];
+                auto* array = as<NArray>(frame->pop());
+                auto* elem = array->getElement(index->getValue());
                 frame->push(elem);
                 break;
             }
             case Opcode::STORE_INDEX: {
-                auto* index = dynamic_cast<NInt*>(frame->pop());
+                auto* index = as<NInt>(frame->pop());
                 auto* object = frame->pop();
-                auto* array = dynamic_cast<NArray*>(frame->pop());
+                auto* array = as<NArray>(frame->pop());
                 array->array[index->value] = object;
                 break;
             }

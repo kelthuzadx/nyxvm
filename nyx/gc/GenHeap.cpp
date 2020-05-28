@@ -20,9 +20,12 @@ void GenHeap::initialize() {
     heap.oldSpace = new Space(50 * MB);
     heap.fromSpace = new Space(10 * MB);
     heap.toSpace = new Space(10 * MB);
-    heap.permanentSpace = new Space(50*MB);
 
+    NType* tString = new NType("string");
+    tString->addField("length");
+    tString->addField("data");
 
+    heap.types.push_back(tString);
 }
 NInt* GenHeap::allocateNInt(int32 value) {
     int32 size = NInt::size();

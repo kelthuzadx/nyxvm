@@ -41,7 +41,7 @@ class NInt : public NValue {
 
     inline void setValue(int32 val) { this->val = val; }
 
-    inline int32 getValue()const {return val;}
+    inline int32 getValue() const { return val; }
 };
 
 class NDouble : public NValue {
@@ -52,7 +52,7 @@ class NDouble : public NValue {
     static int32 size() { return sizeof(NDouble); }
     void setValue(double val) { this->val = (int64)(val); }
 
-    inline double getValue()const {return (double)val;}
+    inline double getValue() const { return (double)val; }
 };
 
 class NChar : public NValue {
@@ -64,7 +64,7 @@ class NChar : public NValue {
 
     void setValue(int8 val) { this->val = val; }
 
-    inline int8 getValue()const{return val;}
+    inline int8 getValue() const { return val; }
 };
 
 class NObject : public NValue {
@@ -73,6 +73,18 @@ class NObject : public NValue {
 
   public:
     void setType(NType* type) { this->type = type; }
+};
+
+class NArray: public NObject{
+  private:
+    uint32 length;
+  public:
+    static int32 size(uint32 len) { return sizeof(NArray)+sizeof(pointer)*len; }
+
+    NValue* getElement(uint32 index){
+        pointer addr = (pointer)this + sizeof(NArray)+ sizeof(pointer)*index;
+        return as<NValue>(addr);
+    }
 };
 
 #endif // NYX_NVALUE_H

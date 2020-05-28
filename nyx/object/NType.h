@@ -11,14 +11,11 @@ class NValue;
 class NType {
   private:
     std::string name;
-    std::map<int, std::string> fields;
+    std::vector<std::string> fields;
 
   public:
-    explicit NType(const std::string& name);
-
-    void* operator new(size_t size) = delete;
-    void operator delete(void* ptr) = delete;
-
+    explicit NType(std::string  name);
+    void addField(const std::string& field);
     uint32 getInstanceSize() { return fields.size() * sizeof(pointer); }
 };
 

@@ -10,7 +10,7 @@ class GenHeap {
     Space* oldSpace;
     Space* fromSpace;
     Space* toSpace;
-    Space* permanentSpace;
+    std::vector<NType*> types;
 
   public:
     explicit GenHeap();

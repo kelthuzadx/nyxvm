@@ -15,44 +15,41 @@ class NDouble;
 class NChar;
 class NObject;
 
-class NHeader :public NonInstantiable{
+class NHeader : public NonInstantiable {
   private:
     pointer header;
 
   private:
-    decltype(auto) value(){return *header;}
+    decltype(auto) value() { return *header; }
 
   public:
-    enum HeaderType{
+    enum HeaderType {
         TypeInt,
         TypeDouble,
         TypeChar,
         TypeObject,
     };
 
-
-    template <typename Type>
-    void setType(HeaderType type){
-        if constexpr (std::is_same_v<Type,NInt*>){
-            value() = value()& 0;
-        }else if constexpr (std::is_same_v<Type,NDouble*>){
-            value() = value()&1;
-        }else if constexpr (std::is_same_v<Type,NChar*>){
-            value() = value()&2;
-        }else if constexpr (std::is_same_v<Type,NObject*>){
-            value() = value()&3;
+    template <typename Type> void setType() {
+        if constexpr (std::is_same_v<Type, NInt*>) {
+            value() = value() & 0;
+        } else if constexpr (std::is_same_v<Type, NDouble*>) {
+            value() = value() & 1;
+        } else if constexpr (std::is_same_v<Type, NChar*>) {
+            value() = value() & 2;
+        } else if constexpr (std::is_same_v<Type, NObject*>) {
+            value() = value() & 3;
         }
     }
 
-    template <typename Type>
-    bool isType(){
-        if constexpr (std::is_same_v<Type,NInt*>){
-           return (value()&0xF) & 0;
-        }else if constexpr (std::is_same_v<Type,NDouble*>){
-            return (value()&0xF) & 1;
-        }else if constexpr (std::is_same_v<Type,NChar*>){
-            return (value()&0xF) & 2;
-        }else if constexpr (std::is_same_v<Type,NObject*>) {
+    template <typename Type> bool isType() {
+        if constexpr (std::is_same_v<Type, NInt*>) {
+            return (value() & 0xF) & 0;
+        } else if constexpr (std::is_same_v<Type, NDouble*>) {
+            return (value() & 0xF) & 1;
+        } else if constexpr (std::is_same_v<Type, NChar*>) {
+            return (value() & 0xF) & 2;
+        } else if constexpr (std::is_same_v<Type, NObject*>) {
             return (value() & 0xF) & 3;
         }
     }

@@ -16,11 +16,11 @@ Interpreter::~Interpreter() {
 
 void Interpreter::neg(NValue* object) {
     if (typeid(*object) == typeid(NInt)) {
-        int32 val = -dynamic_cast<NInt*>(object)->value;
-        frame->push(new NInt(val));
+        int32 val = - as<NInt>(object)->getValue();
+        frame->push(GenHeap::instance().allocateNInt(val));
     } else if (typeid(*object) == typeid(NDouble)) {
-        double val = -dynamic_cast<NDouble*>(object)->value;
-        frame->push(new NDouble(val));
+        double val = - as<NDouble>(object)->getValue();
+        frame->push(GenHeap::instance().allocateNDouble(val));
     } else {
         panic("should not reach here");
     }
@@ -306,27 +306,27 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
                 break;
             }
             case Opcode::JMP_NE: {
-                auto* cond = dynamic_cast<NInt*>(frame->pop());
-                assert(cond->value == 0 || cond->value == 1);
-                if (cond->value == 0) {
+                auto* cond = as<NInt>(frame->pop());
+                if (cond->getValue() == 0) {
                     // Goto target
                     int target = code[bci + 1];
                     bci = target - 1;
                 } else {
                     // Otherwise, just forward bci
+                    assert(cond->getValue() == 1);
                     bci++;
                 }
                 break;
             }
             case Opcode::JMP_EQ: {
-                auto* cond = dynamic_cast<NInt*>(frame->pop());
-                assert(cond->value == 0 || cond->value == 1);
-                if (cond->value == 1) {
+                auto* cond = as<NInt>(frame->pop());
+                if (cond->getValue() == 1) {
                     // Goto target
                     int target = code[bci + 1];
                     bci = target - 1;
                 } else {
                     // Otherwise, just forward bci
+                    assert(cond->getValue() == 0);
                     bci++;
                 }
                 break;
@@ -367,8 +367,8 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
                 break;
             }
             case Opcode::LOAD_INDEX: {
-                auto* index = dynamic_cast<NInt*>(frame->pop());
-                auto* array = dynamic_cast<NArray*>(frame->pop());
+                auto* index = as<NInt>(frame->pop());
+                auto* array = as<NArray*>(frame->pop());
                 auto* elem = array->array[index->value];
                 frame->push(elem);
                 break;

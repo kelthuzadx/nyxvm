@@ -6,10 +6,11 @@
 class GenHeap {
   private:
     static GenHeap heap;
-    Space* youngSpace{};
-    Space* oldSpace{};
-    Space* fromSpace{};
-    Space* toSpace{};
+    Space* youngSpace;
+    Space* oldSpace;
+    Space* fromSpace;
+    Space* toSpace;
+    Space* permanentSpace;
 
   public:
     explicit GenHeap();
@@ -19,10 +20,11 @@ class GenHeap {
 
     static GenHeap instance() { return heap; }
 
+  public:
     NInt* allocateNInt(int32 value);
     NDouble* allocateNDouble(double value);
     NChar* allocateNChar(int8 value);
-    NValue* allocateNObject(NType* type);
+    NObject* allocateNObject(NType* type);
 };
 
 #endif // NYX_GENHEAP_H

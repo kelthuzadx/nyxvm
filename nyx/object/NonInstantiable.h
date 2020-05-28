@@ -3,12 +3,12 @@
 
 #include <cstdlib>
 
-class NonInstantiable{
+class NonInstantiable {
   public:
-    void* operator new(size_t size)= delete;
-    void operator delete(void* ptr)= delete;
-    explicit NonInstantiable()= delete;
-    ~NonInstantiable(){}
+    void* operator new(size_t size) = delete;
+    void operator delete(void* ptr) = delete;
+    explicit NonInstantiable() = delete;
+    ~NonInstantiable() {}
 };
 
 #endif // NYX_NONINSTANTIABLE_H

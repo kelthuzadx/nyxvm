@@ -2,9 +2,7 @@
 
 Frame::Frame(int localSize) { locals = new NValue*[localSize]; }
 
-Frame::~Frame() {
-    delete[] locals;
-}
+Frame::~Frame() { delete[] locals; }
 
 NValue* Frame::pop() {
     NValue* obj = slots.back();

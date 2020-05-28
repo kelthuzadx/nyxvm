@@ -46,8 +46,7 @@ class Interpreter {
     void execute(Bytecode* bytecode);
 };
 
-template <int Operation>
-void Interpreter::arithmetic(NValue* o1, NValue* o2) {
+template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
     switch (Operation) {
     case Opcode::ADD:
         if (typeid(*o1) == typeid(NInt)) {

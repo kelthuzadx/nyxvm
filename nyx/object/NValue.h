@@ -95,25 +95,28 @@ class NObject : public NValue {
 //      [ elem2] element 2
 //      [ ...  ] ...
 //===----------------------------------------------------------------------===//
-class NArray: public NValue{
+class NArray : public NValue {
   private:
     uint32 length;
-  public:
-    static int32 size(uint32 len) { return sizeof(NArray)+sizeof(pointer)*len; }
 
-    inline NValue* getElement(uint32 index){
-        pointer addr = (pointer)this + sizeof(NArray)+ sizeof(pointer)*index;
+  public:
+    static int32 size(uint32 len) {
+        return sizeof(NArray) + sizeof(pointer) * len;
+    }
+
+    inline NValue* getElement(uint32 index) {
+        pointer addr = (pointer)this + sizeof(NArray) + sizeof(pointer) * index;
         return as<NValue>(addr);
     }
 
-    inline void setElement(uint32 index, NValue* value){
-        pointer addr = (pointer)this + sizeof(NArray)+ sizeof(pointer)*index;
-        as<NValue>(addr) = value;
+    inline void setElement(uint32 index, NValue* value) {
+        pointer addr = (pointer)this + sizeof(NArray) + sizeof(pointer) * index;
+        *addr = *(pointer)value;
     }
 
     void initialize(uint32 length);
 
-    inline uint32 getLength() const{return this->length;}
+    inline uint32 getLength() const { return this->length; }
 };
 
 //===----------------------------------------------------------------------===//
@@ -124,15 +127,16 @@ class NArray: public NValue{
 //      [ char2] char 2
 //      [ ...  ] ...
 //===----------------------------------------------------------------------===//
-class NString: public NValue{
+class NString : public NValue {
   private:
     uint32 length;
+
   public:
-    static int32 size(uint32 len) { return sizeof(NString)+len; }
+    static int32 size(uint32 len) { return sizeof(NString) + len; }
 
     void initialize(uint32 length, int8* data);
 
-    inline uint32 getLength() const{return this->length;}
+    inline uint32 getLength() const { return this->length; }
 };
 
 //===----------------------------------------------------------------------===//
@@ -141,7 +145,7 @@ class NString: public NValue{
 //      [is_ntv] is native function
 //      [ ptr  ] points to function
 //===----------------------------------------------------------------------===//
-class NCallalbe: public NValue{
+class NCallalbe : public NValue {
   private:
     bool isNative;
     pointer code;
@@ -151,8 +155,12 @@ class NCallalbe: public NValue{
 
     void initialize(bool isNative, pointer code);
 
-    inline Bytecode* getBytecodePtr(){return code;}
-    
-    inline const char* getNativePtr(){return code;}
+    inline Bytecode* getBytecodePtr() {
+        return reinterpret_cast<Bytecode*>(code);
+    }
+
+    inline const char* getNativePtr() {
+        return reinterpret_cast<const char*>(code);
+    }
 };
 #endif // NYX_NVALUE_H

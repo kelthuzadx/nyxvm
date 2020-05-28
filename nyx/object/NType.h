@@ -15,12 +15,10 @@ class NType {
     std::vector<std::string> fields;
 
   public:
-    explicit NType(std::string  name);
+    explicit NType(std::string name);
     void addField(const std::string& field);
 
-    uint32 getInstanceSize() {
-        return fields.size() * sizeof(pointer);
-    }
+    uint32 getInstanceSize() { return fields.size() * sizeof(pointer); }
 };
 
 #endif // NYX_NTYPE_H

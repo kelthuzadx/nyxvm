@@ -3,17 +3,17 @@
 void NString::initialize(uint32 length, int8* data) {
     this->length = length;
     int8* chars = reinterpret_cast<int8*>((pointer)this + sizeof(NString));
-    for(int i=0;i<length;i++){
+    for (int i = 0; i < length; i++) {
         chars[i] = data[i];
     }
 }
 void NArray::initialize(uint32 length) {
     this->length = length;
-    for(int i=0;i<length;i++){
-        setElement(i,(NValue*)0xdeadbeef);
+    for (int i = 0; i < length; i++) {
+        setElement(i, (NValue*)0xdeadbeef);
     }
 }
 void NCallalbe::initialize(bool isNative, pointer code) {
-    this->isNative=isNative;
+    this->isNative = isNative;
     this->code = code;
 }

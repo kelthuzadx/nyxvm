@@ -52,15 +52,16 @@ bool Interpreter::deepCompare(int cond, NValue* o1, NValue* o2) {
         auto* t1 = as<NArray>(o1);
         auto* t2 = as<NArray>(o2);
         if (t1->getLength() != t2->getLength()) {
-            return Opcode::TEST_EQ!=cond;
+            return Opcode::TEST_EQ != cond;
         }
         for (int i = 0; i < t1->getLength(); i++) {
-            if (!deepCompare(Opcode::TEST_EQ, t1->getElement(i), t2->getElement(i))) {
-                return Opcode::TEST_EQ!=cond;
+            if (!deepCompare(Opcode::TEST_EQ, t1->getElement(i),
+                             t2->getElement(i))) {
+                return Opcode::TEST_EQ != cond;
             }
         }
 
-        return Opcode::TEST_EQ==cond;
+        return Opcode::TEST_EQ == cond;
     } else {
         panic("should not reach here");
     }
@@ -362,7 +363,7 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
                 auto* index = as<NInt>(frame->pop());
                 auto* object = frame->pop();
                 auto* array = as<NArray>(frame->pop());
-                array->setElement(index->getValue(),object);
+                array->setElement(index->getValue(), object);
                 break;
             }
             case Opcode::NEW_ARR: {
@@ -396,16 +397,17 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
                     while (temp != nullptr) {
                         if (temp->callables.find(callableIndex) !=
                             temp->callables.end()) {
-                            frame->push(GenHeap::instance().allocateNCallable(false, reinterpret_cast<pointer>(
+                            frame->push(GenHeap::instance().allocateNCallable(
+                                false, reinterpret_cast<pointer>(
                                            temp->callables[callableIndex])));
                             break;
                         }
                         temp = temp->parent;
                     }
                 } else {
-                    frame->push(                 GenHeap::instance().allocateNCallable(true, const_cast<pointer>(
-                                  bytecode->builtin[-callableIndex - 1][1]))
-                    );
+                    frame->push(GenHeap::instance().allocateNCallable(
+                        true, const_cast<pointer>(
+                                  bytecode->builtin[-callableIndex - 1][1])));
                 }
                 bci++;
                 break;

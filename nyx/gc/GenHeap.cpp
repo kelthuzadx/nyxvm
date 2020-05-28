@@ -13,7 +13,7 @@ GenHeap::~GenHeap() {
     delete oldSpace;
     delete fromSpace;
     delete toSpace;
-    for(auto&type:types){
+    for (auto& type : types) {
         delete type;
     }
 }
@@ -66,9 +66,9 @@ NString* GenHeap::allocateNString(const std::string& str) {
     as<NString>(addr)->initialize(size, (int8*)str.c_str());
     return as<NString>(addr);
 }
-NCallalbe* GenHeap::allocateNCallable(bool isNative, pointer ptr){
+NCallalbe* GenHeap::allocateNCallable(bool isNative, pointer ptr) {
     uint32 size = NCallalbe::size();
     pointer addr = youngSpace->allocate(size);
-    as<NCallalbe>(addr)->initialize(isNative,ptr);
+    as<NCallalbe>(addr)->initialize(isNative, ptr);
     return as<NCallalbe>(addr);
 }

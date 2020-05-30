@@ -72,3 +72,8 @@ NCallalbe* GenHeap::allocateNCallable(bool isNative, pointer ptr) {
     as<NCallalbe>(addr)->initialize(isNative, ptr);
     return as<NCallalbe>(addr);
 }
+NString* GenHeap::allocateNString(uint32 size,int8* str) {
+    pointer addr = youngSpace->allocate(size);
+    as<NString>(addr)->initialize(size, str);
+    return as<NString>(addr);
+}

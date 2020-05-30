@@ -25,7 +25,7 @@ class Interpreter {
 
     void neg(NValue* object);
 
-    bool deepCompare(int cond, NValue* o1, NValue* o2);
+    static bool deepCompare(int cond, NValue* o1, NValue* o2);
 
     void createFrame(Bytecode* bytecode, int argc, NValue** argv);
 
@@ -64,9 +64,18 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
                 frame->push(res);
             } else if (is<NString>(o2)) {
                 auto* t2 = as<NString>(o2);
-                std::string result = std::to_string(t1->value) + t2->value;
-                auto* res = new NString(s);
-                frame->push(res);
+                std::string str = std::to_string(t1->getValue());
+                uint32 len =str.length()+ t2->getLength();
+                int8* temp = new int8[len];
+                int k=0;
+                for(int i=0;i<str.length();i++,k++){
+                    temp[k] = str[k];
+                }
+                for(int i=0;i<t2->getLength();i++,k++){
+                    temp[k] = t2->getData()[i];
+                }
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
             } else {
                 panic("should not reach here");
             }
@@ -151,14 +160,10 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
             NInt* t1 = as<NInt>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                NInt* res =
-                    GenHeap::instance().allocateNInt(t1->value - t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue()-t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                auto* res =
-                    GenHeap::instance().allocateNDouble(t1->value - t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -166,14 +171,10 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
             auto* t1 = as<NDouble>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                auto* res =
-                    GenHeap::instance().allocateNDouble(t1->value - t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                auto* res =
-                    GenHeap::instance().allocateNDouble(t1->value - t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -186,13 +187,10 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
             NInt* t1 = as<NInt>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                NInt* res = new NInt(t1->value * t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue()*t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                auto* res =
-                    GenHeap::instance().allocateNDouble(t1->value * t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
             } else if (is<NString>(o2)) {
                 auto* t2 = as<NString>(o2);
                 std::string str;
@@ -208,12 +206,10 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
             auto* t1 = as<NDouble>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                auto* res = new NDouble(t1->value * t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                auto* res = new NDouble(t1->value * t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -239,12 +235,10 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
             NInt* t1 = as<NInt>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                NInt* res = new NInt(t1->value / t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue()/t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                auto* res = new NDouble(t1->value / t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -252,12 +246,10 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
             auto* t1 = as<NDouble>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                auto* res = new NDouble(t1->value / t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                auto* res = new NDouble(t1->value / t2->value);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -266,13 +258,9 @@ template <int Operation> void Interpreter::arithmetic(NValue* o1, NValue* o2) {
         }
         break;
     case Opcode::REM: {
-        if (typeid(*o1) != typeid(NInt) || typeid(*o2) != typeid(NInt)) {
-            panic("operator % needs both integer operand");
-        }
         NInt* t1 = as<NInt>(o1);
         NInt* t2 = as<NInt>(o2);
-        NInt* res = new NInt(t1->value % t2->value);
-        frame->push(res);
+        frame->push(GenHeap::instance().allocateNInt(t1->getValue()% t2->getValue()));
         break;
     }
     default:

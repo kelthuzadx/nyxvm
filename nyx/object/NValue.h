@@ -137,6 +137,8 @@ class NString : public NValue {
     void initialize(uint32 length, int8* data);
 
     inline uint32 getLength() const { return this->length; }
+
+    inline int8* getData() const {return sizeof(NString)+(pointer)this;}
 };
 
 //===----------------------------------------------------------------------===//

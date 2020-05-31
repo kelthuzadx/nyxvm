@@ -501,11 +501,11 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
     auto* callable = as<NCallable>(callee);
     if (callable->isNativeCallable()) {
         NValue* result = ((NValue * (*)(int, NValue**))(
-            (const char*)callable->code.native))(funcArgc, funcArgv);
+            (const char*)callable->getNativePtr()))(funcArgc, funcArgv);
         frame->push(result);
         return;
     } else {
-        this->execute(callable->code.bytecode, funcArgc, funcArgv);
+        this->execute(callable->getBytecodePtr(), funcArgc, funcArgv);
         return;
     }
     // TODO release funcArgv

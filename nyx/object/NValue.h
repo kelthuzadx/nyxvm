@@ -22,7 +22,7 @@ template <typename AsType> inline AsType* as(void* addr) {
 }
 
 template <typename IsType> inline bool is(void* addr) {
-    return as<IsType*>(addr)->getHeader()->template isType<IsType*>();
+    return static_cast<IsType*>(addr)->getHeader()->template isType<IsType*>();
 }
 
 //===----------------------------------------------------------------------===//

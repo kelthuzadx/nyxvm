@@ -136,11 +136,16 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             auto* t1 = as<NChar>(o1);
             if (is<NString>(o2)) {
                 auto* t2 = as<NString>(o2);
-                std::string str;
-                str += t1->value;
-                str += t2->value;
-                auto* res = new NString(str);
-                frame->push(res);
+
+                uint32 len = t2->getLength()+1;
+                int8* temp = new int8[len];
+                int k=0;
+                temp[k++] = t1->getValue();
+                for(int i=0;i<t2->getLength();i++,k++){
+                    temp[k] = t2->getData()[i];
+                }
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
             } else {
                 panic("should not reach here");
             }
@@ -148,11 +153,7 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             auto* t1 = as<NArray>(o1);
             if (is<NString>(o2)) {
                 auto* t2 = as<NString>(o2);
-                std::string str;
-                str += t1->toString();
-                str += t2->value;
-                auto* res = new NString(str);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNString("arrary"));
             } else {
                 panic("should not reach here");
             }
@@ -198,12 +199,15 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
                 frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
             } else if (is<NString>(o2)) {
                 auto* t2 = as<NString>(o2);
-                std::string str;
-                for (int i = 0; i < t1->value; i++) {
-                    str += t2->value;
+                uint32 len = t2->getLength()*t1->getValue();
+                int8* temp = new int8[len];
+                for(int i=0,k=0;i<t1->getValue();i++){
+                    for(int t=0;t<t2->getLength();t++,k++){
+                        temp[k] = t2->getData()[t];
+                    }
                 }
-                auto* res = new NString(str);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
             } else {
                 panic("should not reach here");
             }
@@ -222,12 +226,16 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             auto* t1 = as<NString>(o1);
             if (is<NInt>(o2)) {
                 auto* t2 = as<NInt>(o2);
-                std::string str;
-                for (int i = 0; i < t2->value; i++) {
-                    str += t1->value;
+
+                uint32 len = t1->getLength()*t2->getValue();
+                int8* temp = new int8[len];
+                for(int i=0,k=0;i<t2->getValue();i++){
+                    for(int t=0;t<t1->getLength();t++,k++){
+                        temp[k] = t1->getData()[t];
+                    }
                 }
-                auto* res = new NString(str);
-                frame->push(res);
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
             } else {
                 panic("should not reach here");
             }

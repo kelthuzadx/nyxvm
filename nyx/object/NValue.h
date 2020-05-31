@@ -15,6 +15,7 @@
 // ***NEVER ADD VIRTUAL TO OBJECT MODEL, USE TEMPLATE WHEN POSSIBLE***
 //===----------------------------------------------------------------------===//
 struct Bytecode;
+class NType;
 
 template <typename AsType> inline AsType* as(void* addr) {
     return static_cast<AsType*>(addr);

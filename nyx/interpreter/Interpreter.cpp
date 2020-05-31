@@ -286,22 +286,22 @@ bool genericCompare(int operation, T1* t1, T2* t2) {
     bool cond;
     switch (operation) {
     case Opcode::TEST_EQ:
-        cond = t1. == t2->value;
+        cond = t1->getValue() == t2->getValue();
         break;
     case Opcode::TEST_NE:
-        cond = t1->value != t2->value;
+        cond = t1->getValue() != t2->getValue();
         break;
     case Opcode::TEST_GE:
-        cond = t1->value >= t2->value;
+        cond = t1->getValue() >= t2->getValue();
         break;
     case Opcode::TEST_GT:
-        cond = t1->value > t2->value;
+        cond = t1->getValue() > t2->getValue();
         break;
     case Opcode::TEST_LE:
-        cond = t1->value <= t2->value;
+        cond = t1->getValue() <= t2->getValue();
         break;
     case Opcode::TEST_LT:
-        cond = t1->value < t2->value;
+        cond = t1->getValue() < t2->getValue();
         break;
     default:
         panic("should not reach here");
@@ -499,7 +499,7 @@ void Interpreter::call(Bytecode* bytecode, int bci) {
         panic("callee '%s' is not callable");
     }
     auto* callable = as<NCallable>(callee);
-    if (callable->isNative) {
+    if (callable->isNativeCallable()) {
         NValue* result = ((NValue * (*)(int, NValue**))(
             (const char*)callable->code.native))(funcArgc, funcArgv);
         frame->push(result);
@@ -559,67 +559,67 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
             case Opcode::ADD: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::ADD>(object1, object2);
+                arithmetic<Opcode::ADD>(frame,object1, object2);
                 break;
             }
             case Opcode::SUB: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::SUB>(object1, object2);
+                arithmetic<Opcode::SUB>(frame,object1, object2);
                 break;
             }
             case Opcode::MUL: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::MUL>(object1, object2);
+                arithmetic<Opcode::MUL>(frame,object1, object2);
                 break;
             }
             case Opcode::DIV: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::DIV>(object1, object2);
+                arithmetic<Opcode::DIV>(frame,object1, object2);
                 break;
             }
             case Opcode::REM: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::REM>(object1, object2);
+                arithmetic<Opcode::REM>(frame,object1, object2);
                 break;
             }
             case Opcode::TEST_EQ: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_EQ>(object1, object2);
+                compare<Opcode::TEST_EQ>(frame,object1, object2);
                 break;
             }
             case Opcode::TEST_NE: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_NE>(object1, object2);
+                compare<Opcode::TEST_NE>(frame,object1, object2);
                 break;
             }
             case Opcode::TEST_GE: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_GE>(object1, object2);
+                compare<Opcode::TEST_GE>(frame,object1, object2);
                 break;
             }
             case Opcode::TEST_GT: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_GT>(object1, object2);
+                compare<Opcode::TEST_GT>(frame,object1, object2);
                 break;
             }
             case Opcode::TEST_LE: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_LE>(object1, object2);
+                compare<Opcode::TEST_LE>(frame,object1, object2);
                 break;
             }
             case Opcode::TEST_LT: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_LT>(object1, object2);
+                compare<Opcode::TEST_LT>(frame,object1, object2);
                 break;
             }
             case Opcode::JMP: {
@@ -656,18 +656,18 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
             case Opcode::AND: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                bitop<Opcode::AND>(object1, object2);
+                bitop<Opcode::AND>(frame,object1, object2);
                 break;
             }
             case Opcode::OR: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                bitop<Opcode::OR>(object1, object2);
+                bitop<Opcode::OR>(frame,object1, object2);
                 break;
             }
             case Opcode::NOT: {
                 NValue* object1 = frame->pop();
-                bitop<Opcode::NOT>(object1, nullptr);
+                bitop<Opcode::NOT>(frame,object1, nullptr);
                 break;
             }
             case Opcode::NEG: {
@@ -741,9 +741,9 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
                         temp = temp->parent;
                     }
                 } else {
+                    const char* funcPtr = bytecode->builtin[-callableIndex - 1][1];
                     frame->push(GenHeap::instance().allocateNCallable(
-                        true, const_cast<pointer>(
-                                  bytecode->builtin[-callableIndex - 1][1])));
+                        true,(pointer)funcPtr));
                 }
                 bci++;
                 break;

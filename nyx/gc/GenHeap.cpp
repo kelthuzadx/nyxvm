@@ -66,11 +66,11 @@ NString* GenHeap::allocateNString(const std::string& str) {
     as<NString>(addr)->initialize(size, (int8*)str.c_str());
     return as<NString>(addr);
 }
-NCallalbe* GenHeap::allocateNCallable(bool isNative, pointer ptr) {
-    uint32 size = NCallalbe::size();
+NCallable* GenHeap::allocateNCallable(bool isNative, pointer ptr) {
+    uint32 size = NCallable::size();
     pointer addr = youngSpace->allocate(size);
-    as<NCallalbe>(addr)->initialize(isNative, ptr);
-    return as<NCallalbe>(addr);
+    as<NCallable>(addr)->initialize(isNative, ptr);
+    return as<NCallable>(addr);
 }
 NString* GenHeap::allocateNString(uint32 size,int8* str) {
     pointer addr = youngSpace->allocate(size);

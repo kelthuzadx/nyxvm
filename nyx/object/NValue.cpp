@@ -7,13 +7,20 @@ void NString::initialize(uint32 length, int8* data) {
         chars[i] = data[i];
     }
 }
+std::string NString::getValue() {
+    std::string str;
+    for(int i=0;i<length;i++){
+        str+=(char)getData()[i];
+    }
+    return str;
+}
 void NArray::initialize(uint32 length) {
     this->length = length;
     for (int i = 0; i < length; i++) {
         setElement(i, (NValue*)0xdeadbeef);
     }
 }
-void NCallalbe::initialize(bool isNative, pointer code) {
+void NCallable::initialize(bool isNative, pointer code) {
     this->isNative = isNative;
     this->code = code;
 }

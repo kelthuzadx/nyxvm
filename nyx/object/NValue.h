@@ -140,6 +140,8 @@ class NString : public NValue {
     inline uint32 getLength() const { return this->length; }
 
     inline int8* getData() const {return sizeof(NString)+(pointer)this;}
+
+    std::string getValue();
 };
 
 //===----------------------------------------------------------------------===//
@@ -148,13 +150,13 @@ class NString : public NValue {
 //      [is_ntv] is native function
 //      [ ptr  ] points to function
 //===----------------------------------------------------------------------===//
-class NCallalbe : public NValue {
+class NCallable : public NValue {
   private:
     bool isNative;
     pointer code;
 
   public:
-    static int32 size() { return sizeof(NCallalbe); }
+    static int32 size() { return sizeof(NCallable); }
 
     void initialize(bool isNative, pointer code);
 
@@ -165,5 +167,7 @@ class NCallalbe : public NValue {
     inline const char* getNativePtr() {
         return reinterpret_cast<const char*>(code);
     }
+
+    inline bool isNativeCallable()const{return isNative;}
 };
 #endif // NYX_NVALUE_H

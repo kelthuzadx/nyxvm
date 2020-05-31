@@ -5,28 +5,303 @@
 #include "../object/NValue.h"
 #include "../runtime/NyxVM.h"
 
-Interpreter::Interpreter() { this->frame = nullptr; }
+template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
+    switch (Operation) {
+    case Opcode::ADD:
+        if (is<NInt>(o1)) {
+            NInt* t1 = as<NInt>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+                NInt* res = GenHeap::instance().allocateNInt(t1->getValue() +
+                                                             t2->getValue());
+                frame->push(res);
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+                auto* res = GenHeap::instance().allocateNDouble(t1->getValue() +
+                                                                t2->getValue());
+                frame->push(res);
+            } else if (is<NString>(o2)) {
+                auto* t2 = as<NString>(o2);
 
-Interpreter::~Interpreter() {
-    frame = nullptr;
-    for (auto& val : stack) {
-        delete val;
+                std::string str = std::to_string(t1->getValue());
+                uint32 len =str.length()+ t2->getLength();
+                int8* temp = new int8[len];
+                int k=0;
+                for(int i=0;i<str.length();i++,k++){
+                    temp[k] = str[i];
+                }
+                for(int i=0;i<t2->getLength();i++,k++){
+                    temp[k] = t2->getData()[i];
+                }
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
+            } else {
+                panic("should not reach here");
+            }
+        } else if (is<NDouble>(o1)) {
+            auto* t1 = as<NDouble>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+                auto* res = GenHeap::instance().allocateNDouble(t1->getValue() +
+                                                                t2->getValue());
+                frame->push(res);
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+                auto* res = GenHeap::instance().allocateNDouble(t1->getValue() +
+                                                                t2->getValue());
+                frame->push(res);
+            } else if (is<NString>(o2)) {
+                auto* t2 = as<NString>(o2);
+
+                std::string str = std::to_string(t1->getValue());
+                uint32 len =str.length()+ t2->getLength();
+                int8* temp = new int8[len];
+                int k=0;
+                for(int i=0;i<str.length();i++,k++){
+                    temp[k] = str[i];
+                }
+                for(int i=0;i<t2->getLength();i++,k++){
+                    temp[k] = t2->getData()[i];
+                }
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
+            } else {
+                panic("should not reach here");
+            }
+        } else if (is<NString>(o1)) {
+            auto* t1 = as<NString>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+
+                std::string str = std::to_string(t2->getValue());
+                uint32 len = str.length()+ t1->getLength();
+                int8* temp = new int8[len];
+                int k=0;
+                for(int i=0;i<t1->getLength();i++,k++){
+                    temp[k] = t1->getData()[i];
+                }
+                for(int i=0;i<str.length();i++,k++){
+                    temp[k] = str[i];
+                }
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+
+                std::string str = std::to_string(t2->getValue());
+                uint32 len = str.length()+ t1->getLength();
+                int8* temp = new int8[len];
+                int k=0;
+                for(int i=0;i<t1->getLength();i++,k++){
+                    temp[k] = t1->getData()[i];
+                }
+                for(int i=0;i<str.length();i++,k++){
+                    temp[k] = str[i];
+                }
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
+            } else if (is<NString>(o2)) {
+                auto* t2 = as<NString>(o2);
+
+                uint32 len = t2->getLength()+ t1->getLength();
+                int8* temp = new int8[len];
+                int k=0;
+                for(int i=0;i<t1->getLength();i++,k++){
+                    temp[k] = t1->getData()[i];
+                }
+                for(int i=0;i<t2->getLength();i++,k++){
+                    temp[k] = t2->getData()[i];
+                }
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+                delete[] temp;
+            } else if (is<NChar>(o2)) {
+                auto* t2 = as<NChar>(o2);
+
+                uint32 len = 1+ t1->getLength();
+                int8* temp = new int8[len];
+                int k=0;
+                for(int i=0;i<t1->getLength();i++,k++){
+                    temp[k] = t1->getData()[i];
+                }
+                temp[k] = t2->getValue();
+                frame->push(GenHeap::instance().allocateNString(len,temp));
+            } else if (is<NArray>(o2)) {
+                auto* t2 = as<NArray>(o2);
+                //TODO : pretty
+                frame->push(GenHeap::instance().allocateNString("array"));
+            } else {
+                panic("should not reach here");
+            }
+        } else if (is<NChar>(o1)) {
+            auto* t1 = as<NChar>(o1);
+            if (is<NString>(o2)) {
+                auto* t2 = as<NString>(o2);
+                std::string str;
+                str += t1->value;
+                str += t2->value;
+                auto* res = new NString(str);
+                frame->push(res);
+            } else {
+                panic("should not reach here");
+            }
+        } else if (is<NArray>(o1)) {
+            auto* t1 = as<NArray>(o1);
+            if (is<NString>(o2)) {
+                auto* t2 = as<NString>(o2);
+                std::string str;
+                str += t1->toString();
+                str += t2->value;
+                auto* res = new NString(str);
+                frame->push(res);
+            } else {
+                panic("should not reach here");
+            }
+        } else {
+            panic("should not reach here");
+        }
+        break;
+    case Opcode::SUB:
+        if (is<NInt>(o1)) {
+            NInt* t1 = as<NInt>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue()-t2->getValue()));
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
+            } else {
+                panic("should not reach here");
+            }
+        } else if (is<NDouble>(o1)) {
+            auto* t1 = as<NDouble>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
+            } else {
+                panic("should not reach here");
+            }
+        } else {
+            panic("should not reach here");
+        }
+        break;
+    case Opcode::MUL:
+        if (is<NInt>(o1)) {
+            NInt* t1 = as<NInt>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue()*t2->getValue()));
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
+            } else if (is<NString>(o2)) {
+                auto* t2 = as<NString>(o2);
+                std::string str;
+                for (int i = 0; i < t1->value; i++) {
+                    str += t2->value;
+                }
+                auto* res = new NString(str);
+                frame->push(res);
+            } else {
+                panic("should not reach here");
+            }
+        } else if (is<NDouble>(o1)) {
+            auto* t1 = as<NDouble>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
+            } else {
+                panic("should not reach here");
+            }
+        } else if (is<NString>(o1)) {
+            auto* t1 = as<NString>(o1);
+            if (is<NInt>(o2)) {
+                auto* t2 = as<NInt>(o2);
+                std::string str;
+                for (int i = 0; i < t2->value; i++) {
+                    str += t1->value;
+                }
+                auto* res = new NString(str);
+                frame->push(res);
+            } else {
+                panic("should not reach here");
+            }
+        } else {
+            panic("should not reach here");
+        }
+        break;
+    case Opcode::DIV:
+        if (is<NInt>(o1)) {
+            NInt* t1 = as<NInt>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue()/t2->getValue()));
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
+            } else {
+                panic("should not reach here");
+            }
+        } else if (is<NDouble>(o1)) {
+            auto* t1 = as<NDouble>(o1);
+            if (is<NInt>(o2)) {
+                NInt* t2 = as<NInt>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
+            } else if (is<NDouble>(o2)) {
+                auto* t2 = as<NDouble>(o2);
+                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
+            } else {
+                panic("should not reach here");
+            }
+        } else {
+            panic("should not reach here");
+        }
+        break;
+    case Opcode::REM: {
+        NInt* t1 = as<NInt>(o1);
+        NInt* t2 = as<NInt>(o2);
+        frame->push(GenHeap::instance().allocateNInt(t1->getValue()% t2->getValue()));
+        break;
     }
-}
-
-void Interpreter::neg(NValue* object) {
-    if (typeid(*object) == typeid(NInt)) {
-        int32 val = -as<NInt>(object)->getValue();
-        frame->push(GenHeap::instance().allocateNInt(val));
-    } else if (typeid(*object) == typeid(NDouble)) {
-        double val = -as<NDouble>(object)->getValue();
-        frame->push(GenHeap::instance().allocateNDouble(val));
-    } else {
+    default:
         panic("should not reach here");
     }
 }
 
-bool Interpreter::deepCompare(int cond, NValue* o1, NValue* o2) {
+template <typename T1, typename T2>
+bool genericCompare(int operation, T1* t1, T2* t2) {
+    bool cond;
+    switch (operation) {
+    case Opcode::TEST_EQ:
+        cond = t1. == t2->value;
+        break;
+    case Opcode::TEST_NE:
+        cond = t1->value != t2->value;
+        break;
+    case Opcode::TEST_GE:
+        cond = t1->value >= t2->value;
+        break;
+    case Opcode::TEST_GT:
+        cond = t1->value > t2->value;
+        break;
+    case Opcode::TEST_LE:
+        cond = t1->value <= t2->value;
+        break;
+    case Opcode::TEST_LT:
+        cond = t1->value < t2->value;
+        break;
+    default:
+        panic("should not reach here");
+    }
+    return cond;
+}
+
+bool deepCompare(int cond, NValue* o1, NValue* o2) {
     if (o1 == nullptr || o2 == nullptr) {
         return cond == Opcode::TEST_EQ == (o1 == nullptr && o2 == nullptr);
     }
@@ -64,6 +339,59 @@ bool Interpreter::deepCompare(int cond, NValue* o1, NValue* o2) {
         return Opcode::TEST_EQ == cond;
     } else {
         panic("should not reach here");
+    }
+}
+
+template <int Operation> void compare(Frame* frame,NValue* o1, NValue* o2) {
+    frame->push(GenHeap::instance().allocateNInt(
+        deepCompare(Operation, o1, o2) ? 1 : 0));
+}
+
+template <int Operation> void bitop(Frame* frame,NValue* o1, NValue* o2) {
+    if (o2 == nullptr) {
+        // NOT
+        auto* t1 = as<NInt>(o1);
+        auto* res = GenHeap::instance().allocateNInt(~t1->getValue());
+        frame->push(res);
+        return;
+    }
+    // AND OR
+    if (typeid(*o1) != typeid(NInt) || typeid(*o2) != typeid(NInt)) {
+        panic("bit operation requires integer as its operand");
+    }
+    auto* t1 = as<NInt>(o1);
+    auto* t2 = as<NInt>(o2);
+    if (Operation == Opcode::AND) {
+        auto* res =
+            GenHeap::instance().allocateNInt(t1->getValue() & t2->getValue());
+        frame->push(res);
+    } else if (Operation == Opcode::OR) {
+        auto* res =
+            GenHeap::instance().allocateNInt(t1->getValue() | t2->getValue());
+        frame->push(res);
+    } else {
+        panic("should not reach here");
+    }
+}
+
+void neg(Frame* frame,NValue* object) {
+    if (typeid(*object) == typeid(NInt)) {
+        int32 val = -as<NInt>(object)->getValue();
+        frame->push(GenHeap::instance().allocateNInt(val));
+    } else if (typeid(*object) == typeid(NDouble)) {
+        double val = -as<NDouble>(object)->getValue();
+        frame->push(GenHeap::instance().allocateNDouble(val));
+    } else {
+        panic("should not reach here");
+    }
+}
+
+Interpreter::Interpreter() { this->frame = nullptr; }
+
+Interpreter::~Interpreter() {
+    frame = nullptr;
+    for (auto& val : stack) {
+        delete val;
     }
 }
 

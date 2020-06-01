@@ -14,11 +14,9 @@
 class Interpreter {
   private:
     std::vector<Frame*> stack;
-    Frame* frame{};
+    Frame* frame;
 
   private:
-    void neg(NValue* object);
-
     void createFrame(Bytecode* bytecode, int argc, NValue** argv);
 
     void destroyFrame(Bytecode* bytecode, bool hasReturnValue);

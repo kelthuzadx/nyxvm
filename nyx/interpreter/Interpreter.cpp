@@ -5,7 +5,7 @@
 #include "../object/NValue.h"
 #include "../runtime/NyxVM.h"
 
-template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
+template <int Operation> void arithmetic(Frame* frame, NValue* o1, NValue* o2) {
     switch (Operation) {
     case Opcode::ADD:
         if (is<NInt>(o1)) {
@@ -24,16 +24,16 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
                 auto* t2 = as<NString>(o2);
 
                 std::string str = std::to_string(t1->getValue());
-                uint32 len =str.length()+ t2->getLength();
+                uint32 len = str.length() + t2->getLength();
                 int8* temp = new int8[len];
-                int k=0;
-                for(int i=0;i<str.length();i++,k++){
+                int k = 0;
+                for (int i = 0; i < str.length(); i++, k++) {
                     temp[k] = str[i];
                 }
-                for(int i=0;i<t2->getLength();i++,k++){
+                for (int i = 0; i < t2->getLength(); i++, k++) {
                     temp[k] = t2->getData()[i];
                 }
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
                 delete[] temp;
             } else {
                 panic("should not reach here");
@@ -54,16 +54,16 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
                 auto* t2 = as<NString>(o2);
 
                 std::string str = std::to_string(t1->getValue());
-                uint32 len =str.length()+ t2->getLength();
+                uint32 len = str.length() + t2->getLength();
                 int8* temp = new int8[len];
-                int k=0;
-                for(int i=0;i<str.length();i++,k++){
+                int k = 0;
+                for (int i = 0; i < str.length(); i++, k++) {
                     temp[k] = str[i];
                 }
-                for(int i=0;i<t2->getLength();i++,k++){
+                for (int i = 0; i < t2->getLength(); i++, k++) {
                     temp[k] = t2->getData()[i];
                 }
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
                 delete[] temp;
             } else {
                 panic("should not reach here");
@@ -74,60 +74,60 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
                 NInt* t2 = as<NInt>(o2);
 
                 std::string str = std::to_string(t2->getValue());
-                uint32 len = str.length()+ t1->getLength();
+                uint32 len = str.length() + t1->getLength();
                 int8* temp = new int8[len];
-                int k=0;
-                for(int i=0;i<t1->getLength();i++,k++){
+                int k = 0;
+                for (int i = 0; i < t1->getLength(); i++, k++) {
                     temp[k] = t1->getData()[i];
                 }
-                for(int i=0;i<str.length();i++,k++){
+                for (int i = 0; i < str.length(); i++, k++) {
                     temp[k] = str[i];
                 }
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
                 delete[] temp;
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
 
                 std::string str = std::to_string(t2->getValue());
-                uint32 len = str.length()+ t1->getLength();
+                uint32 len = str.length() + t1->getLength();
                 int8* temp = new int8[len];
-                int k=0;
-                for(int i=0;i<t1->getLength();i++,k++){
+                int k = 0;
+                for (int i = 0; i < t1->getLength(); i++, k++) {
                     temp[k] = t1->getData()[i];
                 }
-                for(int i=0;i<str.length();i++,k++){
+                for (int i = 0; i < str.length(); i++, k++) {
                     temp[k] = str[i];
                 }
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
                 delete[] temp;
             } else if (is<NString>(o2)) {
                 auto* t2 = as<NString>(o2);
 
-                uint32 len = t2->getLength()+ t1->getLength();
+                uint32 len = t2->getLength() + t1->getLength();
                 int8* temp = new int8[len];
-                int k=0;
-                for(int i=0;i<t1->getLength();i++,k++){
+                int k = 0;
+                for (int i = 0; i < t1->getLength(); i++, k++) {
                     temp[k] = t1->getData()[i];
                 }
-                for(int i=0;i<t2->getLength();i++,k++){
+                for (int i = 0; i < t2->getLength(); i++, k++) {
                     temp[k] = t2->getData()[i];
                 }
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
                 delete[] temp;
             } else if (is<NChar>(o2)) {
                 auto* t2 = as<NChar>(o2);
 
-                uint32 len = 1+ t1->getLength();
+                uint32 len = 1 + t1->getLength();
                 int8* temp = new int8[len];
-                int k=0;
-                for(int i=0;i<t1->getLength();i++,k++){
+                int k = 0;
+                for (int i = 0; i < t1->getLength(); i++, k++) {
                     temp[k] = t1->getData()[i];
                 }
                 temp[k] = t2->getValue();
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
             } else if (is<NArray>(o2)) {
                 auto* t2 = as<NArray>(o2);
-                //TODO : pretty
+                // TODO : pretty
                 frame->push(GenHeap::instance().allocateNString("array"));
             } else {
                 panic("should not reach here");
@@ -137,14 +137,14 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             if (is<NString>(o2)) {
                 auto* t2 = as<NString>(o2);
 
-                uint32 len = t2->getLength()+1;
+                uint32 len = t2->getLength() + 1;
                 int8* temp = new int8[len];
-                int k=0;
+                int k = 0;
                 temp[k++] = t1->getValue();
-                for(int i=0;i<t2->getLength();i++,k++){
+                for (int i = 0; i < t2->getLength(); i++, k++) {
                     temp[k] = t2->getData()[i];
                 }
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
                 delete[] temp;
             } else {
                 panic("should not reach here");
@@ -166,10 +166,12 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             NInt* t1 = as<NInt>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                frame->push(GenHeap::instance().allocateNInt(t1->getValue()-t2->getValue()));
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue() -
+                                                             t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() - t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -177,10 +179,12 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             auto* t1 = as<NDouble>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() - t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()-t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() - t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -193,20 +197,22 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             NInt* t1 = as<NInt>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                frame->push(GenHeap::instance().allocateNInt(t1->getValue()*t2->getValue()));
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue() *
+                                                             t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() * t2->getValue()));
             } else if (is<NString>(o2)) {
                 auto* t2 = as<NString>(o2);
-                uint32 len = t2->getLength()*t1->getValue();
+                uint32 len = t2->getLength() * t1->getValue();
                 int8* temp = new int8[len];
-                for(int i=0,k=0;i<t1->getValue();i++){
-                    for(int t=0;t<t2->getLength();t++,k++){
+                for (int i = 0, k = 0; i < t1->getValue(); i++) {
+                    for (int t = 0; t < t2->getLength(); t++, k++) {
                         temp[k] = t2->getData()[t];
                     }
                 }
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
                 delete[] temp;
             } else {
                 panic("should not reach here");
@@ -215,10 +221,12 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             auto* t1 = as<NDouble>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() * t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()*t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() * t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -227,14 +235,14 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             if (is<NInt>(o2)) {
                 auto* t2 = as<NInt>(o2);
 
-                uint32 len = t1->getLength()*t2->getValue();
+                uint32 len = t1->getLength() * t2->getValue();
                 int8* temp = new int8[len];
-                for(int i=0,k=0;i<t2->getValue();i++){
-                    for(int t=0;t<t1->getLength();t++,k++){
+                for (int i = 0, k = 0; i < t2->getValue(); i++) {
+                    for (int t = 0; t < t1->getLength(); t++, k++) {
                         temp[k] = t1->getData()[t];
                     }
                 }
-                frame->push(GenHeap::instance().allocateNString(len,temp));
+                frame->push(GenHeap::instance().allocateNString(len, temp));
                 delete[] temp;
             } else {
                 panic("should not reach here");
@@ -248,10 +256,12 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             NInt* t1 = as<NInt>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                frame->push(GenHeap::instance().allocateNInt(t1->getValue()/t2->getValue()));
+                frame->push(GenHeap::instance().allocateNInt(t1->getValue() /
+                                                             t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() / t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -259,10 +269,12 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
             auto* t1 = as<NDouble>(o1);
             if (is<NInt>(o2)) {
                 NInt* t2 = as<NInt>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() / t2->getValue()));
             } else if (is<NDouble>(o2)) {
                 auto* t2 = as<NDouble>(o2);
-                frame->push(GenHeap::instance().allocateNDouble(t1->getValue()/t2->getValue()));
+                frame->push(GenHeap::instance().allocateNDouble(
+                    t1->getValue() / t2->getValue()));
             } else {
                 panic("should not reach here");
             }
@@ -273,7 +285,8 @@ template <int Operation> void arithmetic(Frame* frame,NValue* o1, NValue* o2) {
     case Opcode::REM: {
         NInt* t1 = as<NInt>(o1);
         NInt* t2 = as<NInt>(o2);
-        frame->push(GenHeap::instance().allocateNInt(t1->getValue()% t2->getValue()));
+        frame->push(
+            GenHeap::instance().allocateNInt(t1->getValue() % t2->getValue()));
         break;
     }
     default:
@@ -350,12 +363,12 @@ bool deepCompare(int cond, NValue* o1, NValue* o2) {
     }
 }
 
-template <int Operation> void compare(Frame* frame,NValue* o1, NValue* o2) {
+template <int Operation> void compare(Frame* frame, NValue* o1, NValue* o2) {
     frame->push(GenHeap::instance().allocateNInt(
         deepCompare(Operation, o1, o2) ? 1 : 0));
 }
 
-template <int Operation> void bitop(Frame* frame,NValue* o1, NValue* o2) {
+template <int Operation> void bitop(Frame* frame, NValue* o1, NValue* o2) {
     if (o2 == nullptr) {
         // NOT
         auto* t1 = as<NInt>(o1);
@@ -382,7 +395,7 @@ template <int Operation> void bitop(Frame* frame,NValue* o1, NValue* o2) {
     }
 }
 
-void neg(Frame* frame,NValue* object) {
+void neg(Frame* frame, NValue* object) {
     if (typeid(*object) == typeid(NInt)) {
         int32 val = -as<NInt>(object)->getValue();
         frame->push(GenHeap::instance().allocateNInt(val));
@@ -559,67 +572,67 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
             case Opcode::ADD: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::ADD>(frame,object1, object2);
+                arithmetic<Opcode::ADD>(frame, object1, object2);
                 break;
             }
             case Opcode::SUB: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::SUB>(frame,object1, object2);
+                arithmetic<Opcode::SUB>(frame, object1, object2);
                 break;
             }
             case Opcode::MUL: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::MUL>(frame,object1, object2);
+                arithmetic<Opcode::MUL>(frame, object1, object2);
                 break;
             }
             case Opcode::DIV: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::DIV>(frame,object1, object2);
+                arithmetic<Opcode::DIV>(frame, object1, object2);
                 break;
             }
             case Opcode::REM: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                arithmetic<Opcode::REM>(frame,object1, object2);
+                arithmetic<Opcode::REM>(frame, object1, object2);
                 break;
             }
             case Opcode::TEST_EQ: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_EQ>(frame,object1, object2);
+                compare<Opcode::TEST_EQ>(frame, object1, object2);
                 break;
             }
             case Opcode::TEST_NE: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_NE>(frame,object1, object2);
+                compare<Opcode::TEST_NE>(frame, object1, object2);
                 break;
             }
             case Opcode::TEST_GE: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_GE>(frame,object1, object2);
+                compare<Opcode::TEST_GE>(frame, object1, object2);
                 break;
             }
             case Opcode::TEST_GT: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_GT>(frame,object1, object2);
+                compare<Opcode::TEST_GT>(frame, object1, object2);
                 break;
             }
             case Opcode::TEST_LE: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_LE>(frame,object1, object2);
+                compare<Opcode::TEST_LE>(frame, object1, object2);
                 break;
             }
             case Opcode::TEST_LT: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                compare<Opcode::TEST_LT>(frame,object1, object2);
+                compare<Opcode::TEST_LT>(frame, object1, object2);
                 break;
             }
             case Opcode::JMP: {
@@ -656,23 +669,23 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
             case Opcode::AND: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                bitop<Opcode::AND>(frame,object1, object2);
+                bitop<Opcode::AND>(frame, object1, object2);
                 break;
             }
             case Opcode::OR: {
                 NValue* object2 = frame->pop();
                 NValue* object1 = frame->pop();
-                bitop<Opcode::OR>(frame,object1, object2);
+                bitop<Opcode::OR>(frame, object1, object2);
                 break;
             }
             case Opcode::NOT: {
                 NValue* object1 = frame->pop();
-                bitop<Opcode::NOT>(frame,object1, nullptr);
+                bitop<Opcode::NOT>(frame, object1, nullptr);
                 break;
             }
             case Opcode::NEG: {
                 NValue* object = frame->pop();
-                neg(object);
+                neg(frame, object);
                 break;
             }
             case Opcode::LOAD: {
@@ -741,9 +754,10 @@ void Interpreter::execute(Bytecode* bytecode, int argc, NValue** argv) {
                         temp = temp->parent;
                     }
                 } else {
-                    const char* funcPtr = bytecode->builtin[-callableIndex - 1][1];
+                    const char* funcPtr =
+                        bytecode->builtin[-callableIndex - 1][1];
                     frame->push(GenHeap::instance().allocateNCallable(
-                        true,(pointer)funcPtr));
+                        true, (pointer)funcPtr));
                 }
                 bci++;
                 break;

@@ -16,6 +16,7 @@
 //===----------------------------------------------------------------------===//
 struct Bytecode;
 class NType;
+class NHeader;
 
 template <typename AsType> inline AsType* as(void* addr) {
     return static_cast<AsType*>(addr);
@@ -139,7 +140,7 @@ class NString : public NValue {
 
     inline uint32 getLength() const { return this->length; }
 
-    inline int8* getData() const {return sizeof(NString)+(pointer)this;}
+    inline int8* getData() const { return sizeof(NString) + (pointer)this; }
 
     std::string getValue();
 };
@@ -168,6 +169,6 @@ class NCallable : public NValue {
         return reinterpret_cast<const char*>(code);
     }
 
-    inline bool isNativeCallable()const{return isNative;}
+    inline bool isNativeCallable() const { return isNative; }
 };
 #endif // NYX_NVALUE_H

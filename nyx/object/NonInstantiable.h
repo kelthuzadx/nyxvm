@@ -8,7 +8,8 @@ class NonInstantiable {
     void* operator new(size_t size) = delete;
     void operator delete(void* ptr) = delete;
     explicit NonInstantiable() = delete;
-    ~NonInstantiable() {}
+    ~NonInstantiable() { /*do nothing*/
+    }
 };
 
 #endif // NYX_NONINSTANTIABLE_H

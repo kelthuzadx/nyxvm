@@ -9,8 +9,8 @@ void NString::initialize(uint32 length, int8* data) {
 }
 std::string NString::getValue() {
     std::string str;
-    for(int i=0;i<length;i++){
-        str+=(char)getData()[i];
+    for (int i = 0; i < length; i++) {
+        str += (char)getData()[i];
     }
     return str;
 }
